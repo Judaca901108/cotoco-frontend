@@ -13,7 +13,7 @@ type Product = {
 };
 
 const BASE_PATH = "http://localhost:3000"
-const categories = ['Piece', 'Box'];
+const categories = ['piece', 'box'];
 
 const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
