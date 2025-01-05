@@ -4,6 +4,7 @@ import Sidebar from '../layouts/Sidebar';
 import Header from '../layouts/Header';
 import Footer from '../layouts/Footer';
 import ProductsPage from './ProductsPage'; // Página de Productos
+import PointOfSalePage from './PointOfSalePage'; // Página de Puntos de Ventas
 import HomePage from './HomePageDashboard'; // Página de Inicio dentro del Dashboard
 
 const DashboardPage: React.FC = () => {
@@ -28,6 +29,7 @@ const DashboardPage: React.FC = () => {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/products" element={<ProductsPage />} />
+            <Route path="/point-of-sales" element={<PointOfSalePage />} />
             {/* Agrega más rutas aquí */}
           </Routes>
         </main>

@@ -1,101 +1,92 @@
 import React, { useState, useEffect } from 'react';
 import ModalComponent from '../components/ModalComponent';
-import ProductForm from '../components/ProductForm';
+import PointOfSaleForm from '../components/PointOfSaleForm';
 import colors from '../../shared/colors';
 
-type Product = {
+type PointOfSale = {
   id: number;
   name: string;
-  description: string;
-  price: number; // Aseguramos que `price` sea un número
-  sku: string;
-  category: string;
+  address: string;
+  location: string;
+  type: string;
 };
 
 const BASE_PATH = "http://localhost:3000"
-const categories = ['Minifigura', 'Sets', 'Bases', 'Model Kits'];
+const type = ['Bodega', 'Puntos Fijos', 'Ferias'];
 
-const ProductsPage: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+const PointOfSalePage: React.FC = () => {
+  const [pointsOfSale, setPointsOfSale] = useState<PointOfSale[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState<{ id: number | null }>({ id: null });
   const [error, setError] = useState('');
 
-  // Fetch products from backend
   useEffect(() => {
-    fetch(`${BASE_PATH}/product`) // Ajusta la URL según tu backend
+    fetch(`${BASE_PATH}/point-of-sale`)
       .then((res) => res.json())
-      .then((data) => {
-        const parsedProducts = data.map((product: any) => ({
-          ...product,
-          price: parseFloat(product.price), // Convertimos `price` a número
-        }));
-        setProducts(parsedProducts);
-      })
-      .catch((error) => console.error('Error fetching products:', error));
+      .then((data) => setPointsOfSale(data))
+      .catch((err) => {
+        console.error('Error fetching points of sale:', err);
+        setPointsOfSale([]); // Asegurarse de inicializar como un arreglo vacío en caso de error
+      });
   }, []);
 
   const handleDelete = (id: number) => {
-    fetch(`${BASE_PATH}/product/${id}`, { method: 'DELETE' })
+    fetch(`${BASE_PATH}/point-of-sale/${id}`, { method: 'DELETE' })
       .then((res) => {
         if (res.ok) {
-          setProducts(products.filter((product) => product.id !== id));
-          alert('Producto eliminado correctamente');
+          setPointsOfSale(pointsOfSale.filter((pointOfSale) => pointOfSale.id !== id));
+          alert('Punto de Venta eliminado correctamente');
         } else {
-          alert('Error al eliminar el producto');
+          alert('Error al eliminar el Punto de Venta');
         }
       });
   };
 
-  const handleCreateProduct = async (data: { name: string; description: string; price: number; sku: string }) => {
+  const handleCreatePointOfSale = async (data: { name: string; address: string; location: string; type: string }) => {
     try {
-      const res = await fetch(`${BASE_PATH}/product`, {
+      const res = await fetch(`${BASE_PATH}/point-of-sale`, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) {
-        throw new Error('Error al crear el producto');
-      }
-      const newProduct = await res.json();
-      newProduct.price = parseFloat(newProduct.price);
-      setProducts((prev) => [...prev, newProduct]);
+      if (!res.ok) throw new Error('Error al crear el punto de venta');
+      const newPointOfSale = await res.json();
+      setPointsOfSale((prev) => [...prev, newPointOfSale]);
       setIsCreating(false);
     } catch (err: any) {
       setError(err.message);
     }
   };
-  
-  const handleEditProduct = async (data: { name: string; description: string; price: number; sku: string }) => {
+
+  const handleEditPointOfSale = async (data: { name: string; address: string; location: string; type: string }) => {
     try {
-      const res = await fetch(`${BASE_PATH}/product/${isEditing.id}`, {
-        method: 'PUT',
+      const res = await fetch(`${BASE_PATH}/point-of-sale/${isEditing.id}`, {
+        method: 'PATCH',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) {
-        throw new Error('Error al modificar el producto');
-      }
-      const updatedProduct = await res.json();
-      updatedProduct.price = parseFloat(updatedProduct.price);
-      setProducts((prev) => prev.map((p) => (p.id === isEditing.id ? updatedProduct : p)));
+      if (!res.ok) throw new Error('Error al modificar el punto de venta');
+      const updatedPointOfSale = await res.json();
+      setPointsOfSale((prev) => prev.map((p) => (p.id === isEditing.id ? updatedPointOfSale : p)));
       setIsEditing({ id: null });
     } catch (err: any) {
       setError(err.message);
     }
   };
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPointsOfSales = Array.isArray(pointsOfSale)
+  ? pointsOfSale.filter((pointOfSale) =>
+      pointOfSale.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  : [];
 
   return (
     <div style={{ padding: '20px', backgroundColor: colors.mainBackground, color: colors.mainText }}>
       <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
         <input
           type="text"
-          placeholder="Buscar productos..."
+          placeholder="Buscar puntos de venta..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           style={{
@@ -117,26 +108,26 @@ const ProductsPage: React.FC = () => {
           }}
           onClick={() => setIsCreating(true)}
         >
-          Crear Producto
+          Crear Punto de Venta
         </button>
       </div>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
             <th style={{ textAlign: 'left', padding: '10px', backgroundColor: colors.sidebarBackground, color: colors.sidebarInactiveText }}>Nombre</th>
-            <th style={{ textAlign: 'left', padding: '10px', backgroundColor: colors.sidebarBackground, color: colors.sidebarInactiveText }}>Descripción</th>
-            <th style={{ textAlign: 'left', padding: '10px', backgroundColor: colors.sidebarBackground, color: colors.sidebarInactiveText }}>Precio</th>
-            <th style={{ textAlign: 'left', padding: '10px', backgroundColor: colors.sidebarBackground, color: colors.sidebarInactiveText }}>SKU</th>
+            <th style={{ textAlign: 'left', padding: '10px', backgroundColor: colors.sidebarBackground, color: colors.sidebarInactiveText }}>Dirección</th>
+            <th style={{ textAlign: 'left', padding: '10px', backgroundColor: colors.sidebarBackground, color: colors.sidebarInactiveText }}>Ubicación</th>
+            <th style={{ textAlign: 'left', padding: '10px', backgroundColor: colors.sidebarBackground, color: colors.sidebarInactiveText }}>Tipo</th>
             <th style={{ textAlign: 'center', padding: '10px', backgroundColor: colors.sidebarBackground, color: colors.sidebarInactiveText }}>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {filteredProducts.map((product) => (
-            <tr key={product.id}>
-              <td style={{ padding: '10px', borderBottom: `1px solid ${colors.mainText}` }}>{product.name}</td>
-              <td style={{ padding: '10px', borderBottom: `1px solid ${colors.mainText}` }}>{product.description}</td>
-              <td style={{ padding: '10px', borderBottom: `1px solid ${colors.mainText}` }}>${product.price.toFixed(2)}</td>
-              <td style={{ padding: '10px', borderBottom: `1px solid ${colors.mainText}` }}>{product.sku}</td>
+          {filteredPointsOfSales.map((pointsOfSales) => (
+            <tr key={pointsOfSales.id}>
+              <td style={{ padding: '10px', borderBottom: `1px solid ${colors.mainText}` }}>{pointsOfSales.name}</td>
+              <td style={{ padding: '10px', borderBottom: `1px solid ${colors.mainText}` }}>{pointsOfSales.address}</td>
+              <td style={{ padding: '10px', borderBottom: `1px solid ${colors.mainText}` }}>{pointsOfSales.location}</td>
+              <td style={{ padding: '10px', borderBottom: `1px solid ${colors.mainText}` }}>{pointsOfSales.type}</td>
               <td style={{ textAlign: 'center', padding: '10px', borderBottom: `1px solid ${colors.mainText}` }}>
                 <button
                   style={{
@@ -148,7 +139,7 @@ const ProductsPage: React.FC = () => {
                     border: 'none',
                     cursor: 'pointer',
                   }}
-                  onClick={() => setIsEditing({ id: product.id })}
+                  onClick={() => setIsEditing({ id: pointsOfSales.id })}
                 >
                   Modificar
                 </button>
@@ -161,7 +152,7 @@ const ProductsPage: React.FC = () => {
                     border: 'none',
                     cursor: 'pointer',
                   }}
-                  onClick={() => handleDelete(product.id)}
+                  onClick={() => handleDelete(pointsOfSales.id)}
                 >
                   Eliminar
                 </button>
@@ -175,10 +166,10 @@ const ProductsPage: React.FC = () => {
         <ModalComponent
           isOpen={isCreating}
           onClose={() => setIsCreating(false)}
-          title="Crear Producto"
+          title="Crear Punto de Venta"
         >
           {error && <p className="text-danger">{error}</p>}
-          <ProductForm onSubmit={handleCreateProduct} categories={categories} />
+          <PointOfSaleForm onSubmit={handleCreatePointOfSale} types={type} />
         </ModalComponent>
       )}
 
@@ -186,18 +177,18 @@ const ProductsPage: React.FC = () => {
         <ModalComponent
           isOpen={!!isEditing.id}
           onClose={() => setIsEditing({ id: null })}
-          title="Editar Producto"
+          title="Editar Punto de Venta"
         >
           {error && <p className="text-danger">{error}</p>}
-          <ProductForm
-            initialData={products.find((p) => p.id === isEditing.id)!}
-            onSubmit={handleEditProduct}
-            categories={categories}
+          <PointOfSaleForm
+            initialData={pointsOfSale.find((p) => p.id === isEditing.id)!}
+            onSubmit={handleEditPointOfSale}
+            types={type}
           />
         </ModalComponent>
-      )}  
+      )}
     </div>
   );
 };
 
-export default ProductsPage;
+export default PointOfSalePage;

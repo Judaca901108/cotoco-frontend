@@ -86,9 +86,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, categories = [],
         >
           <option value="">Seleccione una categoría</option>
           {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
           ))}
         </select>
         {errors.category && <div className="invalid-feedback">{errors.category}</div>}
