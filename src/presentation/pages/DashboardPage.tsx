@@ -7,6 +7,8 @@ import ProductsPage from './ProductsPage'; // Página de Productos
 import PointOfSalePage from './PointOfSalePage'; // Página de Puntos de Ventas
 import InventoryPage from './InventoryPage';
 import HomePage from './HomePageDashboard'; // Página de Inicio dentro del Dashboard
+import InventoryOverviewPage from './InventoryOverviewPage';
+import PointOfSaleInventoryPage from './PointOfSaleInventoryPage';
 
 const DashboardPage: React.FC = () => {
   const [activePage, setActivePage] = useState('Home');
@@ -31,6 +33,8 @@ const DashboardPage: React.FC = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/point-of-sales" element={<PointOfSalePage />} />
+            <Route path="/point-of-sales/sumary" element={<InventoryOverviewPage />} />
+            <Route path="/point-of-sales/inventory/:pointOfSaleId" element={<PointOfSaleInventoryPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
             {/* Agrega más rutas aquí */}
           </Routes>

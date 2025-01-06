@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 type ProductFormProps = {
   initialData?: { name: string; description: string; price: number | string; sku: string; category: string };

@@ -32,10 +32,9 @@ type PointOfSale = {
 
 const InventoryPage: React.FC = () => {
   const [inventories, setInventories] = useState<Inventory[]>([]);
-  const [products, setProducts] = useState<{ id: number; name: string }[]>([]);
-  const [pointsOfSale, setPointsOfSale] = useState<{ id: number; name: string }[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [pointsOfSale, setPointsOfSale] = useState<PointOfSale[]>([]);
   const [isCreating, setIsCreating] = useState(false);
-  const [isEditing, setIsEditing] = useState<{ id: number | null }>({ id: null });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -55,6 +54,31 @@ const InventoryPage: React.FC = () => {
       .catch((err) => console.error('Error fetching points of sale:', err));
   }, []);
 
+  const findProductById = (productId: number): Product => {
+    const defaultProduct: Product = {
+      id: -1,
+      name: "Unknown Product",
+      price: 0, 
+      description: "",
+      sku: "",
+      category: ""
+    };
+  
+    return products.find(({ id }) => id === productId) ?? defaultProduct;
+  };
+
+  const findPointOfSaleById = (pointOfSaleId: number): PointOfSale => {
+    const defaultPointOfSale: PointOfSale = {
+      id: -1,
+      name: "Unknown Product", 
+      address: "",
+      location: "",
+      type: ""
+    };
+  
+    return pointsOfSale.find(({ id }) => id === pointOfSaleId) ?? defaultPointOfSale;
+  };
+
   const handleCreateInventory = async (data: { productId: number; pointOfSaleId: number; stockQuantity: number; minimumStock: number }) => {
     try {
       const res = await fetch(`${BASE_PATH}/inventory`, {
@@ -64,6 +88,8 @@ const InventoryPage: React.FC = () => {
       });
       if (!res.ok) throw new Error('Error al crear el inventario');
       const newInventory = await res.json();
+      newInventory.product = findProductById(newInventory.productId);
+      newInventory.pointOfSale = findPointOfSaleById(newInventory.pointOfSaleId)
       setInventories((prev) => [...prev, newInventory]);
       setIsCreating(false);
     } catch (err: any) {
