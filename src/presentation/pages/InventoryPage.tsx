@@ -1,143 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import InventoryForm from '../components/InventoryForm';
-import ModalComponent from '../components/ModalComponent';
+import { useNavigate } from 'react-router-dom';
 import colors from '../../shared/colors';
 
 const BASE_PATH = 'http://localhost:3000';
 
-type Inventory = {
-  id: number;
-  stockQuantity: number;
-  minimumStock: number;
-  product: Product;
-  pointOfSale: PointOfSale;
-};
-
-type Product = {
+type PointOfSaleSummary = {
   id: number;
   name: string;
-  description: string;
-  price: number; // Aseguramos que `price` sea un número
-  sku: string;
-  category: string;
-};
-
-type PointOfSale = {
-  id: number;
-  name: string;
-  address: string;
-  location: string;
-  type: string;
+  productCount: number;
 };
 
 const InventoryPage: React.FC = () => {
-  const [inventories, setInventories] = useState<Inventory[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [pointsOfSale, setPointsOfSale] = useState<PointOfSale[]>([]);
-  const [isCreating, setIsCreating] = useState(false);
+  const [pointsOfSale, setPointsOfSale] = useState<PointOfSaleSummary[]>([]);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${BASE_PATH}/inventory`)
+    fetch(`${BASE_PATH}/point-of-sale/summary`)
       .then((res) => res.json())
-      .then((data) => { setInventories(Array.isArray(data) ? data : [])})
-      .catch((err) => console.error('Error fetching inventories:', err));
-
-    fetch(`${BASE_PATH}/product`)
-      .then((res) => res.json())
-      .then((data) => setProducts(data))
-      .catch((err) => console.error('Error fetching products:', err));
-
-    fetch(`${BASE_PATH}/point-of-sale`)
-      .then((res) => res.json())
-      .then((data) => setPointsOfSale(data))
-      .catch((err) => console.error('Error fetching points of sale:', err));
-  }, []);
-
-  const findProductById = (productId: number): Product => {
-    const defaultProduct: Product = {
-      id: -1,
-      name: "Unknown Product",
-      price: 0, 
-      description: "",
-      sku: "",
-      category: ""
-    };
-  
-    return products.find(({ id }) => id === productId) ?? defaultProduct;
-  };
-
-  const findPointOfSaleById = (pointOfSaleId: number): PointOfSale => {
-    const defaultPointOfSale: PointOfSale = {
-      id: -1,
-      name: "Unknown Product", 
-      address: "",
-      location: "",
-      type: ""
-    };
-  
-    return pointsOfSale.find(({ id }) => id === pointOfSaleId) ?? defaultPointOfSale;
-  };
-
-  const handleCreateInventory = async (data: { productId: number; pointOfSaleId: number; stockQuantity: number; minimumStock: number }) => {
-    try {
-      const res = await fetch(`${BASE_PATH}/inventory`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
+      .then((data) => setPointsOfSale(Array.isArray(data) ? data : []))
+      .catch((err) => {
+        console.error('Error fetching points of sale summary:', err);
+        setError('No se pudieron cargar los puntos de venta.');
       });
-      if (!res.ok) throw new Error('Error al crear el inventario');
-      const newInventory = await res.json();
-      newInventory.product = findProductById(newInventory.productId);
-      newInventory.pointOfSale = findPointOfSaleById(newInventory.pointOfSaleId)
-      setInventories((prev) => [...prev, newInventory]);
-      setIsCreating(false);
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
+  }, []);
 
   return (
     <div style={{ padding: '20px', backgroundColor: colors.mainBackground }}>
-      <h2>Inventarios</h2>
-      <button onClick={() => setIsCreating(true)} className="btn btn-primary mb-3">
-        Crear Inventario
-      </button>
-
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Punto de Venta</th>
-            <th>Cantidad</th>
-            <th>Stock Mínimo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {inventories.map((inventory) => (
-            <tr key={inventory.id}>
-              <td>{inventory.product.name}</td>
-              <td>{inventory.pointOfSale.name}</td>
-              <td>{inventory.stockQuantity}</td>
-              <td>{inventory.minimumStock}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {isCreating && (
-        <ModalComponent
-          isOpen={isCreating}
-          onClose={() => setIsCreating(false)}
-          title="Crear Inventario"
-        >
-          <InventoryForm
-            onSubmit={handleCreateInventory}
-            products={products}
-            pointsOfSale={pointsOfSale}
-          />
-        </ModalComponent>
-      )}
+      <h2>Puntos de Venta</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+        {pointsOfSale.map((pos) => (
+          <div
+            key={pos.id}
+            style={{
+              backgroundColor: colors.sidebarBackground,
+              color: colors.sidebarActiveText,
+              padding: '20px',
+              borderRadius: '10px',
+              cursor: 'pointer',
+            }}
+            onClick={() => navigate(`/dashboard/inventory/point-of-sales/${pos.id}`)}
+          >
+            <h3>{pos.name}</h3>
+            <p>Productos: {pos.productCount}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

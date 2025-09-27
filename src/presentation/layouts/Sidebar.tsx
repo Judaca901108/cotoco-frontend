@@ -16,7 +16,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
     { id: 'Home', label: 'Inicio', path: '/dashboard', icon: <FaHome /> },
     { id: 'Products', label: 'Productos', path: '/dashboard/products', icon: <FaBox /> },
     { id: 'PointOfSales', label: 'Puntos de Venta', path: '/dashboard/point-of-sales', icon: <FaStore /> },
-    { id: 'PointOfSalesInventory', label: 'Inventario de Punto de Venta', path: '/dashboard/point-of-sales/sumary' },
     { id: 'Inventory', label: 'Inventario', path: '/dashboard/inventory' },
     { id: 'Transactions', label: 'Transacciones', path: '/dashboard/transactions' },
   ];

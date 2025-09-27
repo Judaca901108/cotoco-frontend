@@ -5,9 +5,8 @@ import Header from '../layouts/Header';
 import Footer from '../layouts/Footer';
 import ProductsPage from './ProductsPage'; // Página de Productos
 import PointOfSalePage from './PointOfSalePage'; // Página de Puntos de Ventas
-import InventoryPage from './InventoryPage';
 import HomePage from './HomePageDashboard'; // Página de Inicio dentro del Dashboard
-import InventoryOverviewPage from './InventoryOverviewPage';
+import InventoryPage from './InventoryPage';
 import PointOfSaleInventoryPage from './PointOfSaleInventoryPage';
 
 const DashboardPage: React.FC = () => {
@@ -33,9 +32,8 @@ const DashboardPage: React.FC = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/point-of-sales" element={<PointOfSalePage />} />
-            <Route path="/point-of-sales/sumary" element={<InventoryOverviewPage />} />
-            <Route path="/point-of-sales/inventory/:pointOfSaleId" element={<PointOfSaleInventoryPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
+            <Route path="/inventory/point-of-sales/:pointOfSaleId" element={<PointOfSaleInventoryPage />} />
             {/* Agrega más rutas aquí */}
           </Routes>
         </main>

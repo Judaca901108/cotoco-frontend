@@ -1,23 +1,20 @@
 import React, { useState } from 'react';
 
 type InventoryFormProps = {
-  initialData?: { productId: number; pointOfSaleId: number; stockQuantity: number; minimumStock: number };
+  initialData?: { productId: number; stockQuantity: number; minimumStock: number };
   products: { id: number; name: string }[]; // Lista de productos disponibles
-  pointsOfSale: { id: number; name: string }[]; // Lista de puntos de venta disponibles
-  onSubmit: (data: { productId: number; pointOfSaleId: number; stockQuantity: number; minimumStock: number }) => void;
+  onSubmit: (data: { productId: number; stockQuantity: number; minimumStock: number }) => void;
 };
   
 
 const InventoryForm: React.FC<InventoryFormProps> = ({
   initialData,
   products,
-  pointsOfSale,
   onSubmit,
 }) => {
   const [formData, setFormData] = useState(
     initialData || {
       productId: 0,
-      pointOfSaleId: 0,
       stockQuantity: 0,
       minimumStock: 0,
     }
@@ -27,8 +24,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!formData.productId) newErrors.productId = 'El producto es obligatorio.';
-    if (!formData.pointOfSaleId) newErrors.pointOfSaleId = 'El punto de venta es obligatorio.';
+    if (!formData.productId) newErrors.productId = 'El producto es obligatorio.'
     if (formData.stockQuantity < 0) newErrors.stockQuantity = 'La cantidad no puede ser negativa.';
     if (formData.minimumStock < 0) newErrors.minimumStock = 'El stock mínimo no puede ser negativo.';
     setErrors(newErrors);
@@ -68,27 +64,6 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
           ))}
         </select>
         {errors.productId && <div className="invalid-feedback">{errors.productId}</div>}
-      </div>
-
-      <div className="mb-3">
-        <label htmlFor="pointOfSaleId" className="form-label">
-          Punto de Venta
-        </label>
-        <select
-          className={`form-control ${errors.pointOfSaleId ? 'is-invalid' : ''}`}
-          id="pointOfSaleId"
-          name="pointOfSaleId"
-          value={formData.pointOfSaleId}
-          onChange={handleChange}
-        >
-          <option value={0}>Seleccione un punto de venta</option>
-          {pointsOfSale.map((pos) => (
-            <option key={pos.id} value={pos.id}>
-              {pos.name}
-            </option>
-          ))}
-        </select>
-        {errors.pointOfSaleId && <div className="invalid-feedback">{errors.pointOfSaleId}</div>}
       </div>
 
       <div className="mb-3">
