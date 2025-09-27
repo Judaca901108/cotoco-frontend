@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaEdit, FaTrash, FaBox, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaPlus, FaSearch, FaEdit, FaTrash, FaBox, FaChevronLeft, FaChevronRight, FaEye } from 'react-icons/fa';
 import ModalComponent from '../components/ModalComponent';
 import ProductForm from '../components/ProductForm';
 import { tableStyles, getRowStyle, getActionButtonStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
@@ -26,6 +27,7 @@ const ProductsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const navigate = useNavigate();
 
   // Fetch products from backend
   useEffect(() => {
@@ -165,7 +167,21 @@ const ProductsPage: React.FC = () => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <td style={tableStyles.tableCell}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '12px',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => navigate(`/dashboard/products/${product.id}`)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.opacity = '0.8';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.opacity = '1';
+                      }}
+                    >
                       <div style={getTechIconStyle('gradle')}>
                         <FaBox />
                       </div>
@@ -206,6 +222,20 @@ const ProductsPage: React.FC = () => {
                     </span>
                   </td>
                   <td style={{...tableStyles.tableCell, textAlign: 'center'}}>
+                    <button
+                      style={getActionButtonStyle('view')}
+                      onClick={() => navigate(`/dashboard/products/${product.id}`)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <FaEye />
+                    </button>
                     <button
                       style={getActionButtonStyle('edit')}
                       onClick={() => setIsEditing({ id: product.id })}

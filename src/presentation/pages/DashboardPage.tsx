@@ -7,6 +7,8 @@ import PointOfSalePage from './PointOfSalePage'; // Página de Puntos de Ventas
 import HomePage from './HomePageDashboard'; // Página de Inicio dentro del Dashboard
 import InventoryPage from './InventoryPage';
 import PointOfSaleInventoryPage from './PointOfSaleInventoryPage';
+import ProductDetailPage from './ProductDetailPage'; // Vista de detalle de producto
+import PointOfSaleDetailPage from './PointOfSaleDetailPage'; // Vista de detalle de punto de venta
 import colors from '../../shared/colors';
 
 const DashboardPage: React.FC = () => {
@@ -52,7 +54,9 @@ const DashboardPage: React.FC = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/point-of-sales" element={<PointOfSalePage />} />
+          <Route path="/point-of-sales/:id" element={<PointOfSaleDetailPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/inventory/point-of-sales/:pointOfSaleId" element={<PointOfSaleInventoryPage />} />
           {/* Agrega más rutas aquí */}

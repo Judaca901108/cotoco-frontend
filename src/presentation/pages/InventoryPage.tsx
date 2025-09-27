@@ -98,7 +98,21 @@ const InventoryPage: React.FC = () => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <td style={tableStyles.tableCell}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '12px',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => navigate(`/dashboard/point-of-sales/${pos.id}`)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.opacity = '0.8';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.opacity = '1';
+                      }}
+                    >
                       <div style={getTechIconStyle('node')}>
                         <FaWarehouse />
                       </div>
