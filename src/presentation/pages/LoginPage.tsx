@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaSun, FaEye, FaEyeSlash, FaExclamationCircle } from 'react-icons/fa';
+import colors from '../../shared/colors';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -12,110 +16,338 @@ const LoginPage: React.FC = () => {
       alert('Login successful!');
       navigate('/dashboard'); // Redirige al Dashboard
     } else {
-      alert('Invalid credentials. Please try again.');
+      setErrors({ general: 'Invalid credentials. Please try again.' });
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleLogin();
     }
   };
 
   return (
     <div style={{
       display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      alignItems: 'center',
       height: '100vh',
-      backgroundColor: '#000000',
-      color: '#FFFFFF',
+      backgroundColor: colors.backgroundPrimary,
+      color: colors.textPrimary,
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
     }}>
-      {/* Logo */}
-      <div style={{ marginTop: '60px' }}>
-        <img
-          src="/images/logo-large.jpg" // Ruta del logo largo
-          alt="Cotoco Logo"
-          style={{
-            width: '400px', // Ajusta el tamaño según sea necesario
-            height: 'auto',
-          }}
-        />
-      </div>
-
-      {/* Formulario de Login */}
+      {/* Sección Principal del Login */}
       <div style={{
-        backgroundColor: '#1A1A1A',
-        padding: '20px',
-        borderRadius: '10px',
-        width: '300px',
-        boxShadow: '0 0 10px rgba(255, 255, 255, 0.2)',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: '40px',
+        position: 'relative',
       }}>
-        <h2 style={{
-          color: '#FFFF00',
-          textAlign: 'center',
-          marginBottom: '20px',
+        {/* Header con Logo y Toggle */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
         }}>
-          Iniciar Sesión
-        </h2>
-        <div style={{ marginBottom: '15px' }}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{
-              width: '90%',
-              padding: '10px',
-              borderRadius: '5px',
-              border: `1px solid #FF0000`,
-              backgroundColor: '#333333',
-              color: '#FFFFFF',
-              fontSize: '1rem',
-            }}
-          />
-        </div>
-        <div style={{ marginBottom: '20px' }}>
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{
-              width: '90%',
-              padding: '10px',
-              borderRadius: '5px',
-              border: `1px solid #FF0000`,
-              backgroundColor: '#333333',
-              color: '#FFFFFF',
-              fontSize: '1rem',
-            }}
-          />
-        </div>
-        <button
-          onClick={handleLogin}
-          style={{
-            width: '100%',
-            padding: '10px',
-            borderRadius: '5px',
-            border: 'none',
-            backgroundColor: '#FF0000',
-            color: '#FFFFFF',
+          {/* Logo */}
+          <div style={{
+            backgroundColor: colors.primaryColor,
+            color: colors.white,
+            padding: '12px 20px',
+            borderRadius: '8px',
             fontWeight: 'bold',
-            fontSize: '1rem',
-            cursor: 'pointer',
-          }}
-        >
-          Iniciar Sesión
-        </button>
+            fontSize: '1.5rem',
+            letterSpacing: '1px',
+          }}>
+            COTOCO
+          </div>
+
+          {/* Toggle de modo claro/oscuro */}
+          <button
+            style={{
+              background: 'none',
+              border: 'none',
+              color: colors.textSecondary,
+              fontSize: '1.5rem',
+              cursor: 'pointer',
+              padding: '8px',
+              borderRadius: '6px',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBackground}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            <FaSun />
+          </button>
+        </div>
+
+        {/* Formulario de Login Centrado */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flex: 1,
+          maxWidth: '400px',
+          margin: '0 auto',
+        }}>
+          {/* Títulos */}
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <h1 style={{
+              fontSize: '2.5rem',
+              fontWeight: '700',
+              color: colors.textPrimary,
+              margin: '0 0 12px 0',
+              letterSpacing: '-0.5px',
+            }}>
+              Sign in to your account
+            </h1>
+            <p style={{
+              fontSize: '1.1rem',
+              color: colors.textSecondary,
+              margin: 0,
+              fontWeight: '400',
+            }}>
+              Welcome, ready to manage your business?
+            </p>
+          </div>
+
+          {/* Formulario */}
+          <div style={{ width: '100%' }}>
+            {/* Campo Email */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                color: colors.textPrimary,
+                marginBottom: '8px',
+              }}>
+                Email
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    fontSize: '1rem',
+                    backgroundColor: '#E5F3E5', // Fondo amarillo verdoso como en la imagen
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#1A1A1A',
+                    outline: 'none',
+                    transition: 'all 0.2s ease',
+                    boxSizing: 'border-box',
+                  }}
+                  placeholder="admin@cotoco.com"
+                />
+                {errors.email && (
+                  <div style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: colors.error,
+                  }}>
+                    <FaExclamationCircle />
+                  </div>
+                )}
+              </div>
+              {errors.email && (
+                <div style={{
+                  fontSize: '0.8rem',
+                  color: colors.error,
+                  marginTop: '4px',
+                }}>
+                  {errors.email}
+                </div>
+              )}
+            </div>
+
+            {/* Campo Password */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                color: colors.textPrimary,
+                marginBottom: '8px',
+              }}>
+                Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  style={{
+                    width: '100%',
+                    padding: '16px 50px 16px 16px',
+                    fontSize: '1rem',
+                    backgroundColor: '#E5F3E5', // Fondo amarillo verdoso como en la imagen
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#1A1A1A',
+                    outline: 'none',
+                    transition: 'all 0.2s ease',
+                    boxSizing: 'border-box',
+                  }}
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#666',
+                    cursor: 'pointer',
+                    padding: '4px',
+                  }}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+                {errors.password && (
+                  <div style={{
+                    position: 'absolute',
+                    right: '40px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: colors.error,
+                  }}>
+                    <FaExclamationCircle />
+                  </div>
+                )}
+              </div>
+              {errors.password && (
+                <div style={{
+                  fontSize: '0.8rem',
+                  color: colors.error,
+                  marginTop: '4px',
+                }}>
+                  {errors.password}
+                </div>
+              )}
+            </div>
+
+            {/* Enlace Forgot Password */}
+            <div style={{ marginBottom: '32px' }}>
+              <a
+                href="#"
+                style={{
+                  color: colors.secondaryColor,
+                  textDecoration: 'none',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+              >
+                Forgot your password?
+              </a>
+            </div>
+
+            {/* Error General */}
+            {errors.general && (
+              <div style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                border: `1px solid ${colors.error}`,
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '24px',
+                color: colors.error,
+                fontSize: '0.9rem',
+                textAlign: 'center',
+              }}>
+                {errors.general}
+              </div>
+            )}
+
+            {/* Botón de Login */}
+            <button
+              onClick={handleLogin}
+              style={{
+                width: '100%',
+                padding: '16px',
+                fontSize: '1.1rem',
+                fontWeight: '600',
+                backgroundColor: colors.secondaryColor, // Azul brillante como en la imagen
+                color: colors.white,
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(6, 182, 212, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              LETS GO
+            </button>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          textAlign: 'center',
+          color: colors.textMuted,
+          fontSize: '0.9rem',
+        }}>
+          © 2025 Comic Toys Colombia - Todos los derechos reservados.
+        </div>
       </div>
 
-      {/* Footer */}
-      <footer style={{
-        marginTop: '20px',
-        padding: '10px',
-        width: '100%',
-        textAlign: 'center',
-        backgroundColor: '#1A1A1A',
-        color: '#FFFF00',
+      {/* Sección Derecha - Placeholder para imagen o contenido adicional */}
+      <div style={{
+        width: '40%',
+        backgroundColor: colors.backgroundSecondary,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden',
       }}>
-        © 2024 Comic Toys Colombia - Todos los derechos reservados.
-      </footer>
+        <div style={{
+          textAlign: 'center',
+          color: colors.textMuted,
+          fontSize: '1.2rem',
+          fontWeight: '500',
+        }}>
+          <div style={{
+            width: '200px',
+            height: '200px',
+            backgroundColor: colors.primaryColor,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 20px',
+            opacity: 0.1,
+          }}>
+            <span style={{ fontSize: '4rem' }}>🎯</span>
+          </div>
+          <p>Welcome to Cotoco</p>
+          <p style={{ fontSize: '1rem', marginTop: '8px' }}>
+            Your business management platform
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

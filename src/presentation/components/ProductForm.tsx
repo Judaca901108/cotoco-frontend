@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
+import { FaSave, FaTimes } from 'react-icons/fa';
+import { formStyles, getInputStyles, getTextareaStyles, getSelectStyles } from '../../shared/formStyles';
 
 type ProductFormProps = {
   initialData?: { name: string; description: string; price: number | string; sku: string; category: string };
   categories?: string[]; // Lista de categorías opcional
   onSubmit: (data: { name: string; description: string; price: number; sku: string; category: string }) => void;
+  onCancel?: () => void;
+  title?: string;
 };
 
-const ProductForm: React.FC<ProductFormProps> = ({ initialData, categories = [], onSubmit }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ 
+  initialData, 
+  categories = [], 
+  onSubmit, 
+  onCancel,
+  title = "Gestión de Producto"
+}) => {
   const [formData, setFormData] = useState(initialData || {
     name: '',
     description: '',
@@ -16,6 +26,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, categories = [],
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -31,6 +42,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, categories = [],
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Limpiar error cuando el usuario empiece a escribir
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -44,89 +59,180 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, categories = [],
     }
   };
 
+  const handleFocus = (fieldName: string) => {
+    setFocusedField(fieldName);
+  };
+
+  const handleBlur = () => {
+    setFocusedField(null);
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="p-3">
-      <div className="mb-3">
-        <label htmlFor="name" className="form-label">
-          Nombre
-        </label>
-        <input
-          type="text"
-          className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-          id="name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-        />
-        {errors.name && <div className="invalid-feedback">{errors.name}</div>}
-      </div>
-      <div className="mb-3">
-        <label htmlFor="description" className="form-label">
-          Descripción
-        </label>
-        <textarea
-          className={`form-control ${errors.description ? 'is-invalid' : ''}`}
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-        />
-        {errors.description && <div className="invalid-feedback">{errors.description}</div>}
-      </div>
-      <div className="mb-3">
-        <label htmlFor="category" className="form-label">
-          Categoría
-        </label>
-        <select
-          className={`form-control ${errors.category ? 'is-invalid' : ''}`}
-          id="category"
-          name="category"
-          value={formData.category}
-          onChange={handleChange}
-        >
-          <option value="">Seleccione una categoría</option>
-          {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-          ))}
-        </select>
-        {errors.category && <div className="invalid-feedback">{errors.category}</div>}
-      </div>
-      <div className="mb-3">
-        <label htmlFor="price" className="form-label">
-          Precio
-        </label>
-        <input
-          type="number"
-          className={`form-control ${errors.price ? 'is-invalid' : ''}`}
-          id="price"
-          name="price"
-          value={formData.price}
-          onChange={handleChange}
-        />
-        {errors.price && <div className="invalid-feedback">{errors.price}</div>}
-      </div>
-      <div className="mb-3">
-        <label htmlFor="sku" className="form-label">
-          SKU
-        </label>
-        <input
-          type="text"
-          className={`form-control ${errors.sku ? 'is-invalid' : ''}`}
-          id="sku"
-          name="sku"
-          value={formData.sku}
-          onChange={handleChange}
-        />
-        {errors.sku && <div className="invalid-feedback">{errors.sku}</div>}
-      </div>
-      <div className="text-end">
-        <button type="submit" className="btn btn-primary">
-          Guardar
-        </button>
-      </div>
-    </form>
+    <div style={formStyles.formContainer}>
+      <h2 style={formStyles.formTitle}>{title}</h2>
+      
+      <form onSubmit={handleSubmit}>
+        {/* Nombre y SKU en la misma fila */}
+        <div style={formStyles.fieldGrid}>
+          <div style={formStyles.fieldContainer}>
+            <label htmlFor="name" style={formStyles.label}>
+              Nombre del Producto *
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              onFocus={() => handleFocus('name')}
+              onBlur={handleBlur}
+              style={getInputStyles(!!errors.name, focusedField === 'name')}
+              placeholder="Ingrese el nombre del producto"
+            />
+            {errors.name && (
+              <div style={formStyles.errorMessage}>
+                <span>{errors.name}</span>
+              </div>
+            )}
+          </div>
+
+          <div style={formStyles.fieldContainer}>
+            <label htmlFor="sku" style={formStyles.label}>
+              SKU *
+            </label>
+            <input
+              type="text"
+              id="sku"
+              name="sku"
+              value={formData.sku}
+              onChange={handleChange}
+              onFocus={() => handleFocus('sku')}
+              onBlur={handleBlur}
+              style={getInputStyles(!!errors.sku, focusedField === 'sku')}
+              placeholder="Código único del producto"
+            />
+            {errors.sku && (
+              <div style={formStyles.errorMessage}>
+                <span>{errors.sku}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Categoría y Precio en la misma fila */}
+        <div style={formStyles.fieldGrid}>
+          <div style={formStyles.fieldContainer}>
+            <label htmlFor="category" style={formStyles.label}>
+              Categoría *
+            </label>
+            <select
+              id="category"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              onFocus={() => handleFocus('category')}
+              onBlur={handleBlur}
+              style={getSelectStyles(!!errors.category, focusedField === 'category')}
+            >
+              <option value="">Seleccione una categoría</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+            {errors.category && (
+              <div style={formStyles.errorMessage}>
+                <span>{errors.category}</span>
+              </div>
+            )}
+          </div>
+
+          <div style={formStyles.fieldContainer}>
+            <label htmlFor="price" style={formStyles.label}>
+              Precio *
+            </label>
+            <input
+              type="number"
+              id="price"
+              name="price"
+              value={formData.price}
+              onChange={handleChange}
+              onFocus={() => handleFocus('price')}
+              onBlur={handleBlur}
+              style={getInputStyles(!!errors.price, focusedField === 'price')}
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+            />
+            {errors.price && (
+              <div style={formStyles.errorMessage}>
+                <span>{errors.price}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Descripción en fila completa */}
+        <div style={formStyles.fieldContainer}>
+          <label htmlFor="description" style={formStyles.label}>
+            Descripción *
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            onFocus={() => handleFocus('description')}
+            onBlur={handleBlur}
+            style={getTextareaStyles(!!errors.description, focusedField === 'description')}
+            placeholder="Descripción detallada del producto..."
+          />
+          {errors.description && (
+            <div style={formStyles.errorMessage}>
+              <span>{errors.description}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Botones */}
+        <div style={formStyles.buttonContainer}>
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              style={formStyles.secondaryButton}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <FaTimes />
+              Cancelar
+            </button>
+          )}
+          <button
+            type="submit"
+            style={formStyles.primaryButton}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          >
+            <FaSave />
+            Guardar Producto
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 
