@@ -35,14 +35,6 @@ const HomePage: React.FC = () => {
       path: '/dashboard/point-of-sales'
     },
     {
-      id: 'inventory',
-      title: 'Control de Inventario',
-      description: 'Monitorea tu stock',
-      icon: <FaWarehouse />,
-      color: '#06B6D4', // Cian
-      path: '/dashboard/inventory'
-    },
-    {
       id: 'analytics',
       title: 'Reportes y Análisis',
       description: 'Visualiza tus datos',

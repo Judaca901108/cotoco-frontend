@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaPlus, FaSearch, FaEdit, FaTrash, FaBox, FaChevronLeft, FaChevronRight, FaEye } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaBox, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import ModalComponent from '../components/ModalComponent';
 import ProductForm from '../components/ProductForm';
-import { tableStyles, getRowStyle, getActionButtonStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
+import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
 import colors from '../../shared/colors';
 
 type Product = {
@@ -22,7 +22,6 @@ const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [isEditing, setIsEditing] = useState<{ id: number | null }>({ id: null });
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -43,17 +42,6 @@ const ProductsPage: React.FC = () => {
       .catch((error) => console.error('Error fetching products:', error));
   }, []);
 
-  const handleDelete = (id: number) => {
-    fetch(`${BASE_PATH}/product/${id}`, { method: 'DELETE' })
-      .then((res) => {
-        if (res.ok) {
-          setProducts(products.filter((product) => product.id !== id));
-          alert('Producto eliminado correctamente');
-        } else {
-          alert('Error al eliminar el producto');
-        }
-      });
-  };
 
   const handleCreateProduct = async (data: { name: string; description: string; price: number; sku: string }) => {
     try {
@@ -74,24 +62,6 @@ const ProductsPage: React.FC = () => {
     }
   };
   
-  const handleEditProduct = async (data: { name: string; description: string; price: number; sku: string }) => {
-    try {
-      const res = await fetch(`${BASE_PATH}/product/${isEditing.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!res.ok) {
-        throw new Error('Error al modificar el producto');
-      }
-      const updatedProduct = await res.json();
-      updatedProduct.price = parseFloat(updatedProduct.price);
-      setProducts((prev) => prev.map((p) => (p.id === isEditing.id ? updatedProduct : p)));
-      setIsEditing({ id: null });
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -144,7 +114,6 @@ const ProductsPage: React.FC = () => {
               <th style={tableStyles.tableHeaderCell}>Precio</th>
               <th style={tableStyles.tableHeaderCell}>SKU</th>
               <th style={tableStyles.tableHeaderCell}>Estado</th>
-              <th style={{...tableStyles.tableHeaderCell, textAlign: 'center'}}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -220,50 +189,6 @@ const ProductsPage: React.FC = () => {
                     <span style={getStatusBadgeStyle('active')}>
                       Activo
                     </span>
-                  </td>
-                  <td style={{...tableStyles.tableCell, textAlign: 'center'}}>
-                    <button
-                      style={getActionButtonStyle('view')}
-                      onClick={() => navigate(`/dashboard/products/${product.id}`)}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      <FaEye />
-                    </button>
-                    <button
-                      style={getActionButtonStyle('edit')}
-                      onClick={() => setIsEditing({ id: product.id })}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      style={getActionButtonStyle('delete')}
-                      onClick={() => handleDelete(product.id)}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      <FaTrash />
-                    </button>
                   </td>
                 </tr>
               ))
@@ -345,20 +270,6 @@ const ProductsPage: React.FC = () => {
         </ModalComponent>
       )}
 
-      {isEditing.id !== null && (
-        <ModalComponent
-          isOpen={!!isEditing.id}
-          onClose={() => setIsEditing({ id: null })}
-          title="Editar Producto"
-        >
-          {error && <p className="text-danger">{error}</p>}
-          <ProductForm
-            initialData={products.find((p) => p.id === isEditing.id)!}
-            onSubmit={handleEditProduct}
-            categories={categories}
-          />
-        </ModalComponent>
-      )}  
     </div>
   );
 };

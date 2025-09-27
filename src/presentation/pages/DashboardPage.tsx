@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Header from '../layouts/Header';
 import Footer from '../layouts/Footer';
 import ProductsPage from './ProductsPage'; // Página de Productos
 import PointOfSalePage from './PointOfSalePage'; // Página de Puntos de Ventas
 import HomePage from './HomePageDashboard'; // Página de Inicio dentro del Dashboard
-import InventoryPage from './InventoryPage';
 import PointOfSaleInventoryPage from './PointOfSaleInventoryPage';
 import ProductDetailPage from './ProductDetailPage'; // Vista de detalle de producto
 import PointOfSaleDetailPage from './PointOfSaleDetailPage'; // Vista de detalle de punto de venta
@@ -20,12 +19,11 @@ const DashboardPage: React.FC = () => {
     if (path === '/dashboard' || path === '/dashboard/') return 'Home';
     if (path.includes('/products')) return 'Products';
     if (path.includes('/point-of-sales')) return 'PointOfSales';
-    if (path.includes('/inventory')) return 'Inventory';
     if (path.includes('/transactions')) return 'Transactions';
     return 'Home';
   };
 
-  const [activePage] = useState(getActivePage());
+  const activePage = getActivePage();
 
   return (
     <div style={{ 
@@ -57,8 +55,7 @@ const DashboardPage: React.FC = () => {
           <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/point-of-sales" element={<PointOfSalePage />} />
           <Route path="/point-of-sales/:id" element={<PointOfSaleDetailPage />} />
-          <Route path="/inventory" element={<InventoryPage />} />
-          <Route path="/inventory/point-of-sales/:pointOfSaleId" element={<PointOfSaleInventoryPage />} />
+          <Route path="/point-of-sales/:id/inventory" element={<PointOfSaleInventoryPage />} />
           {/* Agrega más rutas aquí */}
         </Routes>
       </main>

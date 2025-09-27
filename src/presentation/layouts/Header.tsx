@@ -16,7 +16,6 @@ const Header: React.FC<HeaderProps> = ({ activePage, onLogout }) => {
     { id: 'Home', label: 'INICIO', path: '/dashboard' },
     { id: 'Products', label: 'PRODUCTOS', path: '/dashboard/products' },
     { id: 'PointOfSales', label: 'PUNTOS DE VENTA', path: '/dashboard/point-of-sales' },
-    { id: 'Inventory', label: 'INVENTARIO', path: '/dashboard/inventory' },
     { id: 'Transactions', label: 'TRANSACCIONES', path: '/dashboard/transactions' },
   ];
 

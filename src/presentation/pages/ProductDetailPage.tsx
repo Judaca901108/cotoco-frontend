@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaEdit, FaTrash, FaBox, FaTag, FaDollarSign, FaBarcode } from 'react-icons/fa';
-import { detailStyles, getActionButtonStyle, getStatusBadgeStyle } from '../../shared/detailStyles';
+import { detailStyles, getActionButtonStyle } from '../../shared/detailStyles';
 import colors from '../../shared/colors';
 
 const BASE_PATH = "http://localhost:3000";
@@ -228,23 +228,6 @@ const ProductDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Sección de inventario relacionado */}
-      <div style={detailStyles.relatedDataSection}>
-        <h2 style={detailStyles.relatedDataTitle}>
-          INVENTARIO DISPONIBLE
-          <span style={getStatusBadgeStyle('active')}>
-            En Stock
-          </span>
-        </h2>
-        
-        <div style={detailStyles.emptyState}>
-          <div style={detailStyles.emptyStateIcon}>📦</div>
-          <div style={detailStyles.emptyStateTitle}>Sin inventario</div>
-          <div style={detailStyles.emptyStateDescription}>
-            Este producto no tiene inventario registrado en ningún punto de venta.
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaPlus, FaSearch, FaEdit, FaTrash, FaStore, FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaEye } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaStore, FaMapMarkerAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import ModalComponent from '../components/ModalComponent';
 import PointOfSaleForm from '../components/PointOfSaleForm';
-import { tableStyles, getRowStyle, getActionButtonStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
+import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
 import colors from '../../shared/colors';
 
 type PointOfSale = {
@@ -21,7 +21,6 @@ const PointOfSalePage: React.FC = () => {
   const [pointsOfSale, setPointsOfSale] = useState<PointOfSale[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [isEditing, setIsEditing] = useState<{ id: number | null }>({ id: null });
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -38,17 +37,6 @@ const PointOfSalePage: React.FC = () => {
       });
   }, []);
 
-  const handleDelete = (id: number) => {
-    fetch(`${BASE_PATH}/point-of-sale/${id}`, { method: 'DELETE' })
-      .then((res) => {
-        if (res.ok) {
-          setPointsOfSale(pointsOfSale.filter((pointOfSale) => pointOfSale.id !== id));
-          alert('Punto de Venta eliminado correctamente');
-        } else {
-          alert('Error al eliminar el Punto de Venta');
-        }
-      });
-  };
 
   const handleCreatePointOfSale = async (data: { name: string; address: string; location: string; type: string }) => {
     try {
@@ -66,21 +54,6 @@ const PointOfSalePage: React.FC = () => {
     }
   };
 
-  const handleEditPointOfSale = async (data: { name: string; address: string; location: string; type: string }) => {
-    try {
-      const res = await fetch(`${BASE_PATH}/point-of-sale/${isEditing.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!res.ok) throw new Error('Error al modificar el punto de venta');
-      const updatedPointOfSale = await res.json();
-      setPointsOfSale((prev) => prev.map((p) => (p.id === isEditing.id ? updatedPointOfSale : p)));
-      setIsEditing({ id: null });
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
 
   const filteredPointsOfSales = Array.isArray(pointsOfSale)
     ? pointsOfSale.filter((pointOfSale) =>
@@ -135,7 +108,6 @@ const PointOfSalePage: React.FC = () => {
               <th style={tableStyles.tableHeaderCell}>Ubicación</th>
               <th style={tableStyles.tableHeaderCell}>Tipo</th>
               <th style={tableStyles.tableHeaderCell}>Estado</th>
-              <th style={{...tableStyles.tableHeaderCell, textAlign: 'center'}}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -208,50 +180,6 @@ const PointOfSalePage: React.FC = () => {
                     <span style={getStatusBadgeStyle('active')}>
                       Activo
                     </span>
-                  </td>
-                  <td style={{...tableStyles.tableCell, textAlign: 'center'}}>
-                    <button
-                      style={getActionButtonStyle('view')}
-                      onClick={() => navigate(`/dashboard/point-of-sales/${pointOfSale.id}`)}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      <FaEye />
-                    </button>
-                    <button
-                      style={getActionButtonStyle('edit')}
-                      onClick={() => setIsEditing({ id: pointOfSale.id })}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      style={getActionButtonStyle('delete')}
-                      onClick={() => handleDelete(pointOfSale.id)}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      <FaTrash />
-                    </button>
                   </td>
                 </tr>
               ))
@@ -333,20 +261,6 @@ const PointOfSalePage: React.FC = () => {
         </ModalComponent>
       )}
 
-      {isEditing.id !== null && (
-        <ModalComponent
-          isOpen={!!isEditing.id}
-          onClose={() => setIsEditing({ id: null })}
-          title="Editar Punto de Venta"
-        >
-          {error && <p className="text-danger">{error}</p>}
-          <PointOfSaleForm
-            initialData={pointsOfSale.find((p) => p.id === isEditing.id)!}
-            onSubmit={handleEditPointOfSale}
-            types={type}
-          />
-        </ModalComponent>
-      )}
     </div>
   );
 };

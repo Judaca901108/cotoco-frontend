@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaWarehouse, FaBox, FaChevronRight } from 'react-icons/fa';
-import { tableStyles, getRowStyle, getActionButtonStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
+import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
 import colors from '../../shared/colors';
 
 const BASE_PATH = 'http://localhost:3000';
@@ -75,7 +75,6 @@ const InventoryPage: React.FC = () => {
               <th style={tableStyles.tableHeaderCell}>Punto de Venta</th>
               <th style={tableStyles.tableHeaderCell}>Productos</th>
               <th style={tableStyles.tableHeaderCell}>Estado</th>
-              <th style={{...tableStyles.tableHeaderCell, textAlign: 'center'}}>Acción</th>
             </tr>
           </thead>
           <tbody>
@@ -141,23 +140,6 @@ const InventoryPage: React.FC = () => {
                     <span style={getStatusBadgeStyle(pos.productCount > 0 ? 'active' : 'inactive')}>
                       {pos.productCount > 0 ? 'Con Stock' : 'Sin Stock'}
                     </span>
-                  </td>
-                  <td style={{...tableStyles.tableCell, textAlign: 'center'}}>
-                    <button
-                      style={getActionButtonStyle('view')}
-                      onClick={() => navigate(`/dashboard/inventory/point-of-sales/${pos.id}`)}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      Ver Inventario
-                      <FaChevronRight style={{ marginLeft: '4px', fontSize: '0.8rem' }} />
-                    </button>
                   </td>
                 </tr>
               ))

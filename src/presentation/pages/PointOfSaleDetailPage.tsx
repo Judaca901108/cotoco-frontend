@@ -85,7 +85,7 @@ const PointOfSaleDetailPage: React.FC = () => {
   };
 
   const handleViewInventory = () => {
-    navigate(`/dashboard/inventory/point-of-sales/${pointOfSale?.id}`);
+    navigate(`/dashboard/point-of-sales/${pointOfSale?.id}/inventory`);
   };
 
   if (loading) {
