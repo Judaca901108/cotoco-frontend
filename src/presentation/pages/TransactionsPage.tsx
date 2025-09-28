@@ -53,27 +53,39 @@ const TransactionsPage: React.FC = () => {
         const data = await response.json();
 
         // Enriquecer transacciones con nombres de productos y puntos de venta
-        const [productsResponse, pointsOfSaleResponse] = await Promise.all([
+        const [productsResponse, pointsOfSaleResponse, inventoriesResponse] = await Promise.all([
           fetch(`${BASE_PATH}/product`),
-          fetch(`${BASE_PATH}/point-of-sale`)
+          fetch(`${BASE_PATH}/point-of-sale`),
+          fetch(`${BASE_PATH}/inventory`)
         ]);
 
         const productsData = await productsResponse.json();
         const pointsOfSaleData = await pointsOfSaleResponse.json();
+        const inventoriesData = await inventoriesResponse.json();
 
         const enrichedTransactions = data.map((transaction: any) => {
-          const product = productsData.find((p: any) => p.id === transaction.productId);
-          const pointOfSale = pointsOfSaleData.find((pos: any) => pos.id === transaction.pointOfSaleId);
+          // Buscar el inventario relacionado con la transacción
+          const inventory = inventoriesData.find((inv: any) => inv.id === transaction.inventoryId);
+          
+          // Buscar el producto usando el productId del inventario
+          const product = inventory ? productsData.find((p: any) => p.id === inventory.productId) : null;
+          
+          // Buscar el punto de venta usando el pointOfSaleId del inventario
+          const pointOfSale = inventory ? pointsOfSaleData.find((pos: any) => pos.id === inventory.pointOfSaleId) : null;
+          
+          // Para transferencias, buscar puntos de venta origen y destino
           const sourcePointOfSale = pointsOfSaleData.find((pos: any) => pos.id === transaction.sourcePointOfSaleId);
           const destinationPointOfSale = pointsOfSaleData.find((pos: any) => pos.id === transaction.destinationPointOfSaleId);
 
           return {
             ...transaction,
-            productName: product?.name || `Producto ${transaction.productId}`,
+            productId: inventory?.productId || transaction.productId,
+            pointOfSaleId: inventory?.pointOfSaleId || transaction.pointOfSaleId,
+            productName: product?.name || `Producto ${inventory?.productId || transaction.productId || 'N/A'}`,
             productSku: product?.sku || 'N/A',
-            pointOfSaleName: pointOfSale?.name || `Punto de Venta ${transaction.pointOfSaleId}`,
-            sourcePointOfSaleName: sourcePointOfSale?.name || `Punto de Venta ${transaction.sourcePointOfSaleId}`,
-            destinationPointOfSaleName: destinationPointOfSale?.name || `Punto de Venta ${transaction.destinationPointOfSaleId}`,
+            pointOfSaleName: pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || transaction.pointOfSaleId || 'N/A'}`,
+            sourcePointOfSaleName: sourcePointOfSale?.name || `Punto de Venta ${transaction.sourcePointOfSaleId || 'N/A'}`,
+            destinationPointOfSaleName: destinationPointOfSale?.name || `Punto de Venta ${transaction.destinationPointOfSaleId || 'N/A'}`,
           };
         });
 
@@ -150,7 +162,43 @@ const TransactionsPage: React.FC = () => {
       if (!response.ok) throw new Error('Error al crear transacción');
       
       const newTransaction = await response.json();
-      setTransactions(prev => [newTransaction, ...prev]);
+      
+      // Enriquecer la nueva transacción con nombres de productos y puntos de venta
+      const [productsResponse, pointsOfSaleResponse, inventoriesResponse] = await Promise.all([
+        fetch(`${BASE_PATH}/product`),
+        fetch(`${BASE_PATH}/point-of-sale`),
+        fetch(`${BASE_PATH}/inventory`)
+      ]);
+
+      const productsData = await productsResponse.json();
+      const pointsOfSaleData = await pointsOfSaleResponse.json();
+      const inventoriesData = await inventoriesResponse.json();
+
+      // Buscar el inventario relacionado con la nueva transacción
+      const inventory = inventoriesData.find((inv: any) => inv.id === newTransaction.inventoryId);
+      
+      // Buscar el producto usando el productId del inventario
+      const product = inventory ? productsData.find((p: any) => p.id === inventory.productId) : null;
+      
+      // Buscar el punto de venta usando el pointOfSaleId del inventario
+      const pointOfSale = inventory ? pointsOfSaleData.find((pos: any) => pos.id === inventory.pointOfSaleId) : null;
+      
+      // Para transferencias, buscar puntos de venta origen y destino
+      const sourcePointOfSale = pointsOfSaleData.find((pos: any) => pos.id === newTransaction.sourcePointOfSaleId);
+      const destinationPointOfSale = pointsOfSaleData.find((pos: any) => pos.id === newTransaction.destinationPointOfSaleId);
+
+      const enrichedNewTransaction = {
+        ...newTransaction,
+        productId: inventory?.productId || newTransaction.productId,
+        pointOfSaleId: inventory?.pointOfSaleId || newTransaction.pointOfSaleId,
+        productName: product?.name || `Producto ${inventory?.productId || newTransaction.productId || 'N/A'}`,
+        productSku: product?.sku || 'N/A',
+        pointOfSaleName: pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || newTransaction.pointOfSaleId || 'N/A'}`,
+        sourcePointOfSaleName: sourcePointOfSale?.name || `Punto de Venta ${newTransaction.sourcePointOfSaleId || 'N/A'}`,
+        destinationPointOfSaleName: destinationPointOfSale?.name || `Punto de Venta ${newTransaction.destinationPointOfSaleId || 'N/A'}`,
+      };
+
+      setTransactions(prev => [enrichedNewTransaction, ...prev]);
       
       // Recargar inventarios para obtener los datos actualizados después de la transacción
       await loadInventories();
