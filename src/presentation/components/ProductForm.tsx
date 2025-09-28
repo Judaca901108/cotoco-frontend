@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { FaSave, FaTimes } from 'react-icons/fa';
+import { FaSave, FaTimes, FaImage, FaUpload } from 'react-icons/fa';
 import { formStyles, getInputStyles, getTextareaStyles, getSelectStyles } from '../../shared/formStyles';
+import colors from '../../shared/colors';
 
 type ProductFormProps = {
-  initialData?: { name: string; description: string; price: number | string; sku: string; category: string };
+  initialData?: { name: string; description: string; price: number | string; sku: string; category: string; imagePath?: string };
   categories?: string[]; // Lista de categorías opcional
-  onSubmit: (data: { name: string; description: string; price: number; sku: string; category: string }) => void;
+  onSubmit: (data: { name: string; description: string; price: number; sku: string; category: string; image?: File }) => void;
   onCancel?: () => void;
   title?: string;
 };
@@ -27,6 +28,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.imagePath ? `http://localhost:3000/product/image/${initialData.imagePath}` : null);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -48,13 +51,34 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      
+      // Crear preview de la imagen
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
       const submissionData = {
         ...formData,
         price: parseFloat(String(formData.price)), // Convertimos price a número
+        image: selectedImage || undefined, // Incluir la imagen si se seleccionó una
       };
+      console.log('Datos del formulario a enviar:', submissionData);
       onSubmit(submissionData);
     }
   };
@@ -144,6 +168,119 @@ const ProductForm: React.FC<ProductFormProps> = ({
             {errors.category && (
               <div style={formStyles.errorMessage}>
                 <span>{errors.category}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Campo de imagen */}
+          <div style={formStyles.fieldContainer}>
+            <label htmlFor="image" style={formStyles.label}>
+              <FaImage style={{ marginRight: '8px' }} />
+              Imagen del Producto
+            </label>
+            
+            {/* Input de archivo oculto */}
+            <input
+              type="file"
+              id="image"
+              name="image"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
+            />
+            
+            {/* Botón para seleccionar imagen */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '12px',
+            }}>
+              <button
+                type="button"
+                onClick={() => document.getElementById('image')?.click()}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backgroundColor: colors.buttonSecondary,
+                  color: colors.textPrimary,
+                  border: `1px solid ${colors.borderColor}`,
+                  padding: '10px 16px',
+                  borderRadius: '6px',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.buttonSecondary;
+                }}
+              >
+                <FaUpload />
+                {imagePreview ? 'Cambiar Imagen' : 'Seleccionar Imagen'}
+              </button>
+              
+              {imagePreview && (
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: colors.error,
+                    color: colors.white,
+                    border: 'none',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#dc2626';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = colors.error;
+                  }}
+                >
+                  <FaTimes />
+                  Eliminar
+                </button>
+              )}
+            </div>
+            
+            {/* Preview de la imagen */}
+            {imagePreview && (
+              <div style={{
+                border: `1px solid ${colors.borderColor}`,
+                borderRadius: '8px',
+                padding: '12px',
+                backgroundColor: colors.backgroundTertiary,
+                textAlign: 'center',
+              }}>
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{
+                    maxWidth: '200px',
+                    maxHeight: '200px',
+                    objectFit: 'contain',
+                    borderRadius: '6px',
+                    border: `1px solid ${colors.borderColor}`,
+                  }}
+                />
+                <div style={{
+                  marginTop: '8px',
+                  fontSize: '0.8rem',
+                  color: colors.textSecondary,
+                }}>
+                  Vista previa de la imagen
+                </div>
               </div>
             )}
           </div>

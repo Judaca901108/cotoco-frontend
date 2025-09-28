@@ -13,6 +13,7 @@ type Product = {
   price: number;
   sku: string;
   category: string;
+  imagePath?: string;
 };
 
 const ProductDetailPage: React.FC = () => {
@@ -33,6 +34,10 @@ const ProductDetailPage: React.FC = () => {
         return res.json();
       })
       .then((data) => {
+        console.log('Datos del producto recibidos:', data);
+        console.log('Imagen del producto:', data.imagePath);
+        console.log('URL completa de la imagen:', data.imagePath ? `http://localhost:3000/product/image/${data.imagePath}` : 'No hay imagen');
+        
         setProduct({
           ...data,
           price: parseFloat(data.price)
@@ -107,6 +112,11 @@ const ProductDetailPage: React.FC = () => {
     );
   }
 
+  // Debug: verificar el estado del producto antes del render
+  console.log('Producto en render:', product);
+  console.log('¿Tiene imagen?', product?.imagePath);
+  console.log('URL de imagen en render:', product?.imagePath ? `http://localhost:3000/product/image/${product.imagePath}` : 'No hay imagen');
+
   return (
     <div style={detailStyles.pageContainer}>
       {/* Botón de regreso */}
@@ -137,7 +147,87 @@ const ProductDetailPage: React.FC = () => {
           INFO
         </h2>
         
-        <div style={detailStyles.infoGrid}>
+        {/* Layout principal: Imagen a la izquierda, información a la derecha */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: product.imagePath ? '1fr 2fr' : '1fr',
+          gap: '40px',
+          alignItems: 'start',
+        }}>
+          {/* Columna de imagen */}
+          {product.imagePath ? (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}>
+              <div style={{
+                border: `2px solid ${colors.borderColor}`,
+                borderRadius: '16px',
+                padding: '24px',
+                backgroundColor: colors.backgroundTertiary,
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                width: '100%',
+                maxWidth: '400px',
+              }}>
+                <img
+                  src={`http://localhost:3000/product/image/${product.imagePath}`}
+                  alt={product.name}
+                  style={{
+                    width: '100%',
+                    maxWidth: '350px',
+                    height: 'auto',
+                    objectFit: 'contain',
+                    borderRadius: '12px',
+                  }}
+                  onError={(e) => {
+                    console.error('Error al cargar la imagen:', e.currentTarget.src);
+                    // Si la imagen falla al cargar, mostrar placeholder
+                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDM1MCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzNTAiIGhlaWdodD0iMjAwIiBmaWxsPSIjM0EzQTNBIi8+CjxwYXRoIGQ9Ik0xNzUgMTAwTDE0MCA2NUwyMDAgNjVMMTc1IDEwMFoiIGZpbGw9IiM3MTcxN0EiLz4KPHN2ZyB4PSIxNzUiIHk9IjEwMCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiB2aWV3Qm94PSIwIDAgNTAgNTAiIGZpbGw9Im5vbmUiPgo8Y2lyY2xlIGN4PSIyNSIgY3k9IjI1IiByPSIyMCIgZmlsbD0iIzcxNzE3QSIvPgo8L3N2Zz4KPC9zdmc+';
+                    e.currentTarget.style.opacity = '0.5';
+                  }}
+                />
+              </div>
+              
+              {/* Información adicional de la imagen */}
+              <div style={{
+                marginTop: '16px',
+                textAlign: 'center',
+                color: colors.textSecondary,
+                fontSize: '0.9rem',
+              }}>
+                <div style={{ fontWeight: '500', marginBottom: '4px' }}>
+                  Imagen del Producto
+                </div>
+                <div style={{ fontSize: '0.8rem' }}>
+                  {product.name}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '40px',
+              border: `2px dashed ${colors.borderColor}`,
+              borderRadius: '16px',
+              backgroundColor: colors.backgroundTertiary,
+              color: colors.textSecondary,
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📦</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: '500', marginBottom: '8px' }}>
+                Sin Imagen
+              </div>
+              <div style={{ fontSize: '0.9rem', textAlign: 'center' }}>
+                Este producto no tiene imagen asociada
+              </div>
+            </div>
+          )}
+
+          {/* Columna de información */}
+          <div style={detailStyles.infoGrid}>
           <div style={detailStyles.infoItem}>
             <span style={detailStyles.infoLabel}>ID</span>
             <span style={detailStyles.infoValueCode}>{product.id}</span>
@@ -173,6 +263,7 @@ const ProductDetailPage: React.FC = () => {
               {product.category}
             </span>
           </div>
+        </div>
         </div>
 
         {/* Checkboxes */}

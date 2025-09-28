@@ -13,6 +13,7 @@ type Product = {
   price: number; // Aseguramos que `price` sea un número
   sku: string;
   category: string;
+  imagePath?: string; // URL de la imagen
 };
 
 const BASE_PATH = "http://localhost:3000"
@@ -43,21 +44,71 @@ const ProductsPage: React.FC = () => {
   }, []);
 
 
-  const handleCreateProduct = async (data: { name: string; description: string; price: number; sku: string }) => {
+  const handleCreateProduct = async (data: { name: string; description: string; price: number; sku: string; category: string; image?: File }) => {
     try {
-      const res = await fetch(`${BASE_PATH}/product`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!res.ok) {
-        throw new Error('Error al crear el producto');
+      console.log('Datos recibidos:', data);
+      
+      // Si hay imagen, usar FormData, si no, usar JSON
+      if (data.image) {
+        const formData = new FormData();
+        formData.append('name', data.name);
+        formData.append('description', data.description);
+        formData.append('price', data.price.toString());
+        formData.append('sku', data.sku);
+        formData.append('category', data.category);
+        formData.append('image', data.image);
+        
+        console.log('Enviando con FormData (con imagen)');
+        console.log('Imagen:', data.image.name, data.image.size, 'bytes');
+        
+        const res = await fetch(`${BASE_PATH}/product`, {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          const errorMessage = errorData.message || `Error ${res.status}: ${res.statusText}`;
+          throw new Error(errorMessage);
+        }
+        
+        const newProduct = await res.json();
+        newProduct.price = parseFloat(newProduct.price);
+        setProducts((prev) => [...prev, newProduct]);
+        setIsCreating(false);
+      } else {
+        // Sin imagen, enviar como JSON
+        const jsonData = {
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          sku: data.sku,
+          category: data.category,
+        };
+        
+        console.log('Enviando como JSON (sin imagen):', jsonData);
+        
+        const res = await fetch(`${BASE_PATH}/product`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(jsonData),
+        });
+        
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          const errorMessage = errorData.message || `Error ${res.status}: ${res.statusText}`;
+          throw new Error(errorMessage);
+        }
+        
+        const newProduct = await res.json();
+        newProduct.price = parseFloat(newProduct.price);
+        setProducts((prev) => [...prev, newProduct]);
+        setIsCreating(false);
       }
-      const newProduct = await res.json();
-      newProduct.price = parseFloat(newProduct.price);
-      setProducts((prev) => [...prev, newProduct]);
-      setIsCreating(false);
     } catch (err: any) {
+      console.error('Error completo:', err);
       setError(err.message);
     }
   };
@@ -109,6 +160,7 @@ const ProductsPage: React.FC = () => {
         <table style={tableStyles.table}>
           <thead style={tableStyles.tableHeader}>
             <tr>
+              <th style={tableStyles.tableHeaderCell}>Imagen</th>
               <th style={tableStyles.tableHeaderCell}>Nombre</th>
               <th style={tableStyles.tableHeaderCell}>Categoría</th>
               <th style={tableStyles.tableHeaderCell}>Precio</th>
@@ -135,6 +187,44 @@ const ProductsPage: React.FC = () => {
                   onMouseEnter={() => setHoveredRow(product.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                 >
+                  {/* Columna de imagen */}
+                  <td style={tableStyles.tableCell}>
+                    <div style={{ 
+                      width: '50px', 
+                      height: '50px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      backgroundColor: colors.backgroundTertiary,
+                      borderRadius: '6px',
+                      border: `1px solid ${colors.borderColor}`,
+                    }}>
+                      {product.imagePath ? (
+                        <img
+                          src={`http://localhost:3000/product/image/${product.imagePath}`}
+                          alt={product.name}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                          }}
+                          onError={(e) => {
+                            // Si la imagen falla al cargar, ocultar y mostrar icono
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) {
+                              parent.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: ${colors.textSecondary}; font-size: 1.2rem;">📦</div>`;
+                            }
+                          }}
+                        />
+                      ) : (
+                        <FaBox style={{ color: colors.textSecondary, fontSize: '1.2rem' }} />
+                      )}
+                    </div>
+                  </td>
+                  
+                  {/* Columna de nombre */}
                   <td style={tableStyles.tableCell}>
                     <div 
                       style={{ 
@@ -151,9 +241,6 @@ const ProductsPage: React.FC = () => {
                         e.currentTarget.style.opacity = '1';
                       }}
                     >
-                      <div style={getTechIconStyle('gradle')}>
-                        <FaBox />
-                      </div>
                       <div>
                         <div style={{ fontWeight: '600', color: colors.textPrimary }}>
                           {product.name}
