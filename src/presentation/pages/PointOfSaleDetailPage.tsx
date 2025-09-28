@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaEdit, FaTrash, FaStore, FaMapMarkerAlt, FaBuilding, FaBox } from 'react-icons/fa';
 import { detailStyles, getActionButtonStyle, getStatusBadgeStyle } from '../../shared/detailStyles';
+import { authenticatedFetch } from '../../infrastructure/authService';
 import colors from '../../shared/colors';
 
 const BASE_PATH = "http://localhost:3000";
@@ -33,7 +34,7 @@ const PointOfSaleDetailPage: React.FC = () => {
     if (!id) return;
 
     // Cargar datos del punto de venta
-    fetch(`${BASE_PATH}/point-of-sale/${id}`)
+    authenticatedFetch(`${BASE_PATH}/point-of-sale/${id}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error('Punto de venta no encontrado');
@@ -49,7 +50,7 @@ const PointOfSaleDetailPage: React.FC = () => {
       });
 
     // Cargar inventario del punto de venta
-    fetch(`${BASE_PATH}/point-of-sale/${id}/inventories`)
+    authenticatedFetch(`${BASE_PATH}/point-of-sale/${id}/inventories`)
       .then((res) => res.json())
       .then((data) => {
         setInventories(data || []);
@@ -66,7 +67,7 @@ const PointOfSaleDetailPage: React.FC = () => {
       return;
     }
 
-    fetch(`${BASE_PATH}/point-of-sale/${pointOfSale.id}`, { method: 'DELETE' })
+    authenticatedFetch(`${BASE_PATH}/point-of-sale/${pointOfSale.id}`, { method: 'DELETE' })
       .then((res) => {
         if (res.ok) {
           alert('Punto de venta eliminado correctamente');

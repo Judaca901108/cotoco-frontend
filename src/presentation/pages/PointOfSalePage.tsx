@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaPlus, FaSearch, FaStore, FaMapMarkerAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import ModalComponent from '../components/ModalComponent';
 import PointOfSaleForm from '../components/PointOfSaleForm';
+import { authenticatedFetch } from '../../infrastructure/authService';
 import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
 import colors from '../../shared/colors';
 
@@ -28,7 +29,7 @@ const PointOfSalePage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${BASE_PATH}/point-of-sale`)
+    authenticatedFetch(`${BASE_PATH}/point-of-sale`)
       .then((res) => res.json())
       .then((data) => setPointsOfSale(data))
       .catch((err) => {
@@ -40,7 +41,7 @@ const PointOfSalePage: React.FC = () => {
 
   const handleCreatePointOfSale = async (data: { name: string; address: string; location: string; type: string }) => {
     try {
-      const res = await fetch(`${BASE_PATH}/point-of-sale`, {
+      const res = await authenticatedFetch(`${BASE_PATH}/point-of-sale`, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },

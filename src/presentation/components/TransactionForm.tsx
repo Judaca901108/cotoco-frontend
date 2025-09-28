@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaSave, FaTimes, FaBox, FaStore, FaExchangeAlt, FaInfoCircle } from 'react-icons/fa';
 import { formStyles, getInputStyles, getSelectStyles, getTextareaStyles } from '../../shared/formStyles';
+import { authenticatedFetch } from '../../infrastructure/authService';
 import colors from '../../shared/colors';
 
 type Inventory = {
@@ -59,7 +60,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   useEffect(() => {
     const loadPointsOfSale = async () => {
       try {
-        const response = await fetch('http://localhost:3000/point-of-sale');
+        const response = await authenticatedFetch('http://localhost:3000/point-of-sale');
         if (response.ok) {
           const data = await response.json();
           setPointsOfSale(data);

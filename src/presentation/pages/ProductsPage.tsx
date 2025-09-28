@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaPlus, FaSearch, FaBox, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import ModalComponent from '../components/ModalComponent';
 import ProductForm from '../components/ProductForm';
+import { authenticatedFetch } from '../../infrastructure/authService';
 import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
 import colors from '../../shared/colors';
 
@@ -31,7 +32,7 @@ const ProductsPage: React.FC = () => {
 
   // Fetch products from backend
   useEffect(() => {
-    fetch(`${BASE_PATH}/product`) // Ajusta la URL según tu backend
+    authenticatedFetch(`${BASE_PATH}/product`)
       .then((res) => res.json())
       .then((data) => {
         const parsedProducts = data.map((product: any) => ({
@@ -61,10 +62,10 @@ const ProductsPage: React.FC = () => {
         console.log('Enviando con FormData (con imagen)');
         console.log('Imagen:', data.image.name, data.image.size, 'bytes');
         
-        const res = await fetch(`${BASE_PATH}/product`, {
-          method: 'POST',
-          body: formData,
-        });
+            const res = await authenticatedFetch(`${BASE_PATH}/product`, {
+              method: 'POST',
+              body: formData,
+            });
         
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
@@ -88,13 +89,13 @@ const ProductsPage: React.FC = () => {
         
         console.log('Enviando como JSON (sin imagen):', jsonData);
         
-        const res = await fetch(`${BASE_PATH}/product`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(jsonData),
-        });
+            const res = await authenticatedFetch(`${BASE_PATH}/product`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(jsonData),
+            });
         
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));

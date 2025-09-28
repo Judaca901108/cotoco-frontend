@@ -35,13 +35,7 @@ const DashboardPage: React.FC = () => {
       color: colors.textPrimary 
     }}>
       {/* Header horizontal */}
-      <Header 
-        activePage={activePage} 
-        onLogout={() => {
-          alert('Cerrando sesión...');
-          // Aquí podrías agregar la lógica real de logout
-        }} 
-      />
+      <Header activePage={activePage} />
 
       {/* Main Content */}
       <main style={{

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaEdit, FaTrash, FaBox, FaTag, FaDollarSign, FaBarcode } from 'react-icons/fa';
 import { detailStyles, getActionButtonStyle } from '../../shared/detailStyles';
+import { authenticatedFetch } from '../../infrastructure/authService';
 import colors from '../../shared/colors';
 
 const BASE_PATH = "http://localhost:3000";
@@ -26,7 +27,7 @@ const ProductDetailPage: React.FC = () => {
   useEffect(() => {
     if (!id) return;
 
-    fetch(`${BASE_PATH}/product/${id}`)
+    authenticatedFetch(`${BASE_PATH}/product/${id}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error('Producto no encontrado');
@@ -55,7 +56,7 @@ const ProductDetailPage: React.FC = () => {
       return;
     }
 
-    fetch(`${BASE_PATH}/product/${product.id}`, { method: 'DELETE' })
+    authenticatedFetch(`${BASE_PATH}/product/${product.id}`, { method: 'DELETE' })
       .then((res) => {
         if (res.ok) {
           alert('Producto eliminado correctamente');
@@ -147,11 +148,11 @@ const ProductDetailPage: React.FC = () => {
           INFO
         </h2>
         
-        {/* Layout principal: Imagen a la izquierda, información a la derecha */}
+        {/* Layout principal: Imagen más grande y mejor distribuida */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: product.imagePath ? '1fr 2fr' : '1fr',
-          gap: '40px',
+          gridTemplateColumns: product.imagePath ? '1fr 1.5fr' : '1fr',
+          gap: '50px',
           alignItems: 'start',
         }}>
           {/* Columna de imagen */}
@@ -160,26 +161,42 @@ const ProductDetailPage: React.FC = () => {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
+              position: 'sticky',
+              top: '20px',
             }}>
               <div style={{
-                border: `2px solid ${colors.borderColor}`,
-                borderRadius: '16px',
-                padding: '24px',
+                border: `3px solid ${colors.borderColor}`,
+                borderRadius: '20px',
+                padding: '30px',
                 backgroundColor: colors.backgroundTertiary,
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
                 width: '100%',
-                maxWidth: '400px',
+                maxWidth: '500px',
+                position: 'relative',
+                overflow: 'hidden',
               }}>
+                {/* Efecto de brillo sutil */}
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '2px',
+                  background: `linear-gradient(90deg, transparent, ${colors.primaryColor}, transparent)`,
+                  opacity: 0.6,
+                }} />
+                
                 <img
                   src={`http://localhost:3000/product/image/${product.imagePath}`}
                   alt={product.name}
                   style={{
                     width: '100%',
-                    maxWidth: '350px',
+                    maxWidth: '450px',
                     height: 'auto',
                     objectFit: 'contain',
-                    borderRadius: '12px',
-                    opacity: 1, // Asegurar opacidad normal
+                    borderRadius: '16px',
+                    opacity: 1,
+                    transition: 'transform 0.3s ease',
                   }}
                   onLoad={(e) => {
                     console.log('Imagen cargada correctamente:', e.currentTarget.src);
@@ -187,24 +204,43 @@ const ProductDetailPage: React.FC = () => {
                   }}
                   onError={(e) => {
                     console.error('Error al cargar la imagen:', e.currentTarget.src);
-                    // Si la imagen falla al cargar, mostrar placeholder
-                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDM1MCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzNTAiIGhlaWdodD0iMjAwIiBmaWxsPSIjM0EzQTNBIi8+CjxwYXRoIGQ9Ik0xNzUgMTAwTDE0MCA2NUwyMDAgNjVMMTc1IDEwMFoiIGZpbGw9IiM3MTcxN0EiLz4KPHN2ZyB4PSIxNzUiIHk9IjEwMCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiB2aWV3Qm94PSIwIDAgNTAgNTAiIGZpbGw9Im5vbmUiPgo8Y2lyY2xlIGN4PSIyNSIgY3k9IjI1IiByPSIyMCIgZmlsbD0iIzcxNzE3QSIvPgo8L3N2Zz4KPC9zdmc+';
+                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDUwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQ1MCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0NTAiIGhlaWdodD0iMzAwIiBmaWxsPSIjM0EzQTNBIi8+CjxwYXRoIGQ9Ik0yMjUgMTUwTDE4MCAxMTVMMjcwIDExNUwyMjUgMTUwWiIgZmlsbD0iIzcxNzE3QSIvPgo8Y2lyY2xlIGN4PSIyMjUiIGN5PSIxNTAiIHI9IjMwIiBmaWxsPSIjNzE3MTdBIi8+Cjwvc3ZnPg==';
                     e.currentTarget.style.opacity = '0.5';
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
                   }}
                 />
               </div>
               
               {/* Información adicional de la imagen */}
               <div style={{
-                marginTop: '16px',
+                marginTop: '20px',
                 textAlign: 'center',
                 color: colors.textSecondary,
-                fontSize: '0.9rem',
+                fontSize: '1rem',
+                padding: '16px 24px',
+                backgroundColor: colors.backgroundSecondary,
+                borderRadius: '12px',
+                border: `1px solid ${colors.borderColor}`,
+                width: '100%',
+                maxWidth: '500px',
               }}>
-                <div style={{ fontWeight: '500', marginBottom: '4px' }}>
-                  Imagen del Producto
+                <div style={{ 
+                  fontWeight: '600', 
+                  marginBottom: '6px',
+                  color: colors.textPrimary,
+                  fontSize: '1.1rem',
+                }}>
+                  📸 Imagen del Producto
                 </div>
-                <div style={{ fontSize: '0.8rem' }}>
+                <div style={{ 
+                  fontSize: '0.9rem',
+                  opacity: 0.8,
+                }}>
                   {product.name}
                 </div>
               </div>
@@ -215,17 +251,36 @@ const ProductDetailPage: React.FC = () => {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '40px',
-              border: `2px dashed ${colors.borderColor}`,
-              borderRadius: '16px',
+              padding: '60px 40px',
+              border: `3px dashed ${colors.borderColor}`,
+              borderRadius: '20px',
               backgroundColor: colors.backgroundTertiary,
               color: colors.textSecondary,
+              width: '100%',
+              maxWidth: '500px',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
             }}>
-              <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📦</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: '500', marginBottom: '8px' }}>
+              <div style={{ 
+                fontSize: '4rem', 
+                marginBottom: '20px',
+                opacity: 0.6,
+              }}>
+                📦
+              </div>
+              <div style={{ 
+                fontSize: '1.3rem', 
+                fontWeight: '600', 
+                marginBottom: '12px',
+                color: colors.textPrimary,
+              }}>
                 Sin Imagen
               </div>
-              <div style={{ fontSize: '0.9rem', textAlign: 'center' }}>
+              <div style={{ 
+                fontSize: '1rem', 
+                textAlign: 'center',
+                opacity: 0.8,
+                lineHeight: '1.5',
+              }}>
                 Este producto no tiene imagen asociada
               </div>
             </div>

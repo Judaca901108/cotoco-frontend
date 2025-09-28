@@ -1,15 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaSun, FaFingerprint, FaSignOutAlt } from 'react-icons/fa';
+import { FaSun, FaFingerprint, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import { useAuth } from '../../application/contexts/AuthContext';
 import colors from '../../shared/colors';
 
 type HeaderProps = {
   activePage: string;
-  onLogout: () => void;
 };
 
-const Header: React.FC<HeaderProps> = ({ activePage, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ activePage }) => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   // Opciones del menú de navegación
   const menuItems = [
@@ -21,6 +22,11 @@ const Header: React.FC<HeaderProps> = ({ activePage, onLogout }) => {
 
   const handleMenuClick = (item: any) => {
     navigate(item.path);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -110,17 +116,39 @@ const Header: React.FC<HeaderProps> = ({ activePage, onLogout }) => {
           <FaFingerprint />
         </button>
 
-        {/* Nombre del usuario */}
-        <span style={{
-          color: colors.textPrimary,
-          fontSize: '0.9rem',
-          fontWeight: '500',
+        {/* Información del usuario */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 12px',
+          backgroundColor: colors.backgroundSecondary,
+          borderRadius: '6px',
+          border: `1px solid ${colors.borderColor}`,
         }}>
-          Usuario Admin
-        </span>
+          <FaUser style={{ color: colors.primaryColor, fontSize: '0.9rem' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <span style={{
+              color: colors.textPrimary,
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              lineHeight: '1.2',
+            }}>
+              {user?.name || 'Usuario'}
+            </span>
+            <span style={{
+              color: colors.textSecondary,
+              fontSize: '0.75rem',
+              lineHeight: '1.2',
+            }}>
+              @{user?.username || 'admin'}
+            </span>
+          </div>
+        </div>
 
         {/* Botón de logout */}
         <button
+          onClick={handleLogout}
           style={{
             background: 'none',
             border: 'none',
@@ -131,9 +159,9 @@ const Header: React.FC<HeaderProps> = ({ activePage, onLogout }) => {
             borderRadius: '4px',
             transition: 'background-color 0.2s ease',
           }}
-          onClick={onLogout}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBackground}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          title="Cerrar sesión"
         >
           <FaSignOutAlt />
         </button>

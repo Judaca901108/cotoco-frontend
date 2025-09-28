@@ -4,6 +4,7 @@ import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse } from 'react-icons/f
 import colors from '../../shared/colors';
 import InventoryForm from '../components/InventoryForm';
 import ModalComponent from '../components/ModalComponent';
+import { authenticatedFetch } from '../../infrastructure/authService';
 import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
 
 const BASE_PATH = 'http://localhost:3000';
@@ -51,8 +52,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
     try {
       // Cargar inventarios y productos en paralelo
       const [inventoriesResponse, productsResponse] = await Promise.all([
-        fetch(`${BASE_PATH}/point-of-sale/${id}/inventories`),
-        fetch(`${BASE_PATH}/product`)
+        authenticatedFetch(`${BASE_PATH}/point-of-sale/${id}/inventories`),
+        authenticatedFetch(`${BASE_PATH}/product`)
       ]);
 
       if (!inventoriesResponse.ok) throw new Error('Error al cargar inventarios');
@@ -85,7 +86,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
   useEffect(() => {
     loadInventories();
 
-      fetch(`${BASE_PATH}/point-of-sale`)
+      authenticatedFetch(`${BASE_PATH}/point-of-sale`)
         .then((res) => res.json())
         .then((data) => setPointsOfSale(data))
         .catch((err) => console.error('Error fetching points of sale:', err));
@@ -99,7 +100,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
   const handleCreateInventory = async (data: { productId: number; pointOfSaleId?: number; stockQuantity: number; minimumStock: number }) => {
     try {
       data.pointOfSaleId = parseInt(id!, 10)
-      const res = await fetch(`${BASE_PATH}/inventory`, {
+      const res = await authenticatedFetch(`${BASE_PATH}/inventory`, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },

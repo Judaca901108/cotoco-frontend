@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaPlus, FaSearch, FaFilter, FaBox, FaStore, FaArrowRight } from 'react-icons/fa';
 import ModalComponent from '../components/ModalComponent';
 import TransactionForm from '../components/TransactionForm';
+import { authenticatedFetch } from '../../infrastructure/authService';
 import { transactionStyles, getTransactionTypeStyle, getQuantityStyle, getTransactionIcon, getTransactionTypeLabel } from '../../shared/transactionStyles';
 import colors from '../../shared/colors';
 
@@ -48,15 +49,15 @@ const TransactionsPage: React.FC = () => {
     const loadTransactions = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${BASE_PATH}/inventory-transaction`);
+        const response = await authenticatedFetch(`${BASE_PATH}/inventory-transaction`);
         if (!response.ok) throw new Error('Error al cargar transacciones');
         const data = await response.json();
 
         // Enriquecer transacciones con nombres de productos y puntos de venta
         const [productsResponse, pointsOfSaleResponse, inventoriesResponse] = await Promise.all([
-          fetch(`${BASE_PATH}/product`),
-          fetch(`${BASE_PATH}/point-of-sale`),
-          fetch(`${BASE_PATH}/inventory`)
+          authenticatedFetch(`${BASE_PATH}/product`),
+          authenticatedFetch(`${BASE_PATH}/point-of-sale`),
+          authenticatedFetch(`${BASE_PATH}/inventory`)
         ]);
 
         const productsData = await productsResponse.json();
@@ -105,8 +106,8 @@ const TransactionsPage: React.FC = () => {
     try {
       // Cargar inventarios y productos en paralelo
       const [inventoriesResponse, productsResponse] = await Promise.all([
-        fetch(`${BASE_PATH}/inventory`),
-        fetch(`${BASE_PATH}/product`)
+        authenticatedFetch(`${BASE_PATH}/inventory`),
+        authenticatedFetch(`${BASE_PATH}/product`)
       ]);
 
       if (!inventoriesResponse.ok) throw new Error('Error al cargar inventarios');
@@ -153,7 +154,7 @@ const TransactionsPage: React.FC = () => {
   // Crear nueva transacción
   const handleCreateTransaction = async (data: any) => {
     try {
-      const response = await fetch(`${BASE_PATH}/inventory-transaction`, {
+      const response = await authenticatedFetch(`${BASE_PATH}/inventory-transaction`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -165,9 +166,9 @@ const TransactionsPage: React.FC = () => {
       
       // Enriquecer la nueva transacción con nombres de productos y puntos de venta
       const [productsResponse, pointsOfSaleResponse, inventoriesResponse] = await Promise.all([
-        fetch(`${BASE_PATH}/product`),
-        fetch(`${BASE_PATH}/point-of-sale`),
-        fetch(`${BASE_PATH}/inventory`)
+        authenticatedFetch(`${BASE_PATH}/product`),
+        authenticatedFetch(`${BASE_PATH}/point-of-sale`),
+        authenticatedFetch(`${BASE_PATH}/inventory`)
       ]);
 
       const productsData = await productsResponse.json();

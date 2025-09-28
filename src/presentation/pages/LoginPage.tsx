@@ -1,22 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaSun, FaEye, FaEyeSlash, FaExclamationCircle } from 'react-icons/fa';
+import { useAuth } from '../../application/contexts/AuthContext';
 import colors from '../../shared/colors';
 
 const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const navigate = useNavigate();
+  const { login, isLoading, error, clearError, isAuthenticated } = useAuth();
 
-  const handleLogin = () => {
-    // Lógica simple para simular un login exitoso
-    if (email === 'admin@cotoco.com' && password === 'password123') {
-      alert('Login successful!');
-      navigate('/dashboard'); // Redirige al Dashboard
+  // Redirigir si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Limpiar errores cuando el usuario empiece a escribir
+  useEffect(() => {
+    if (error) {
+      setErrors({ general: error });
     } else {
-      setErrors({ general: 'Invalid credentials. Please try again.' });
+      setErrors({});
+    }
+  }, [error]);
+
+  const handleLogin = async () => {
+    try {
+      clearError();
+      setErrors({});
+
+      // Validación básica
+      if (!username.trim()) {
+        setErrors({ username: 'El nombre de usuario es obligatorio' });
+        return;
+      }
+      if (!password.trim()) {
+        setErrors({ password: 'La contraseña es obligatoria' });
+        return;
+      }
+
+      await login({ username, password });
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('Error en login:', error);
+      setErrors({ general: error.message || 'Error al iniciar sesión' });
     }
   };
 
@@ -114,7 +145,7 @@ const LoginPage: React.FC = () => {
 
           {/* Formulario */}
           <div style={{ width: '100%' }}>
-            {/* Campo Email */}
+            {/* Campo Username */}
             <div style={{ marginBottom: '24px' }}>
               <label style={{
                 display: 'block',
@@ -123,13 +154,13 @@ const LoginPage: React.FC = () => {
                 color: colors.textPrimary,
                 marginBottom: '8px',
               }}>
-                Email
+                Username
               </label>
               <div style={{ position: 'relative' }}>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   onKeyPress={handleKeyPress}
                   style={{
                     width: '100%',
@@ -143,9 +174,9 @@ const LoginPage: React.FC = () => {
                     transition: 'all 0.2s ease',
                     boxSizing: 'border-box',
                   }}
-                  placeholder="admin@cotoco.com"
+                  placeholder="admin"
                 />
-                {errors.email && (
+                {errors.username && (
                   <div style={{
                     position: 'absolute',
                     right: '12px',
@@ -157,13 +188,13 @@ const LoginPage: React.FC = () => {
                   </div>
                 )}
               </div>
-              {errors.email && (
+              {errors.username && (
                 <div style={{
                   fontSize: '0.8rem',
                   color: colors.error,
                   marginTop: '4px',
                 }}>
-                  {errors.email}
+                  {errors.username}
                 </div>
               )}
             </div>
@@ -275,30 +306,36 @@ const LoginPage: React.FC = () => {
             {/* Botón de Login */}
             <button
               onClick={handleLogin}
+              disabled={isLoading}
               style={{
                 width: '100%',
                 padding: '16px',
                 fontSize: '1.1rem',
                 fontWeight: '600',
-                backgroundColor: colors.secondaryColor, // Azul brillante como en la imagen
+                backgroundColor: isLoading ? colors.textMuted : colors.secondaryColor,
                 color: colors.white,
                 border: 'none',
                 borderRadius: '8px',
-                cursor: 'pointer',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s ease',
                 textTransform: 'uppercase',
                 letterSpacing: '1px',
+                opacity: isLoading ? 0.7 : 1,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(6, 182, 212, 0.3)';
+                if (!isLoading) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(6, 182, 212, 0.3)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
+                if (!isLoading) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
               }}
             >
-              LETS GO
+              {isLoading ? 'INICIANDO SESIÓN...' : 'LETS GO'}
             </button>
           </div>
         </div>
