@@ -179,6 +179,11 @@ const ProductDetailPage: React.FC = () => {
                     height: 'auto',
                     objectFit: 'contain',
                     borderRadius: '12px',
+                    opacity: 1, // Asegurar opacidad normal
+                  }}
+                  onLoad={(e) => {
+                    console.log('Imagen cargada correctamente:', e.currentTarget.src);
+                    e.currentTarget.style.opacity = '1';
                   }}
                   onError={(e) => {
                     console.error('Error al cargar la imagen:', e.currentTarget.src);

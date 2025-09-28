@@ -208,6 +208,10 @@ const ProductsPage: React.FC = () => {
                             height: '100%',
                             objectFit: 'cover',
                             borderRadius: '4px',
+                            opacity: 1, // Asegurar opacidad normal
+                          }}
+                          onLoad={(e) => {
+                            e.currentTarget.style.opacity = '1';
                           }}
                           onError={(e) => {
                             // Si la imagen falla al cargar, ocultar y mostrar icono
