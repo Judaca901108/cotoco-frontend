@@ -31,6 +31,7 @@ type Inventory = {
   productSku: string;
   pointOfSaleId: number;
   pointOfSaleName: string;
+  stockQuantity: number;
 };
 
 const TransactionsPage: React.FC = () => {
@@ -50,7 +51,33 @@ const TransactionsPage: React.FC = () => {
         const response = await fetch(`${BASE_PATH}/inventory-transaction`);
         if (!response.ok) throw new Error('Error al cargar transacciones');
         const data = await response.json();
-        setTransactions(data);
+
+        // Enriquecer transacciones con nombres de productos y puntos de venta
+        const [productsResponse, pointsOfSaleResponse] = await Promise.all([
+          fetch(`${BASE_PATH}/product`),
+          fetch(`${BASE_PATH}/point-of-sale`)
+        ]);
+
+        const productsData = await productsResponse.json();
+        const pointsOfSaleData = await pointsOfSaleResponse.json();
+
+        const enrichedTransactions = data.map((transaction: any) => {
+          const product = productsData.find((p: any) => p.id === transaction.productId);
+          const pointOfSale = pointsOfSaleData.find((pos: any) => pos.id === transaction.pointOfSaleId);
+          const sourcePointOfSale = pointsOfSaleData.find((pos: any) => pos.id === transaction.sourcePointOfSaleId);
+          const destinationPointOfSale = pointsOfSaleData.find((pos: any) => pos.id === transaction.destinationPointOfSaleId);
+
+          return {
+            ...transaction,
+            productName: product?.name || `Producto ${transaction.productId}`,
+            productSku: product?.sku || 'N/A',
+            pointOfSaleName: pointOfSale?.name || `Punto de Venta ${transaction.pointOfSaleId}`,
+            sourcePointOfSaleName: sourcePointOfSale?.name || `Punto de Venta ${transaction.sourcePointOfSaleId}`,
+            destinationPointOfSaleName: destinationPointOfSale?.name || `Punto de Venta ${transaction.destinationPointOfSaleId}`,
+          };
+        });
+
+        setTransactions(enrichedTransactions);
       } catch (err: any) {
         setError(err.message);
       } finally {

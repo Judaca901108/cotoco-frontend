@@ -347,13 +347,36 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               <span>{errors.quantity}</span>
             </div>
           )}
+          
+          {/* Información de stock disponible */}
+          {formData.inventoryId && (() => {
+            const selectedInventory = inventories.find(inv => inv.id === formData.inventoryId);
+            if (selectedInventory) {
+              return (
+                <div style={{
+                  marginTop: '8px',
+                  padding: '8px 12px',
+                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                  border: `1px solid ${colors.success}30`,
+                  borderRadius: '6px',
+                  fontSize: '0.85rem',
+                  color: colors.success,
+                }}>
+                  <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem' }} />
+                  Stock disponible: <strong>{selectedInventory.stockQuantity} unidades</strong>
+                </div>
+              );
+            }
+            return null;
+          })()}
+          
           <div style={{
-            marginTop: '4px',
+            marginTop: '8px',
             fontSize: '0.8rem',
             color: colors.textSecondary,
           }}>
             • Positiva (+) para aumentar inventario (reabastecimiento)<br/>
-            • Negativa (-) para reducir inventario (venta, ajuste)
+            • Negativa (-) para reducir inventario (venta, ajuste, transferencia)
           </div>
         </div>
 
