@@ -10,6 +10,7 @@ type Inventory = {
   productSku: string;
   pointOfSaleId: number;
   pointOfSaleName: string;
+  stockQuantity: number;
 };
 
 type PointOfSale = {
@@ -97,6 +98,20 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       newErrors.quantity = 'La cantidad no puede ser cero.';
     }
     
+    // Validación de stock disponible
+    if (formData.inventoryId && formData.quantity !== 0) {
+      const selectedInventory = inventories.find(inv => inv.id === formData.inventoryId);
+      if (selectedInventory) {
+        const isReducingTransaction = formData.transactionType === 'sale' || 
+                                     formData.transactionType === 'transfer' || 
+                                     (formData.transactionType === 'adjustment' && formData.quantity < 0);
+        
+        if (isReducingTransaction && Math.abs(formData.quantity) > selectedInventory.stockQuantity) {
+          newErrors.quantity = `No hay suficiente stock. Disponible: ${selectedInventory.stockQuantity} unidades.`;
+        }
+      }
+    }
+    
     if (!formData.remarks.trim()) {
       newErrors.remarks = 'Los comentarios son obligatorios.';
     }
@@ -129,6 +144,15 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       // Si cambia el punto de venta, resetear el inventario seleccionado
       if (name === 'pointOfSaleId') {
         newData.inventoryId = 0;
+        // También resetear el destino si es una transferencia
+        if (newData.transactionType === 'transfer') {
+          newData.destinationPointOfSaleId = 0;
+        }
+      }
+      
+      // Si cambia el tipo de transacción, resetear campos específicos
+      if (name === 'transactionType') {
+        newData.destinationPointOfSaleId = 0;
       }
       
       return newData;
@@ -148,7 +172,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         quantity: formData.quantity,
         remarks: formData.remarks,
         ...(formData.transactionType === 'transfer' && {
-          sourcePointOfSaleId: formData.sourcePointOfSaleId,
+          sourcePointOfSaleId: formData.pointOfSaleId, // El origen es el punto de venta seleccionado
           destinationPointOfSaleId: formData.destinationPointOfSaleId,
         }),
       };
