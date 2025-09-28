@@ -8,6 +8,7 @@ import HomePage from './HomePageDashboard'; // Página de Inicio dentro del Dash
 import PointOfSaleInventoryPage from './PointOfSaleInventoryPage';
 import ProductDetailPage from './ProductDetailPage'; // Vista de detalle de producto
 import PointOfSaleDetailPage from './PointOfSaleDetailPage'; // Vista de detalle de punto de venta
+import TransactionsPage from './TransactionsPage'; // Página de transacciones
 import colors from '../../shared/colors';
 
 const DashboardPage: React.FC = () => {
@@ -56,6 +57,7 @@ const DashboardPage: React.FC = () => {
           <Route path="/point-of-sales" element={<PointOfSalePage />} />
           <Route path="/point-of-sales/:id" element={<PointOfSaleDetailPage />} />
           <Route path="/point-of-sales/:id/inventory" element={<PointOfSaleInventoryPage />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
           {/* Agrega más rutas aquí */}
         </Routes>
       </main>

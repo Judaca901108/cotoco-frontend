@@ -12,6 +12,7 @@ type Inventory = {
   id: number;
   productId: string;
   productName: string;
+  productSku: string;
   stockQuantity: number;
   minimumStock: number;
 };
@@ -43,23 +44,46 @@ const PointOfSaleInventoryPage: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   
-  useEffect(() => {
+  // Función para cargar inventarios
+  const loadInventories = async () => {
     if (!id) return;
 
-    fetch(`${BASE_PATH}/point-of-sale/${id}/inventories`)
-      .then((res) => res.json())
-      .then((data) => {
-        setInventories(data); // Asigna directamente el arreglo de inventarios
-      })
-      .catch((err) => {
-        console.error('Error fetching point of sale inventories:', err);
-        setError('No se pudieron cargar los inventarios.');
-      });
+    try {
+      // Cargar inventarios y productos en paralelo
+      const [inventoriesResponse, productsResponse] = await Promise.all([
+        fetch(`${BASE_PATH}/point-of-sale/${id}/inventories`),
+        fetch(`${BASE_PATH}/product`)
+      ]);
 
-      fetch(`${BASE_PATH}/product`)
-      .then((res) => res.json())
-      .then((data) => setProducts(data))
-      .catch((err) => console.error('Error fetching products:', err));
+      if (!inventoriesResponse.ok) throw new Error('Error al cargar inventarios');
+      if (!productsResponse.ok) throw new Error('Error al cargar productos');
+
+      const [inventoriesData, productsData] = await Promise.all([
+        inventoriesResponse.json(),
+        productsResponse.json()
+      ]);
+
+      setProducts(productsData);
+      
+      // Mapear inventarios para incluir información del producto
+      const enrichedInventories = inventoriesData.map((inventory: any) => {
+        const product = productsData.find((p: Product) => p.id === inventory.productId);
+        return {
+          ...inventory,
+          productName: product?.name || `Producto ${inventory.productId}`,
+          productSku: product?.sku || 'N/A'
+        };
+      });
+      
+      setInventories(enrichedInventories);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError('No se pudieron cargar los datos.');
+    }
+  };
+
+  useEffect(() => {
+    loadInventories();
 
       fetch(`${BASE_PATH}/point-of-sale`)
         .then((res) => res.json())
@@ -81,11 +105,9 @@ const PointOfSaleInventoryPage: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
       });
       if (!res.ok) throw new Error('Error al crear el inventario');
-      const newInventory = await res.json();
-      newInventory.product = findProductById(newInventory.productId);
-      newInventory.productName = newInventory.product.name
-      newInventory.pointOfSale = findPointOfSaleById(newInventory.pointOfSaleId)
-      setInventories((prev) => [...prev, newInventory]);
+      
+      // Recargar la lista de inventarios para obtener los datos actualizados del backend
+      await loadInventories();
       setIsCreating(false);
     } catch (err: any) {
       setError(err.message);
@@ -323,7 +345,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                           {inventory.productName}
                         </div>
                         <div style={{ fontSize: '0.8rem', color: colors.textSecondary }}>
-                          ID: {inventory.productId}
+                          SKU: {inventory.productSku} • ID: {inventory.productId}
                         </div>
                       </div>
                     </div>
