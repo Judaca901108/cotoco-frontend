@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaSun, FaFingerprint, FaSignOutAlt, FaUser, FaCog } from 'react-icons/fa';
+import { FaSignOutAlt, FaUser, FaCog } from 'react-icons/fa';
 import { useAuth } from '../../application/contexts/AuthContext';
 import colors from '../../shared/colors';
 
@@ -97,8 +97,9 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
 
       {/* Elementos del usuario (derecha) */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-        {/* Toggle de modo claro/oscuro */}
+        {/* Icono de configuración */}
         <button
+          onClick={handleSettings}
           style={{
             background: 'none',
             border: 'none',
@@ -111,48 +112,10 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
           }}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBackground}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          title="Configuración"
         >
-          <FaSun />
+          <FaCog />
         </button>
-
-            {/* Icono de configuración */}
-            <button
-              onClick={handleSettings}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: colors.textSecondary,
-                fontSize: '1.2rem',
-                cursor: 'pointer',
-                padding: '8px',
-                borderRadius: '4px',
-                transition: 'background-color 0.2s ease',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBackground}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              title="Configuración"
-            >
-              <FaCog />
-            </button>
-
-            {/* Icono de perfil/seguridad */}
-            <button
-              style={{
-                background: 'none',
-                border: 'none',
-                color: colors.textSecondary,
-                fontSize: '1.2rem',
-                cursor: 'pointer',
-                padding: '8px',
-                borderRadius: '4px',
-                transition: 'background-color 0.2s ease',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBackground}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              title="Seguridad"
-            >
-              <FaFingerprint />
-            </button>
 
         {/* Información del usuario */}
         <div style={{
