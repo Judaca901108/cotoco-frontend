@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaSun, FaEye, FaEyeSlash, FaExclamationCircle } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaExclamationCircle } from 'react-icons/fa';
 import { useAuth } from '../../application/contexts/AuthContext';
 import colors from '../../shared/colors';
 
@@ -74,12 +74,8 @@ const LoginPage: React.FC = () => {
         padding: '40px',
         position: 'relative',
       }}>
-        {/* Header con Logo y Toggle */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-        }}>
+        {/* Header con Logo */}
+        <div>
           {/* Logo */}
           <div style={{
             backgroundColor: colors.primaryColor,
@@ -89,27 +85,10 @@ const LoginPage: React.FC = () => {
             fontWeight: 'bold',
             fontSize: '1.5rem',
             letterSpacing: '1px',
+            display: 'inline-block',
           }}>
             COTOCO
           </div>
-
-          {/* Toggle de modo claro/oscuro */}
-          <button
-            style={{
-              background: 'none',
-              border: 'none',
-              color: colors.textSecondary,
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '6px',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBackground}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-          >
-            <FaSun />
-          </button>
         </div>
 
         {/* Formulario de Login Centrado */}
@@ -157,15 +136,15 @@ const LoginPage: React.FC = () => {
                 Username
               </label>
               <div style={{ position: 'relative' }}>
-                <input
+          <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  style={{
+            style={{
                     width: '100%',
                     padding: '16px',
-                    fontSize: '1rem',
+              fontSize: '1rem',
                     backgroundColor: '#E5F3E5', // Fondo amarillo verdoso como en la imagen
                     border: 'none',
                     borderRadius: '8px',
@@ -197,7 +176,7 @@ const LoginPage: React.FC = () => {
                   {errors.username}
                 </div>
               )}
-            </div>
+        </div>
 
             {/* Campo Password */}
             <div style={{ marginBottom: '24px' }}>
@@ -211,15 +190,15 @@ const LoginPage: React.FC = () => {
                 Password
               </label>
               <div style={{ position: 'relative' }}>
-                <input
+          <input
                   type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  style={{
+            style={{
                     width: '100%',
                     padding: '16px 50px 16px 16px',
-                    fontSize: '1rem',
+              fontSize: '1rem',
                     backgroundColor: '#E5F3E5', // Fondo amarillo verdoso como en la imagen
                     border: 'none',
                     borderRadius: '8px',
@@ -304,21 +283,21 @@ const LoginPage: React.FC = () => {
                 textAlign: 'center',
               }}>
                 {errors.general}
-              </div>
+        </div>
             )}
 
             {/* Botón de Login */}
-            <button
-              onClick={handleLogin}
+        <button
+          onClick={handleLogin}
               disabled={isLoading}
-              style={{
-                width: '100%',
+          style={{
+            width: '100%',
                 padding: '16px',
                 fontSize: '1.1rem',
                 fontWeight: '600',
                 backgroundColor: isLoading ? colors.textMuted : colors.secondaryColor,
                 color: colors.white,
-                border: 'none',
+            border: 'none',
                 borderRadius: '8px',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s ease',
@@ -340,13 +319,13 @@ const LoginPage: React.FC = () => {
               }}
             >
               {isLoading ? 'INICIANDO SESIÓN...' : 'LETS GO'}
-            </button>
+        </button>
           </div>
-        </div>
+      </div>
 
-        {/* Footer */}
+      {/* Footer */}
         <div style={{
-          textAlign: 'center',
+        textAlign: 'center',
           color: colors.textMuted,
           fontSize: '0.9rem',
         }}>
