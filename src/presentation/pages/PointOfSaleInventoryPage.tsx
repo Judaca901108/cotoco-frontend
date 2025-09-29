@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse } from 'react-icons/fa';
 import colors from '../../shared/colors';
@@ -46,7 +46,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
   const navigate = useNavigate();
   
   // Función para cargar inventarios
-  const loadInventories = async () => {
+  const loadInventories = useCallback(async () => {
     if (!id) return;
 
     try {
@@ -81,7 +81,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
       console.error('Error fetching data:', err);
       setError('No se pudieron cargar los datos.');
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     loadInventories();
@@ -91,7 +91,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
         .then((data) => setPointsOfSale(data))
         .catch((err) => console.error('Error fetching points of sale:', err));
         
-  }, [id]);
+  }, [id, loadInventories]);
 
   const filteredInventories = inventories.filter((inventory) =>
     inventory.productName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -115,30 +115,6 @@ const PointOfSaleInventoryPage: React.FC = () => {
     }
   };
 
-  const findProductById = (productId: number): Product => {
-    const defaultProduct: Product = {
-      id: -1,
-      name: "Unknown Product",
-      price: 0, 
-      description: "",
-      sku: "",
-      category: ""
-    };
-  
-    return products.find(({ id }) => id === productId) ?? defaultProduct;
-  };
-
-  const findPointOfSaleById = (pointOfSaleId: number): PointOfSale => {
-    const defaultPointOfSale: PointOfSale = {
-      id: -1,
-      name: "Unknown Product", 
-      address: "",
-      location: "",
-      type: ""
-    };
-  
-    return pointsOfSale.find(({ id }) => id === pointOfSaleId) ?? defaultPointOfSale;
-  };
 
   const currentPointOfSale = pointsOfSale.find(pos => pos.id === parseInt(id!));
 

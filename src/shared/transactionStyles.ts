@@ -224,28 +224,40 @@ export const getTransactionTypeStyle = (type: string) => {
   }
 };
 
-// Función para obtener el estilo de la cantidad según si es positiva o negativa
-export const getQuantityStyle = (quantity: number) => {
+// Función para obtener el estilo de la cantidad según el tipo de transacción
+export const getQuantityStyle = (quantity: number, transactionType: string) => {
   const baseStyle = {
     fontWeight: '700',
     fontSize: '1.1rem',
   };
 
-  if (quantity > 0) {
-    return {
-      ...baseStyle,
-      color: colors.success,
-    };
-  } else if (quantity < 0) {
-    return {
-      ...baseStyle,
-      color: colors.error,
-    };
-  } else {
-    return {
-      ...baseStyle,
-      color: colors.textSecondary,
-    };
+  // Usar el mismo color que el tipo de transacción
+  switch (transactionType) {
+    case 'sale':
+      return {
+        ...baseStyle,
+        color: colors.error, // Rojo para ventas
+      };
+    case 'restock':
+      return {
+        ...baseStyle,
+        color: colors.success, // Verde para reabastecimiento
+      };
+    case 'adjustment':
+      return {
+        ...baseStyle,
+        color: colors.warning, // Amarillo para ajustes
+      };
+    case 'transfer':
+      return {
+        ...baseStyle,
+        color: colors.info, // Cian para transferencias
+      };
+    default:
+      return {
+        ...baseStyle,
+        color: colors.textSecondary,
+      };
   }
 };
 

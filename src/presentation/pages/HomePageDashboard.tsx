@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../application/contexts/AuthContext';
 import { 
   FaBox, 
   FaStore, 
@@ -15,16 +16,18 @@ import colors from '../../shared/colors';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, isAdmin } = useAuth();
 
-  // Enlaces frecuentes como en la imagen
-  const frequentLinks = [
+  // Enlaces frecuentes filtrados por rol
+  const getAllLinks = () => [
     {
       id: 'products',
       title: 'Gestión de Productos',
       description: 'Administra tu catálogo',
       icon: <FaBox />,
       color: '#F59E0B', // Ámbar
-      path: '/dashboard/products'
+      path: '/dashboard/products',
+      adminOnly: true
     },
     {
       id: 'point-of-sales',
@@ -32,7 +35,17 @@ const HomePage: React.FC = () => {
       description: 'Gestiona tus tiendas',
       icon: <FaStore />,
       color: '#10B981', // Verde
-      path: '/dashboard/point-of-sales'
+      path: '/dashboard/point-of-sales',
+      adminOnly: true
+    },
+    {
+      id: 'transactions',
+      title: 'Transacciones',
+      description: 'Gestiona movimientos de inventario',
+      icon: <FaWarehouse />,
+      color: '#06B6D4', // Cian
+      path: '/dashboard/transactions',
+      adminOnly: false
     },
     {
       id: 'analytics',
@@ -40,7 +53,8 @@ const HomePage: React.FC = () => {
       description: 'Visualiza tus datos',
       icon: <FaChartLine />,
       color: '#8B5CF6', // Púrpura
-      path: '/dashboard/analytics'
+      path: '/dashboard/analytics',
+      adminOnly: true
     },
     {
       id: 'users',
@@ -48,7 +62,8 @@ const HomePage: React.FC = () => {
       description: 'Administra el acceso',
       icon: <FaUsers />,
       color: '#EF4444', // Rojo
-      path: '/dashboard/users'
+      path: '/dashboard/users',
+      adminOnly: true
     },
     {
       id: 'settings',
@@ -56,7 +71,8 @@ const HomePage: React.FC = () => {
       description: 'Ajustes del sistema',
       icon: <FaCog />,
       color: '#6B7280', // Gris
-      path: '/dashboard/settings'
+      path: '/dashboard/settings',
+      adminOnly: false
     },
     {
       id: 'reports',
@@ -64,7 +80,8 @@ const HomePage: React.FC = () => {
       description: 'Genera reportes',
       icon: <FaFileAlt />,
       color: '#F97316', // Naranja
-      path: '/dashboard/reports'
+      path: '/dashboard/reports',
+      adminOnly: true
     },
     {
       id: 'notifications',
@@ -72,7 +89,8 @@ const HomePage: React.FC = () => {
       description: 'Mantente informado',
       icon: <FaBell />,
       color: '#EC4899', // Rosa
-      path: '/dashboard/notifications'
+      path: '/dashboard/notifications',
+      adminOnly: true
     },
     {
       id: 'security',
@@ -80,9 +98,15 @@ const HomePage: React.FC = () => {
       description: 'Protege tu sistema',
       icon: <FaShieldAlt />,
       color: '#84CC16', // Lima
-      path: '/dashboard/security'
+      path: '/dashboard/security',
+      adminOnly: true
     }
   ];
+
+  // Filtrar enlaces según el rol del usuario
+  const frequentLinks = getAllLinks().filter(link => 
+    isAdmin || !link.adminOnly
+  );
 
   const handleLinkClick = (path: string) => {
     navigate(path);
@@ -102,14 +126,17 @@ const HomePage: React.FC = () => {
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
         }}>
-          ¿Listo Usuario Admin?
+          {isAdmin ? '¿Listo Usuario Admin?' : `¡Hola ${user?.name || 'Usuario'}!`}
         </h1>
         <p style={{
           fontSize: '1.1rem',
           color: colors.textSecondary,
           margin: 0,
         }}>
-          Bienvenido al panel de control de Cotoco. Gestiona tu negocio desde aquí.
+          {isAdmin 
+            ? 'Bienvenido al panel de control de Cotoco. Gestiona tu negocio desde aquí.'
+            : 'Bienvenido al sistema de transacciones de Cotoco. Gestiona los movimientos de inventario.'
+          }
         </p>
       </div>
 

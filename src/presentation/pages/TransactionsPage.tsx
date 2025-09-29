@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaFilter, FaBox, FaStore, FaArrowRight } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaFilter, FaBox, FaStore, FaArrowRight, FaUser } from 'react-icons/fa';
 import ModalComponent from '../components/ModalComponent';
 import TransactionForm from '../components/TransactionForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
+import { useAuth } from '../../application/contexts/AuthContext';
 import { transactionStyles, getTransactionTypeStyle, getQuantityStyle, getTransactionIcon, getTransactionTypeLabel } from '../../shared/transactionStyles';
 import colors from '../../shared/colors';
 
@@ -23,6 +24,10 @@ type Transaction = {
   pointOfSaleName?: string;
   sourcePointOfSaleName?: string;
   destinationPointOfSaleName?: string;
+  // Información del usuario
+  userId?: number;
+  userName?: string;
+  userUsername?: string;
 };
 
 type Inventory = {
@@ -43,26 +48,35 @@ const TransactionsPage: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { user, isAdmin } = useAuth();
 
   // Cargar transacciones
   useEffect(() => {
     const loadTransactions = async () => {
       try {
         setLoading(true);
-        const response = await authenticatedFetch(`${BASE_PATH}/inventory-transaction`);
+        
+        // Usar endpoint diferente según el rol del usuario
+        const endpoint = isAdmin 
+          ? `${BASE_PATH}/inventory-transaction`  // Admin ve todas las transacciones
+          : `${BASE_PATH}/inventory-transaction?userId=${user?.id}`;  // Usuario ve solo sus transacciones
+        
+        const response = await authenticatedFetch(endpoint);
         if (!response.ok) throw new Error('Error al cargar transacciones');
         const data = await response.json();
 
-        // Enriquecer transacciones con nombres de productos y puntos de venta
-        const [productsResponse, pointsOfSaleResponse, inventoriesResponse] = await Promise.all([
+        // Enriquecer transacciones con nombres de productos, puntos de venta y usuarios
+        const [productsResponse, pointsOfSaleResponse, inventoriesResponse, usersResponse] = await Promise.all([
           authenticatedFetch(`${BASE_PATH}/product`),
           authenticatedFetch(`${BASE_PATH}/point-of-sale`),
-          authenticatedFetch(`${BASE_PATH}/inventory`)
+          authenticatedFetch(`${BASE_PATH}/inventory`),
+          authenticatedFetch(`${BASE_PATH}/users`)
         ]);
 
         const productsData = await productsResponse.json();
         const pointsOfSaleData = await pointsOfSaleResponse.json();
         const inventoriesData = await inventoriesResponse.json();
+        const usersData = await usersResponse.json();
 
         const enrichedTransactions = data.map((transaction: any) => {
           // Buscar el inventario relacionado con la transacción
@@ -78,6 +92,9 @@ const TransactionsPage: React.FC = () => {
           const sourcePointOfSale = pointsOfSaleData.find((pos: any) => pos.id === transaction.sourcePointOfSaleId);
           const destinationPointOfSale = pointsOfSaleData.find((pos: any) => pos.id === transaction.destinationPointOfSaleId);
 
+          // Buscar el usuario que realizó la transacción
+          const user = usersData.find((u: any) => u.id === transaction.userId);
+
           return {
             ...transaction,
             productId: inventory?.productId || transaction.productId,
@@ -87,6 +104,9 @@ const TransactionsPage: React.FC = () => {
             pointOfSaleName: pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || transaction.pointOfSaleId || 'N/A'}`,
             sourcePointOfSaleName: sourcePointOfSale?.name || `Punto de Venta ${transaction.sourcePointOfSaleId || 'N/A'}`,
             destinationPointOfSaleName: destinationPointOfSale?.name || `Punto de Venta ${transaction.destinationPointOfSaleId || 'N/A'}`,
+            // Información del usuario
+            userName: user?.name || 'Usuario no encontrado',
+            userUsername: user?.username || 'N/A',
           };
         });
 
@@ -99,7 +119,7 @@ const TransactionsPage: React.FC = () => {
     };
 
     loadTransactions();
-  }, []);
+  }, [isAdmin, user?.id]);
 
   // Función para cargar inventarios
   const loadInventories = async () => {
@@ -164,16 +184,18 @@ const TransactionsPage: React.FC = () => {
       
       const newTransaction = await response.json();
       
-      // Enriquecer la nueva transacción con nombres de productos y puntos de venta
-      const [productsResponse, pointsOfSaleResponse, inventoriesResponse] = await Promise.all([
+      // Enriquecer la nueva transacción con nombres de productos, puntos de venta y usuarios
+      const [productsResponse, pointsOfSaleResponse, inventoriesResponse, usersResponse] = await Promise.all([
         authenticatedFetch(`${BASE_PATH}/product`),
         authenticatedFetch(`${BASE_PATH}/point-of-sale`),
-        authenticatedFetch(`${BASE_PATH}/inventory`)
+        authenticatedFetch(`${BASE_PATH}/inventory`),
+        authenticatedFetch(`${BASE_PATH}/users`)
       ]);
 
       const productsData = await productsResponse.json();
       const pointsOfSaleData = await pointsOfSaleResponse.json();
       const inventoriesData = await inventoriesResponse.json();
+      const usersData = await usersResponse.json();
 
       // Buscar el inventario relacionado con la nueva transacción
       const inventory = inventoriesData.find((inv: any) => inv.id === newTransaction.inventoryId);
@@ -188,6 +210,9 @@ const TransactionsPage: React.FC = () => {
       const sourcePointOfSale = pointsOfSaleData.find((pos: any) => pos.id === newTransaction.sourcePointOfSaleId);
       const destinationPointOfSale = pointsOfSaleData.find((pos: any) => pos.id === newTransaction.destinationPointOfSaleId);
 
+      // Buscar el usuario que realizó la transacción
+      const user = usersData.find((u: any) => u.id === newTransaction.userId);
+
       const enrichedNewTransaction = {
         ...newTransaction,
         productId: inventory?.productId || newTransaction.productId,
@@ -197,6 +222,9 @@ const TransactionsPage: React.FC = () => {
         pointOfSaleName: pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || newTransaction.pointOfSaleId || 'N/A'}`,
         sourcePointOfSaleName: sourcePointOfSale?.name || `Punto de Venta ${newTransaction.sourcePointOfSaleId || 'N/A'}`,
         destinationPointOfSaleName: destinationPointOfSale?.name || `Punto de Venta ${newTransaction.destinationPointOfSaleId || 'N/A'}`,
+        // Información del usuario
+        userName: user?.name || 'Usuario no encontrado',
+        userUsername: user?.username || 'N/A',
       };
 
       setTransactions(prev => [enrichedNewTransaction, ...prev]);
@@ -237,10 +265,13 @@ const TransactionsPage: React.FC = () => {
       <div style={transactionStyles.pageHeader}>
         <h1 style={transactionStyles.pageTitle}>
           <FaBox style={{ color: colors.primaryColor }} />
-          Transacciones de Inventario
+          {isAdmin ? 'Transacciones de Inventario' : 'Mis Transacciones'}
         </h1>
         <p style={transactionStyles.pageSubtitle}>
-          Gestiona todas las transacciones de inventario: ventas, reabastecimientos, ajustes y transferencias
+          {isAdmin 
+            ? 'Gestiona todas las transacciones de inventario: ventas, reabastecimientos, ajustes y transferencias'
+            : 'Gestiona tus transacciones de inventario: ventas, reabastecimientos, ajustes y transferencias'
+          }
         </p>
       </div>
 
@@ -424,8 +455,8 @@ const TransactionsPage: React.FC = () => {
                   <span style={{ color: colors.textSecondary, fontSize: '0.9rem' }}>
                     Cantidad:
                   </span>
-                  <span style={getQuantityStyle(transaction.quantity)}>
-                    {transaction.quantity > 0 ? '+' : ''}{transaction.quantity}
+                  <span style={getQuantityStyle(transaction.quantity, transaction.transactionType)}>
+                    {transaction.quantity}
                   </span>
                 </div>
 
@@ -462,10 +493,16 @@ const TransactionsPage: React.FC = () => {
               {/* Footer de la tarjeta */}
               <div style={transactionStyles.cardFooter}>
                 <div style={transactionStyles.pointOfSaleInfo}>
-                  ID: {transaction.id}
+                  <FaUser style={{ marginRight: '6px', fontSize: '0.8rem', color: colors.textSecondary }} />
+                  {transaction.userName || 'Usuario no encontrado'}
+                  {transaction.userUsername && (
+                    <span style={{ color: colors.textMuted, marginLeft: '8px' }}>
+                      (@{transaction.userUsername})
+                    </span>
+                  )}
                 </div>
                 <div style={transactionStyles.transactionId}>
-                  #{transaction.inventoryId}
+                  ID: {transaction.id} • #{transaction.inventoryId}
                 </div>
               </div>
             </div>

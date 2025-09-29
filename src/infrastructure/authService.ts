@@ -167,6 +167,35 @@ class AuthService {
       return true;
     }
   }
+
+  /**
+   * Obtener el rol del usuario desde el JWT
+   */
+  getUserRole(): string | null {
+    if (!this.token) return null;
+    
+    try {
+      const payload = JSON.parse(atob(this.token.split('.')[1]));
+      return payload.role || null;
+    } catch (error) {
+      console.error('Error al decodificar el rol del token:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Verificar si el usuario es administrador
+   */
+  isAdmin(): boolean {
+    return this.getUserRole() === 'admin';
+  }
+
+  /**
+   * Verificar si el usuario es usuario normal
+   */
+  isUser(): boolean {
+    return this.getUserRole() === 'user';
+  }
 }
 
 // Crear instancia singleton

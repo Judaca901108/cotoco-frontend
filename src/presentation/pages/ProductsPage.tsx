@@ -4,7 +4,7 @@ import { FaPlus, FaSearch, FaBox, FaChevronLeft, FaChevronRight } from 'react-ic
 import ModalComponent from '../components/ModalComponent';
 import ProductForm from '../components/ProductForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
-import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
+import { tableStyles, getRowStyle, getStatusBadgeStyle } from '../../shared/tableStyles';
 import colors from '../../shared/colors';
 
 type Product = {

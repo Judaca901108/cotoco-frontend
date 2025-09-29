@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaSave, FaTimes, FaBox, FaStore, FaExchangeAlt, FaInfoCircle } from 'react-icons/fa';
 import { formStyles, getInputStyles, getSelectStyles, getTextareaStyles } from '../../shared/formStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
+import { useAuth } from '../../application/contexts/AuthContext';
 import colors from '../../shared/colors';
 
 type Inventory = {
@@ -42,6 +43,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   onCancel,
   title = "Nueva Transacción"
 }) => {
+  const { isAdmin } = useAuth();
   const [formData, setFormData] = useState({
     pointOfSaleId: 0,
     inventoryId: 0,
@@ -73,12 +75,20 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     loadPointsOfSale();
   }, []);
 
-  const transactionTypes = [
+  // Tipos de transacciones disponibles según el rol del usuario
+  const getAllTransactionTypes = () => [
     { value: 'sale', label: 'Venta', description: 'Reduce el inventario por venta de productos' },
     { value: 'restock', label: 'Reabastecimiento', description: 'Aumenta el inventario por compra o reposición' },
     { value: 'adjustment', label: 'Ajuste', description: 'Corrección de inventario (productos dañados, pérdidas, etc.)' },
     { value: 'transfer', label: 'Transferencia', description: 'Movimiento de productos entre puntos de venta' },
   ];
+
+  // Filtrar tipos de transacciones según el rol
+  const transactionTypes = isAdmin 
+    ? getAllTransactionTypes()  // Admin puede crear todos los tipos
+    : getAllTransactionTypes().filter(type => 
+        type.value === 'sale' || type.value === 'adjustment'  // Usuario solo puede crear ventas y ajustes
+      );
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -325,6 +335,22 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem' }} />
             {transactionTypes.find(t => t.value === formData.transactionType)?.description}
           </div>
+
+          {/* Mensaje informativo para usuarios normales */}
+          {!isAdmin && (
+            <div style={{
+              marginTop: '8px',
+              padding: '8px 12px',
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              border: `1px solid ${colors.warning}30`,
+              borderRadius: '6px',
+              fontSize: '0.85rem',
+              color: colors.warning,
+            }}>
+              <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem' }} />
+              <strong>Restricción de usuario:</strong> Solo puedes crear transacciones de venta y ajuste.
+            </div>
+          )}
         </div>
 
         {/* Cantidad */}

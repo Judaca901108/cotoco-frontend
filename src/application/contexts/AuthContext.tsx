@@ -9,6 +9,8 @@ interface AuthContextType {
   logout: () => void;
   error: string | null;
   clearError: () => void;
+  userRole: string | null;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +24,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Verificar autenticación al cargar la aplicación
   useEffect(() => {
@@ -29,9 +33,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const currentUser = authService.getUser();
         const isAuth = authService.isAuthenticated();
+        const role = authService.getUserRole();
+        const adminStatus = authService.isAdmin();
         
         setUser(currentUser);
         setIsAuthenticated(isAuth);
+        setUserRole(role);
+        setIsAdmin(adminStatus);
         
         // Si el token está expirando, mostrar advertencia
         if (isAuth && authService.isTokenExpiring()) {
@@ -42,6 +50,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         authService.logout();
         setUser(null);
         setIsAuthenticated(false);
+        setUserRole(null);
+        setIsAdmin(false);
       } finally {
         setIsLoading(false);
       }
@@ -56,14 +66,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(null);
       
       const response = await authService.login(credentials);
+      const role = authService.getUserRole();
+      const adminStatus = authService.isAdmin();
       
       setUser(response.user);
       setIsAuthenticated(true);
+      setUserRole(role);
+      setIsAdmin(adminStatus);
       
-      console.log('Login exitoso:', response.user.name);
+      console.log('Login exitoso:', response.user.name, 'Rol:', role);
     } catch (error: any) {
       console.error('Error en login:', error);
       setError(error.message || 'Error al iniciar sesión');
+      setUser(null);
+      setIsAuthenticated(false);
+      setUserRole(null);
+      setIsAdmin(false);
       throw error;
     } finally {
       setIsLoading(false);
@@ -75,6 +93,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authService.logout();
       setUser(null);
       setIsAuthenticated(false);
+      setUserRole(null);
+      setIsAdmin(false);
       setError(null);
       console.log('Logout exitoso');
     } catch (error) {
@@ -94,6 +114,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     error,
     clearError,
+    userRole,
+    isAdmin,
   };
 
   return (

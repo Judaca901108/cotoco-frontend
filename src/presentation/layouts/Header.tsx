@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaSun, FaFingerprint, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import { FaSun, FaFingerprint, FaSignOutAlt, FaUser, FaCog } from 'react-icons/fa';
 import { useAuth } from '../../application/contexts/AuthContext';
 import colors from '../../shared/colors';
 
@@ -10,15 +10,28 @@ type HeaderProps = {
 
 const Header: React.FC<HeaderProps> = ({ activePage }) => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
 
-  // Opciones del menú de navegación
-  const menuItems = [
-    { id: 'Home', label: 'INICIO', path: '/dashboard' },
-    { id: 'Products', label: 'PRODUCTOS', path: '/dashboard/products' },
-    { id: 'PointOfSales', label: 'PUNTOS DE VENTA', path: '/dashboard/point-of-sales' },
-    { id: 'Transactions', label: 'TRANSACCIONES', path: '/dashboard/transactions' },
-  ];
+  // Opciones del menú de navegación basadas en el rol
+  const getMenuItems = () => {
+    const allMenuItems = [
+      { id: 'Home', label: 'INICIO', path: '/dashboard' },
+      { id: 'Products', label: 'PRODUCTOS', path: '/dashboard/products', adminOnly: true },
+      { id: 'PointOfSales', label: 'PUNTOS DE VENTA', path: '/dashboard/point-of-sales', adminOnly: true },
+      { id: 'Transactions', label: 'TRANSACCIONES', path: '/dashboard/transactions' },
+      { id: 'Users', label: 'USUARIOS', path: '/dashboard/users', adminOnly: true },
+    ];
+
+    // Si es admin, mostrar todos los menús
+    if (isAdmin) {
+      return allMenuItems;
+    }
+
+    // Si es usuario normal, solo mostrar inicio y transacciones
+    return allMenuItems.filter(item => !item.adminOnly);
+  };
+
+  const menuItems = getMenuItems();
 
   const handleMenuClick = (item: any) => {
     navigate(item.path);
@@ -27,6 +40,10 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleSettings = () => {
+    navigate('/dashboard/settings');
   };
 
   return (
@@ -98,23 +115,44 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
           <FaSun />
         </button>
 
-        {/* Icono de perfil/seguridad */}
-        <button
-          style={{
-            background: 'none',
-            border: 'none',
-            color: colors.textSecondary,
-            fontSize: '1.2rem',
-            cursor: 'pointer',
-            padding: '8px',
-            borderRadius: '4px',
-            transition: 'background-color 0.2s ease',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBackground}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-        >
-          <FaFingerprint />
-        </button>
+            {/* Icono de configuración */}
+            <button
+              onClick={handleSettings}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: colors.textSecondary,
+                fontSize: '1.2rem',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '4px',
+                transition: 'background-color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBackground}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              title="Configuración"
+            >
+              <FaCog />
+            </button>
+
+            {/* Icono de perfil/seguridad */}
+            <button
+              style={{
+                background: 'none',
+                border: 'none',
+                color: colors.textSecondary,
+                fontSize: '1.2rem',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '4px',
+                transition: 'background-color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBackground}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              title="Seguridad"
+            >
+              <FaFingerprint />
+            </button>
 
         {/* Información del usuario */}
         <div style={{

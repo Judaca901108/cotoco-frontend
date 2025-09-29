@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaEdit, FaTrash, FaBox, FaTag, FaDollarSign, FaBarcode } from 'react-icons/fa';
+import { FaArrowLeft, FaEdit, FaTrash, FaBox, FaTag, FaDollarSign } from 'react-icons/fa';
 import { detailStyles, getActionButtonStyle } from '../../shared/detailStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import colors from '../../shared/colors';

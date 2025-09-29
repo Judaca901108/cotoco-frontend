@@ -272,19 +272,23 @@ const LoginPage: React.FC = () => {
 
             {/* Enlace Forgot Password */}
             <div style={{ marginBottom: '32px' }}>
-              <a
-                href="#"
+              <button
+                type="button"
                 style={{
+                  background: 'none',
+                  border: 'none',
                   color: colors.secondaryColor,
                   textDecoration: 'none',
                   fontSize: '0.9rem',
                   fontWeight: '500',
+                  cursor: 'pointer',
+                  padding: 0,
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
                 onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
               >
                 Forgot your password?
-              </a>
+              </button>
             </div>
 
             {/* Error General */}
