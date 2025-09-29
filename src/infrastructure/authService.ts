@@ -203,7 +203,18 @@ export const authService = new AuthService();
 
 // Función helper para hacer peticiones HTTP autenticadas
 export const authenticatedFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  const authHeaders = authService.getAuthHeaders();
+  // Obtener headers de autorización (solo Authorization, sin Content-Type)
+  const authHeaders: { [key: string]: string } = {};
+  if (authService.getToken()) {
+    authHeaders['Authorization'] = `Bearer ${authService.getToken()}`;
+  }
+  
+  // Si el body es FormData, NO agregar Content-Type (se establece automáticamente)
+  // Si no es FormData, agregar Content-Type: application/json
+  const isFormData = options.body instanceof FormData;
+  if (!isFormData) {
+    authHeaders['Content-Type'] = 'application/json';
+  }
   
   const requestOptions: RequestInit = {
     ...options,

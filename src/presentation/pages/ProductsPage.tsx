@@ -49,7 +49,7 @@ const ProductsPage: React.FC = () => {
     try {
       console.log('Datos recibidos:', data);
       
-      // Si hay imagen, usar FormData, si no, usar JSON
+      // Si hay imagen, usar FormData (multipart/form-data)
       if (data.image) {
         const formData = new FormData();
         formData.append('name', data.name);
@@ -62,10 +62,11 @@ const ProductsPage: React.FC = () => {
         console.log('Enviando con FormData (con imagen)');
         console.log('Imagen:', data.image.name, data.image.size, 'bytes');
         
-            const res = await authenticatedFetch(`${BASE_PATH}/product`, {
-              method: 'POST',
-              body: formData,
-            });
+        const res = await authenticatedFetch(`${BASE_PATH}/product`, {
+          method: 'POST',
+          body: formData,
+          // NO establecer Content-Type - se establece automáticamente con FormData
+        });
         
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
@@ -77,8 +78,9 @@ const ProductsPage: React.FC = () => {
         newProduct.price = parseFloat(newProduct.price);
         setProducts((prev) => [...prev, newProduct]);
         setIsCreating(false);
+        setError('');
       } else {
-        // Sin imagen, enviar como JSON
+        // Sin imagen, enviar como JSON (application/json)
         const jsonData = {
           name: data.name,
           description: data.description,
@@ -89,13 +91,13 @@ const ProductsPage: React.FC = () => {
         
         console.log('Enviando como JSON (sin imagen):', jsonData);
         
-            const res = await authenticatedFetch(`${BASE_PATH}/product`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(jsonData),
-            });
+        const res = await authenticatedFetch(`${BASE_PATH}/product`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(jsonData),
+        });
         
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
@@ -107,6 +109,7 @@ const ProductsPage: React.FC = () => {
         newProduct.price = parseFloat(newProduct.price);
         setProducts((prev) => [...prev, newProduct]);
         setIsCreating(false);
+        setError('');
       }
     } catch (err: any) {
       console.error('Error completo:', err);

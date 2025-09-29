@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaFilter, FaBox, FaStore, FaArrowRight, FaUser } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaFilter, FaBox, FaStore, FaArrowRight, FaUser, FaCalendarAlt } from 'react-icons/fa';
 import ModalComponent from '../components/ModalComponent';
 import TransactionForm from '../components/TransactionForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
@@ -45,10 +45,43 @@ const TransactionsPage: React.FC = () => {
   const [inventories, setInventories] = useState<Inventory[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { user, isAdmin } = useAuth();
+
+  // Función para generar fechas de filtro
+  const getDateRange = (filter: string) => {
+    const today = new Date();
+    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+    
+    switch (filter) {
+      case '3months':
+        const threeMonthsAgo = new Date(today);
+        threeMonthsAgo.setMonth(today.getMonth() - 3);
+        return {
+          startDate: formatDate(threeMonthsAgo),
+          endDate: formatDate(today)
+        };
+      case '6months':
+        const sixMonthsAgo = new Date(today);
+        sixMonthsAgo.setMonth(today.getMonth() - 6);
+        return {
+          startDate: formatDate(sixMonthsAgo),
+          endDate: formatDate(today)
+        };
+      case 'custom':
+        return {
+          startDate: customStartDate,
+          endDate: customEndDate
+        };
+      default:
+        return null;
+    }
+  };
 
   // Cargar transacciones
   useEffect(() => {
@@ -56,10 +89,17 @@ const TransactionsPage: React.FC = () => {
       try {
         setLoading(true);
         
-        // Usar endpoint diferente según el rol del usuario
-        const endpoint = isAdmin 
+        // Construir endpoint base
+        let endpoint = isAdmin 
           ? `${BASE_PATH}/inventory-transaction`  // Admin ve todas las transacciones
           : `${BASE_PATH}/inventory-transaction?userId=${user?.id}`;  // Usuario ve solo sus transacciones
+        
+        // Agregar filtros de fecha si están seleccionados
+        const dateRange = getDateRange(dateFilter);
+        if (dateRange && dateRange.startDate && dateRange.endDate) {
+          const separator = endpoint.includes('?') ? '&' : '?';
+          endpoint += `${separator}startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
+        }
         
         const response = await authenticatedFetch(endpoint);
         if (!response.ok) throw new Error('Error al cargar transacciones');
@@ -119,7 +159,7 @@ const TransactionsPage: React.FC = () => {
     };
 
     loadTransactions();
-  }, [isAdmin, user?.id]);
+  }, [isAdmin, user?.id, dateFilter, customStartDate, customEndDate]);
 
   // Función para cargar inventarios
   const loadInventories = async () => {
@@ -329,6 +369,48 @@ const TransactionsPage: React.FC = () => {
               <option value="transfer">Transferencias</option>
             </select>
           </div>
+
+          {/* Filtro por fecha */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FaCalendarAlt style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              style={transactionStyles.filterSelect}
+            >
+              <option value="all">Todas las fechas</option>
+              <option value="3months">Últimos 3 meses</option>
+              <option value="6months">Últimos 6 meses</option>
+              <option value="custom">Rango personalizado</option>
+            </select>
+          </div>
+
+          {/* Filtros de fecha personalizada */}
+          {dateFilter === 'custom' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                style={{
+                  ...transactionStyles.filterSelect,
+                  minWidth: '140px',
+                }}
+                placeholder="Fecha inicio"
+              />
+              <span style={{ color: colors.textSecondary, fontSize: '0.9rem' }}>a</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                style={{
+                  ...transactionStyles.filterSelect,
+                  minWidth: '140px',
+                }}
+                placeholder="Fecha fin"
+              />
+            </div>
+          )}
         </div>
 
         {/* Botón crear */}
