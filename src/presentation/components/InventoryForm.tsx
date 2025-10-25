@@ -3,9 +3,9 @@ import { FaSave, FaTimes, FaBox, FaWarehouse } from 'react-icons/fa';
 import { formStyles, getInputStyles, getSelectStyles } from '../../shared/formStyles';
 
 type InventoryFormProps = {
-  initialData?: { productId: number; stockQuantity: number; minimumStock: number };
+  initialData?: { productId: number; stockQuantity: number; minimumStock: number; onDisplay?: number };
   products: { id: number; name: string }[]; // Lista de productos disponibles
-  onSubmit: (data: { productId: number; stockQuantity: number; minimumStock: number }) => void;
+  onSubmit: (data: { productId: number; stockQuantity: number; minimumStock: number; onDisplay: number }) => void;
   onCancel?: () => void;
   title?: string;
 };
@@ -23,6 +23,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
       productId: 0,
       stockQuantity: 0,
       minimumStock: 0,
+      onDisplay: 0,
     }
   );
 
@@ -40,7 +41,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: name === 'stockQuantity' || name === 'minimumStock' ? Number(value) : value }));
+    setFormData((prev) => ({ ...prev, [name]: name === 'stockQuantity' || name === 'minimumStock' || name === 'onDisplay' ? Number(value) : value }));
     // Limpiar error cuando el usuario empiece a escribir
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -50,7 +51,8 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
-      onSubmit(formData);
+      // Asegurar que onDisplay siempre sea 0 para nuevos inventarios
+      onSubmit({ ...formData, onDisplay: 0 });
     }
   };
 

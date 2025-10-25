@@ -7,7 +7,9 @@ import PointOfSalePage from './PointOfSalePage'; // Página de Puntos de Ventas
 import HomePage from './HomePageDashboard'; // Página de Inicio dentro del Dashboard
 import PointOfSaleInventoryPage from './PointOfSaleInventoryPage';
 import ProductDetailPage from './ProductDetailPage'; // Vista de detalle de producto
+import EditProductPage from './EditProductPage'; // Vista de edición de producto
 import PointOfSaleDetailPage from './PointOfSaleDetailPage'; // Vista de detalle de punto de venta
+import EditPointOfSalePage from './EditPointOfSalePage'; // Vista de edición de punto de venta
 import TransactionsPage from './TransactionsPage'; // Página de transacciones
 import UsersPage from './UsersPage'; // Página de usuarios
 import UserDetailPage from './UserDetailPage'; // Vista de detalle de usuario
@@ -55,8 +57,10 @@ const DashboardPage: React.FC = () => {
               <Route path="/" element={<HomePage />} />
               <Route path="/products" element={isAdmin ? <ProductsPage /> : <Navigate to="/dashboard/transactions" replace />} />
               <Route path="/products/:id" element={isAdmin ? <ProductDetailPage /> : <Navigate to="/dashboard/transactions" replace />} />
+              <Route path="/products/edit/:id" element={isAdmin ? <EditProductPage /> : <Navigate to="/dashboard/transactions" replace />} />
               <Route path="/point-of-sales" element={isAdmin ? <PointOfSalePage /> : <Navigate to="/dashboard/transactions" replace />} />
               <Route path="/point-of-sales/:id" element={isAdmin ? <PointOfSaleDetailPage /> : <Navigate to="/dashboard/transactions" replace />} />
+              <Route path="/point-of-sales/edit/:id" element={isAdmin ? <EditPointOfSalePage /> : <Navigate to="/dashboard/transactions" replace />} />
               <Route path="/point-of-sales/:id/inventory" element={isAdmin ? <PointOfSaleInventoryPage /> : <Navigate to="/dashboard/transactions" replace />} />
               <Route path="/transactions" element={<TransactionsPage />} />
               <Route path="/users" element={isAdmin ? <UsersPage /> : <Navigate to="/dashboard/transactions" replace />} />

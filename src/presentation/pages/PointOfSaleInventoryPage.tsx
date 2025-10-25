@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse } from 'react-icons/fa';
+import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse, FaEye } from 'react-icons/fa';
 import colors from '../../shared/colors';
 import InventoryForm from '../components/InventoryForm';
 import ModalComponent from '../components/ModalComponent';
@@ -16,6 +16,7 @@ type Inventory = {
   productSku: string;
   stockQuantity: number;
   minimumStock: number;
+  onDisplay: number;
 };
 
 type Product = {
@@ -43,6 +44,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
+  const [editingDisplay, setEditingDisplay] = useState<number | null>(null);
+  const [displayValue, setDisplayValue] = useState('');
   const navigate = useNavigate();
   
   // Función para cargar inventarios
@@ -56,8 +59,15 @@ const PointOfSaleInventoryPage: React.FC = () => {
         authenticatedFetch(`${BASE_PATH}/product`)
       ]);
 
-      if (!inventoriesResponse.ok) throw new Error('Error al cargar inventarios');
-      if (!productsResponse.ok) throw new Error('Error al cargar productos');
+      if (!inventoriesResponse.ok) {
+        const errorText = await inventoriesResponse.text();
+        throw new Error(`Error al cargar inventarios: ${inventoriesResponse.status} - ${errorText}`);
+      }
+      
+      if (!productsResponse.ok) {
+        const errorText = await productsResponse.text();
+        throw new Error(`Error al cargar productos: ${productsResponse.status} - ${errorText}`);
+      }
 
       const [inventoriesData, productsData] = await Promise.all([
         inventoriesResponse.json(),
@@ -66,23 +76,42 @@ const PointOfSaleInventoryPage: React.FC = () => {
 
       setProducts(productsData);
       
-      // Mapear inventarios para incluir información del producto
-      const enrichedInventories = inventoriesData.map((inventory: any) => {
-        const product = productsData.find((p: Product) => p.id === inventory.productId);
-        return {
-          ...inventory,
-          productName: product?.name || `Producto ${inventory.productId}`,
-          productSku: product?.sku || 'N/A'
-        };
-      });
+      // Cargar datos individuales para obtener onDisplay correcto
+      const enrichedInventories = await Promise.all(
+        inventoriesData.map(async (inventory: any) => {
+          try {
+            // Cargar datos individuales para obtener onDisplay correcto
+            const individualResponse = await authenticatedFetch(`${BASE_PATH}/inventory/${inventory.id}`);
+            const individualData = await individualResponse.json();
+            
+            const product = productsData.find((p: Product) => p.id === inventory.productId);
+            return {
+              ...inventory,
+              productName: product?.name || `Producto ${inventory.productId}`,
+              productSku: product?.sku || 'N/A',
+              // Usar onDisplay del endpoint individual (correcto)
+              onDisplay: individualData.onDisplay || 0
+            };
+          } catch (err) {
+            // Fallback a datos de la lista si falla el individual
+            const product = productsData.find((p: Product) => p.id === inventory.productId);
+            return {
+              ...inventory,
+              productName: product?.name || `Producto ${inventory.productId}`,
+              productSku: product?.sku || 'N/A',
+              onDisplay: inventory.onDisplay || 0
+            };
+          }
+        })
+      );
       
       setInventories(enrichedInventories);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching data:', err);
-      setError('No se pudieron cargar los datos.');
+      setError(`Error: ${err.message}`);
     }
   }, [id]);
-
+  
   useEffect(() => {
     loadInventories();
 
@@ -97,13 +126,19 @@ const PointOfSaleInventoryPage: React.FC = () => {
     inventory.productName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCreateInventory = async (data: { productId: number; pointOfSaleId?: number; stockQuantity: number; minimumStock: number }) => {
+  const handleCreateInventory = async (data: { productId: number; pointOfSaleId?: number; stockQuantity: number; minimumStock: number; onDisplay: number }) => {
     try {
-      data.pointOfSaleId = parseInt(id!, 10)
+      const inventoryData = {
+        productId: data.productId,
+        pointOfSaleId: parseInt(id!, 10),
+        stockQuantity: data.stockQuantity,
+        minimumStock: data.minimumStock,
+        onDisplay: data.onDisplay
+      };
+      
       const res = await authenticatedFetch(`${BASE_PATH}/inventory`, {
         method: 'POST',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(inventoryData),
       });
       if (!res.ok) throw new Error('Error al crear el inventario');
       
@@ -114,6 +149,48 @@ const PointOfSaleInventoryPage: React.FC = () => {
       setError(err.message);
     }
   };
+
+  const handleUpdateDisplay = async (inventoryId: number, newDisplayValue: number) => {
+    try {
+      // Validar que el valor sea válido
+      if (isNaN(newDisplayValue) || newDisplayValue < 0) {
+        setError('La cantidad debe ser un número válido mayor o igual a 0');
+        return;
+      }
+
+      const res = await authenticatedFetch(`${BASE_PATH}/inventory/${inventoryId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ onDisplay: newDisplayValue }),
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Error al actualizar: ${res.status} - ${errorText}`);
+      }
+      
+      // Recargar la lista de inventarios
+      await loadInventories();
+      setEditingDisplay(null);
+      setDisplayValue('');
+      setError(''); // Limpiar errores previos
+    } catch (err: any) {
+      console.error('Error en handleUpdateDisplay:', err);
+      setError(`Error: ${err.message}`);
+    }
+  };
+
+  const startEditingDisplay = (inventory: Inventory) => {
+    setEditingDisplay(inventory.id);
+    setDisplayValue(inventory.onDisplay.toString());
+    setError(''); // Limpiar errores previos
+  };
+
+  const cancelEditingDisplay = () => {
+    setEditingDisplay(null);
+    setDisplayValue('');
+    setError(''); // Limpiar errores previos
+  };
+
 
 
   const currentPointOfSale = pointsOfSale.find(pos => pos.id === parseInt(id!));
@@ -193,12 +270,12 @@ const PointOfSaleInventoryPage: React.FC = () => {
             color: colors.textSecondary,
             fontSize: '0.9rem',
           }} />
-          <input
-            type="text"
-            placeholder="Buscar por nombre del producto..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
+        <input
+          type="text"
+          placeholder="Buscar por nombre del producto..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
               width: '100%',
               padding: '12px 12px 12px 40px',
               fontSize: '1rem',
@@ -248,6 +325,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
           <FaPlus />
           Agregar Producto
         </button>
+        
       </div>
 
       {/* Error message */}
@@ -273,13 +351,14 @@ const PointOfSaleInventoryPage: React.FC = () => {
               <th style={tableStyles.tableHeaderCell}>Producto</th>
               <th style={tableStyles.tableHeaderCell}>Stock Actual</th>
               <th style={tableStyles.tableHeaderCell}>Stock Mínimo</th>
+              <th style={tableStyles.tableHeaderCell}>En Exhibición</th>
               <th style={tableStyles.tableHeaderCell}>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
+          </tr>
+        </thead>
+        <tbody>
             {filteredInventories.length === 0 ? (
               <tr>
-                <td colSpan={4} style={{
+                <td colSpan={5} style={{
                   ...tableStyles.tableCell,
                   textAlign: 'center',
                   padding: '40px',
@@ -293,7 +372,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                     {!searchQuery && (
                       <button
                         onClick={() => setIsCreating(true)}
-                        style={{
+                style={{
                           backgroundColor: colors.primaryColor,
                           color: colors.white,
                           border: 'none',
@@ -337,8 +416,129 @@ const PointOfSaleInventoryPage: React.FC = () => {
                   </td>
                   <td style={tableStyles.tableCell}>
                     <span style={{ color: colors.textSecondary }}>
-                      {inventory.minimumStock}
+                {inventory.minimumStock}
                     </span>
+                  </td>
+                  <td style={tableStyles.tableCell}>
+                    {editingDisplay === inventory.id ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="number"
+                          value={displayValue}
+                          onChange={(e) => setDisplayValue(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleUpdateDisplay(inventory.id, parseInt(displayValue));
+                            }
+                          }}
+                          style={{
+                            width: '80px',
+                            padding: '6px 8px',
+                            border: `2px solid ${colors.primaryColor}`,
+                            borderRadius: '6px',
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
+                            textAlign: 'center',
+                            backgroundColor: colors.backgroundTertiary,
+                          }}
+                          min="0"
+                          max={inventory.stockQuantity}
+                          placeholder="0"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => handleUpdateDisplay(inventory.id, parseInt(displayValue))}
+                          style={{
+                            backgroundColor: '#10b981',
+                            color: colors.white,
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#059669';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#10b981';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                          }}
+                        >
+                          ✓ Guardar
+                        </button>
+                        <button
+                          onClick={cancelEditingDisplay}
+                          style={{
+                            backgroundColor: '#ef4444',
+                            color: colors.white,
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#dc2626';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ef4444';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                          }}
+                        >
+                          ✕ Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ color: colors.textPrimary, fontWeight: '600', fontSize: '1.2rem' }}>
+                          {inventory.onDisplay}
+                        </span>
+                        <button
+                          onClick={() => startEditingDisplay(inventory)}
+                          style={{
+                            backgroundColor: colors.primaryColor,
+                            color: colors.white,
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#7c3aed';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = colors.primaryColor;
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                          }}
+                        >
+                          <FaEye />
+                          Editar Exhibición
+                        </button>
+                      </div>
+                    )}
                   </td>
                   <td style={tableStyles.tableCell}>
                     <span style={getStatusBadgeStyle(
@@ -350,8 +550,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
                 </tr>
               ))
             )}
-          </tbody>
-        </table>
+        </tbody>
+      </table>
       </div>
 
       {/* Modal para crear inventario */}

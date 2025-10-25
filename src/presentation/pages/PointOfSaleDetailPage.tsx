@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaEdit, FaTrash, FaStore, FaMapMarkerAlt, FaBuilding, FaBox } from 'react-icons/fa';
+import { FaArrowLeft, FaEdit, FaTrash, FaStore, FaMapMarkerAlt, FaBuilding, FaBox, FaTruck } from 'react-icons/fa';
 import { detailStyles, getActionButtonStyle, getStatusBadgeStyle } from '../../shared/detailStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import colors from '../../shared/colors';
@@ -20,29 +20,44 @@ type InventorySummary = {
   productName: string;
   stockQuantity: number;
   minimumStock: number;
+  onDisplay: number;
 };
 
 const PointOfSaleDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [pointOfSale, setPointOfSale] = useState<PointOfSale | null>(null);
   const [inventories, setInventories] = useState<InventorySummary[]>([]);
+  const [allPointsOfSale, setAllPointsOfSale] = useState<PointOfSale[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showMoveInventory, setShowMoveInventory] = useState(false);
+  const [selectedTargetPoint, setSelectedTargetPoint] = useState<number>(0);
+  const [movingInventory, setMovingInventory] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!id) return;
 
-    // Cargar datos del punto de venta
-    authenticatedFetch(`${BASE_PATH}/point-of-sale/${id}`)
-      .then((res) => {
-        if (!res.ok) {
+    // Cargar datos del punto de venta y todos los puntos de venta en paralelo
+    Promise.all([
+      authenticatedFetch(`${BASE_PATH}/point-of-sale/${id}`),
+      authenticatedFetch(`${BASE_PATH}/point-of-sale`)
+    ])
+      .then(([pointResponse, allPointsResponse]) => {
+        if (!pointResponse.ok) {
           throw new Error('Punto de venta no encontrado');
         }
-        return res.json();
+        return Promise.all([pointResponse.json(), allPointsResponse.json()]);
       })
-      .then((data) => {
-        setPointOfSale(data);
+      .then(([pointData, allPointsData]) => {
+        console.log('Punto de venta cargado:', pointData);
+        console.log('Todos los puntos de venta:', allPointsData);
+        setPointOfSale(pointData);
+        // Filtrar el punto de venta actual de la lista
+        const filteredPoints = allPointsData.filter((pos: PointOfSale) => pos.id !== parseInt(id!));
+        console.log('Puntos de venta filtrados (sin el actual):', filteredPoints);
+        setAllPointsOfSale(filteredPoints);
       })
       .catch((err) => {
         setError(err.message);
@@ -52,8 +67,31 @@ const PointOfSaleDetailPage: React.FC = () => {
     // Cargar inventario del punto de venta
     authenticatedFetch(`${BASE_PATH}/point-of-sale/${id}/inventories`)
       .then((res) => res.json())
-      .then((data) => {
-        setInventories(data || []);
+      .then(async (data) => {
+        // Cargar datos individuales para obtener onDisplay correcto
+        const enrichedInventories = await Promise.all(
+          (data || []).map(async (inventory: any) => {
+            try {
+              // Cargar datos individuales para obtener onDisplay correcto
+              const individualResponse = await authenticatedFetch(`${BASE_PATH}/inventory/${inventory.id}`);
+              const individualData = await individualResponse.json();
+              
+              return {
+                ...inventory,
+                onDisplay: individualData.onDisplay || 0
+              };
+            } catch (err) {
+              // Fallback a datos de la lista si falla el individual
+              return {
+                ...inventory,
+                onDisplay: inventory.onDisplay || 0
+              };
+            }
+          })
+        );
+        
+        console.log('Inventarios enriquecidos:', enrichedInventories);
+        setInventories(enrichedInventories);
         setLoading(false);
       })
       .catch((err) => {
@@ -87,6 +125,98 @@ const PointOfSaleDetailPage: React.FC = () => {
 
   const handleViewInventory = () => {
     navigate(`/dashboard/point-of-sales/${pointOfSale?.id}/inventory`);
+  };
+
+  const handleMoveInventory = async () => {
+    console.log('=== INICIANDO MOVIMIENTO DE INVENTARIO ===');
+    console.log('selectedTargetPoint:', selectedTargetPoint);
+    console.log('pointOfSale:', pointOfSale);
+    console.log('inventories.length:', inventories.length);
+    console.log('allPointsOfSale:', allPointsOfSale);
+    
+    if (!selectedTargetPoint || !pointOfSale) {
+      console.log('Error: No hay punto de venta destino seleccionado o punto de venta actual');
+      alert('Por favor selecciona un punto de venta destino');
+      return;
+    }
+
+    if (inventories.length === 0) {
+      console.log('Error: No hay inventario para mover');
+      alert('No hay inventario para mover');
+      return;
+    }
+
+    const targetPoint = allPointsOfSale.find(pos => pos.id === selectedTargetPoint);
+    console.log('targetPoint encontrado:', targetPoint);
+    
+    if (!targetPoint) {
+      console.log('Error: Punto de venta destino no válido');
+      alert('Punto de venta destino no válido');
+      return;
+    }
+
+    console.log('Mostrando modal de confirmación...');
+    setShowConfirmModal(true);
+  };
+
+  const executeMoveInventory = async () => {
+    if (!selectedTargetPoint || !pointOfSale) return;
+
+    const targetPoint = allPointsOfSale.find(pos => pos.id === selectedTargetPoint);
+    if (!targetPoint) return;
+
+    setMovingInventory(true);
+    setShowConfirmModal(false);
+    
+    try {
+      const requestBody = {
+        targetPointOfSaleId: selectedTargetPoint
+      };
+      console.log('Request body:', requestBody);
+      console.log('URL:', `${BASE_PATH}/point-of-sale/${pointOfSale.id}/move-all-inventory`);
+      
+      const response = await authenticatedFetch(`${BASE_PATH}/point-of-sale/${pointOfSale.id}/move-all-inventory`, {
+        method: 'POST',
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Error al mover inventario: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('Resultado exitoso:', result);
+      
+      // Mostrar resultado exitoso
+      alert(`✅ Inventario movido exitosamente!\n\n` +
+            `De: ${result.sourcePointOfSale.name}\n` +
+            `A: ${result.targetPointOfSale.name}\n` +
+            `Productos movidos: ${result.totalProductsMoved}\n` +
+            `Stock total movido: ${result.totalStockMoved}\n` +
+            `En exhibición movido: ${result.totalOnDisplayMoved}`);
+
+      // Recargar la página para mostrar el inventario vacío
+      console.log('Recargando página...');
+      window.location.reload();
+      
+    } catch (err: any) {
+      console.error('Error moving inventory:', err);
+      alert(`Error al mover inventario: ${err.message}`);
+    } finally {
+      setMovingInventory(false);
+      setShowMoveInventory(false);
+      setSelectedTargetPoint(0);
+    }
+  };
+
+  const cancelMoveInventory = () => {
+    setShowConfirmModal(false);
+    setMovingInventory(false);
   };
 
   if (loading) {
@@ -253,6 +383,29 @@ const PointOfSaleDetailPage: React.FC = () => {
             VER INVENTARIO
           </button>
           
+          {inventories.length > 0 && (
+            <button
+              style={getActionButtonStyle('secondary')}
+              onClick={() => {
+                console.log('Botón MOVER INVENTARIO clickeado');
+                console.log('Inventories length:', inventories.length);
+                console.log('showMoveInventory actual:', showMoveInventory);
+                setShowMoveInventory(!showMoveInventory);
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <FaTruck />
+              MOVER INVENTARIO
+            </button>
+          )}
+          
           <button
             style={getActionButtonStyle('danger')}
             onClick={handleDelete}
@@ -270,6 +423,110 @@ const PointOfSaleDetailPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Sección para mover inventario */}
+      {showMoveInventory && (
+        <div style={{
+          ...detailStyles.relatedDataSection,
+          backgroundColor: 'rgba(139, 92, 246, 0.05)',
+          border: `2px solid ${colors.primaryColor}`,
+        }}>
+          <h2 style={detailStyles.relatedDataTitle}>
+            <FaTruck style={{ marginRight: '8px', color: colors.primaryColor }} />
+            MOVER TODO EL INVENTARIO
+          </h2>
+          
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            padding: '20px',
+            backgroundColor: colors.backgroundTertiary,
+            borderRadius: '8px',
+            border: `1px solid ${colors.borderColor}`,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <label style={{
+                fontWeight: '600',
+                color: colors.textPrimary,
+                minWidth: '120px'
+              }}>
+                Mover a:
+              </label>
+              <select
+                value={selectedTargetPoint}
+                onChange={(e) => setSelectedTargetPoint(parseInt(e.target.value))}
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  border: `1px solid ${colors.borderColor}`,
+                  borderRadius: '6px',
+                  backgroundColor: colors.backgroundPrimary,
+                  color: colors.textPrimary,
+                  fontSize: '0.95rem',
+                }}
+              >
+                <option value={0}>Selecciona un punto de venta destino</option>
+                {allPointsOfSale.map((pos) => (
+                  <option key={pos.id} value={pos.id}>
+                    {pos.name} - {pos.location}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div style={{
+              fontSize: '0.9rem',
+              color: colors.textSecondary,
+              backgroundColor: 'rgba(255, 193, 7, 0.1)',
+              padding: '12px',
+              borderRadius: '6px',
+              border: `1px solid rgba(255, 193, 7, 0.3)`,
+            }}>
+              ⚠️ <strong>Advertencia:</strong> Esta acción moverá TODO el inventario de este punto de venta al destino seleccionado. 
+              Si el producto ya existe en el destino, se sumará al stock existente.
+            </div>
+            
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowMoveInventory(false);
+                  setSelectedTargetPoint(0);
+                }}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: colors.buttonSecondary,
+                  color: colors.textSecondary,
+                  border: `1px solid ${colors.borderColor}`,
+                  borderRadius: '6px',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleMoveInventory}
+                disabled={!selectedTargetPoint || movingInventory}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: selectedTargetPoint && !movingInventory ? colors.primaryColor : colors.textSecondary,
+                  color: colors.white,
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '0.9rem',
+                  cursor: selectedTargetPoint && !movingInventory ? 'pointer' : 'not-allowed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                {movingInventory ? '⏳ Moviendo...' : '🚚 Mover Inventario'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sección de inventario */}
       <div style={detailStyles.relatedDataSection}>
@@ -295,6 +552,7 @@ const PointOfSaleDetailPage: React.FC = () => {
                 <th style={detailStyles.relatedTableHeaderCell}>Producto</th>
                 <th style={detailStyles.relatedTableHeaderCell}>Stock Actual</th>
                 <th style={detailStyles.relatedTableHeaderCell}>Stock Mínimo</th>
+                <th style={detailStyles.relatedTableHeaderCell}>En Exhibición</th>
                 <th style={detailStyles.relatedTableHeaderCell}>Estado</th>
               </tr>
             </thead>
@@ -320,6 +578,15 @@ const PointOfSaleDetailPage: React.FC = () => {
                     </span>
                   </td>
                   <td style={detailStyles.relatedTableCell}>
+                    <span style={{ 
+                      fontWeight: '600', 
+                      color: colors.primaryColor,
+                      fontSize: '1.1rem'
+                    }}>
+                      {inventory.onDisplay}
+                    </span>
+                  </td>
+                  <td style={detailStyles.relatedTableCell}>
                     <span style={getStatusBadgeStyle(
                       inventory.stockQuantity < inventory.minimumStock ? 'warning' : 'active'
                     )}>
@@ -332,6 +599,177 @@ const PointOfSaleDetailPage: React.FC = () => {
           </table>
         )}
       </div>
+
+      {/* Modal de confirmación */}
+      {showConfirmModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            backgroundColor: colors.backgroundPrimary,
+            borderRadius: '12px',
+            padding: '32px',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            border: `1px solid ${colors.borderColor}`,
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '16px',
+                fontSize: '24px',
+              }}>
+                ⚠️
+              </div>
+              <h3 style={{
+                margin: 0,
+                fontSize: '1.25rem',
+                fontWeight: '600',
+                color: colors.textPrimary,
+              }}>
+                Confirmar Movimiento de Inventario
+              </h3>
+            </div>
+
+            <div style={{
+              marginBottom: '24px',
+              lineHeight: '1.6',
+              color: colors.textSecondary,
+            }}>
+              <p style={{ margin: '0 0 12px 0' }}>
+                ¿Estás seguro de que quieres mover <strong>TODO el inventario</strong> de:
+              </p>
+              <div style={{
+                backgroundColor: colors.backgroundSecondary,
+                padding: '16px',
+                borderRadius: '8px',
+                margin: '12px 0',
+                border: `1px solid ${colors.borderColor}`,
+              }}>
+                <div style={{ fontWeight: '600', color: colors.textPrimary, marginBottom: '4px' }}>
+                  📍 Origen: {pointOfSale?.name}
+                </div>
+                <div style={{ fontWeight: '600', color: colors.textPrimary }}>
+                  🎯 Destino: {allPointsOfSale.find(pos => pos.id === selectedTargetPoint)?.name}
+                </div>
+              </div>
+              <p style={{ margin: '12px 0 0 0' }}>
+                Esto moverá <strong>{inventories.length} productos</strong> con un total de{' '}
+                <strong>{inventories.reduce((sum, inv) => sum + inv.stockQuantity, 0)} unidades</strong>.
+              </p>
+              <div style={{
+                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                border: `1px solid rgba(255, 193, 7, 0.3)`,
+                borderRadius: '6px',
+                padding: '12px',
+                marginTop: '16px',
+                fontSize: '0.9rem',
+              }}>
+                <strong>⚠️ Importante:</strong> Si los productos ya existen en el destino, se sumarán al stock existente.
+              </div>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end',
+            }}>
+              <button
+                onClick={cancelMoveInventory}
+                disabled={movingInventory}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: colors.buttonSecondary,
+                  color: colors.textSecondary,
+                  border: `1px solid ${colors.borderColor}`,
+                  borderRadius: '8px',
+                  fontSize: '0.95rem',
+                  fontWeight: '600',
+                  cursor: movingInventory ? 'not-allowed' : 'pointer',
+                  opacity: movingInventory ? 0.5 : 1,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (!movingInventory) {
+                    e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                    e.currentTarget.style.color = colors.textPrimary;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!movingInventory) {
+                    e.currentTarget.style.backgroundColor = colors.buttonSecondary;
+                    e.currentTarget.style.color = colors.textSecondary;
+                  }
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={executeMoveInventory}
+                disabled={movingInventory}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: movingInventory ? colors.textSecondary : colors.primaryColor,
+                  color: colors.white,
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '0.95rem',
+                  fontWeight: '600',
+                  cursor: movingInventory ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (!movingInventory) {
+                    e.currentTarget.style.backgroundColor = '#7c3aed';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!movingInventory) {
+                    e.currentTarget.style.backgroundColor = colors.primaryColor;
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }
+                }}
+              >
+                {movingInventory ? (
+                  <>
+                    <span>⏳</span>
+                    Moviendo...
+                  </>
+                ) : (
+                  <>
+                    <span>🚚</span>
+                    Confirmar Movimiento
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
