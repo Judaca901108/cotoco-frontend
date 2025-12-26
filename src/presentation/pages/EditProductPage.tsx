@@ -15,6 +15,7 @@ type Product = {
   sku: string;
   category: string;
   imagePath?: string;
+  barcode?: string; // Código de barras
 };
 
 const EditProductPage: React.FC = () => {
@@ -31,6 +32,7 @@ const EditProductPage: React.FC = () => {
     price: '',
     sku: '',
     category: '',
+    barcode: '',
     image: null as File | null
   });
 
@@ -59,6 +61,7 @@ const EditProductPage: React.FC = () => {
         price: productData.price?.toString() || '',
         sku: productData.sku || '',
         category: productData.category || '',
+        barcode: productData.barcode || '',
         image: null
       });
     } catch (err: any) {
@@ -112,6 +115,10 @@ const EditProductPage: React.FC = () => {
       formDataToSend.append('price', formData.price);
       formDataToSend.append('sku', formData.sku);
       formDataToSend.append('category', formData.category);
+      
+      if (formData.barcode) {
+        formDataToSend.append('barcode', formData.barcode);
+      }
       
       if (formData.image) {
         formDataToSend.append('image', formData.image);
@@ -344,6 +351,29 @@ const EditProductPage: React.FC = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Código de barras */}
+        <div style={formStyles.fieldContainer}>
+          <label htmlFor="barcode" style={formStyles.label}>
+            Código de Barras
+          </label>
+          <input
+            type="text"
+            id="barcode"
+            name="barcode"
+            value={formData.barcode}
+            onChange={handleChange}
+            onFocus={() => handleFocus('barcode')}
+            onBlur={handleBlur}
+            style={getInputStyles(!!errors.barcode, focusedField === 'barcode')}
+            placeholder="Ej: 1234567890123"
+          />
+          {errors.barcode && (
+            <div style={formStyles.errorMessage}>
+              <span>{errors.barcode}</span>
+            </div>
+          )}
         </div>
 
         {/* Categoría */}

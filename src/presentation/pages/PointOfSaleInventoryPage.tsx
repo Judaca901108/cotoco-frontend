@@ -26,6 +26,7 @@ type Product = {
   price: number; // Aseguramos que `price` sea un número
   sku: string;
   category: string;
+  barcode?: string; // Código de barras
 };
 
 type PointOfSale = {

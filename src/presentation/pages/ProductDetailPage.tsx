@@ -15,6 +15,7 @@ type Product = {
   sku: string;
   category: string;
   imagePath?: string;
+  barcode?: string; // Código de barras
 };
 
 const ProductDetailPage: React.FC = () => {
@@ -323,6 +324,13 @@ const ProductDetailPage: React.FC = () => {
               {product.category}
             </span>
           </div>
+          
+          {product.barcode && (
+            <div style={detailStyles.infoItem}>
+              <span style={detailStyles.infoLabel}>Código de Barras</span>
+              <span style={detailStyles.infoValueCode}>{product.barcode}</span>
+            </div>
+          )}
         </div>
         </div>
 

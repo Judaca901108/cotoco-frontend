@@ -4,9 +4,9 @@ import { formStyles, getInputStyles, getTextareaStyles, getSelectStyles } from '
 import colors from '../../shared/colors';
 
 type ProductFormProps = {
-  initialData?: { name: string; description: string; price: number | string; sku: string; category: string; imagePath?: string };
+  initialData?: { name: string; description: string; price: number | string; sku: string; category: string; imagePath?: string; barcode?: string };
   categories?: string[]; // Lista de categorías opcional
-  onSubmit: (data: { name: string; description: string; price: number; sku: string; category: string; image?: File }) => void;
+  onSubmit: (data: { name: string; description: string; price: number; sku: string; category: string; barcode?: string; image?: File }) => void;
   onCancel?: () => void;
   title?: string;
 };
@@ -24,6 +24,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     price: '',
     sku: '',
     category: '', // Campo para la categoría
+    barcode: '', // Código de barras
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -76,6 +77,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       const submissionData = {
         ...formData,
         price: parseFloat(String(formData.price)), // Convertimos price a número
+        barcode: formData.barcode || undefined, // Incluir barcode si existe
         image: selectedImage || undefined, // Incluir la imagen si se seleccionó una
       };
       console.log('Datos del formulario a enviar:', submissionData);
@@ -141,6 +143,29 @@ const ProductForm: React.FC<ProductFormProps> = ({
               </div>
             )}
           </div>
+        </div>
+
+        {/* Código de barras */}
+        <div style={formStyles.fieldContainer}>
+          <label htmlFor="barcode" style={formStyles.label}>
+            Código de Barras
+          </label>
+          <input
+            type="text"
+            id="barcode"
+            name="barcode"
+            value={formData.barcode || ''}
+            onChange={handleChange}
+            onFocus={() => handleFocus('barcode')}
+            onBlur={handleBlur}
+            style={getInputStyles(!!errors.barcode, focusedField === 'barcode')}
+            placeholder="Ej: 1234567890123"
+          />
+          {errors.barcode && (
+            <div style={formStyles.errorMessage}>
+              <span>{errors.barcode}</span>
+            </div>
+          )}
         </div>
 
         {/* Categoría y Precio en la misma fila */}

@@ -15,6 +15,7 @@ type Product = {
   sku: string;
   category: string;
   imagePath?: string; // URL de la imagen
+  barcode?: string; // Código de barras
 };
 
 const BASE_PATH = "http://localhost:3000"
@@ -45,7 +46,7 @@ const ProductsPage: React.FC = () => {
   }, []);
 
 
-  const handleCreateProduct = async (data: { name: string; description: string; price: number; sku: string; category: string; image?: File }) => {
+  const handleCreateProduct = async (data: { name: string; description: string; price: number; sku: string; category: string; barcode?: string; image?: File }) => {
     try {
       console.log('Datos recibidos:', data);
       
@@ -57,6 +58,9 @@ const ProductsPage: React.FC = () => {
         formData.append('price', data.price.toString());
         formData.append('sku', data.sku);
         formData.append('category', data.category);
+        if (data.barcode) {
+          formData.append('barcode', data.barcode);
+        }
         formData.append('image', data.image);
         
         console.log('Enviando con FormData (con imagen)');
@@ -81,13 +85,16 @@ const ProductsPage: React.FC = () => {
         setError('');
       } else {
         // Sin imagen, enviar como JSON (application/json)
-        const jsonData = {
+        const jsonData: any = {
           name: data.name,
           description: data.description,
           price: data.price,
           sku: data.sku,
           category: data.category,
         };
+        if (data.barcode) {
+          jsonData.barcode = data.barcode;
+        }
         
         console.log('Enviando como JSON (sin imagen):', jsonData);
         
