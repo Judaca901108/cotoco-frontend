@@ -10,6 +10,8 @@ export const formStyles = {
     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
     maxWidth: '600px',
     margin: '0 auto',
+    width: '100%',
+    // Responsive handled via CSS
   },
 
   // Título del formulario
@@ -167,8 +169,9 @@ export const formStyles = {
   // Grid para campos en fila
   fieldGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
     gap: '16px',
+    // Responsive handled via CSS
   },
 
   // Placeholder styles

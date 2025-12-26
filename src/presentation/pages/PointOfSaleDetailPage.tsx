@@ -5,7 +5,8 @@ import { detailStyles, getActionButtonStyle, getStatusBadgeStyle } from '../../s
 import { authenticatedFetch } from '../../infrastructure/authService';
 import colors from '../../shared/colors';
 
-const BASE_PATH = "http://localhost:3000";
+import { API_BASE_URL } from '../../config/apiConfig';
+const BASE_PATH = API_BASE_URL;
 
 type PointOfSale = {
   id: number;
@@ -262,7 +263,7 @@ const PointOfSaleDetailPage: React.FC = () => {
   const lowStockProducts = inventories.filter(inv => inv.stockQuantity < inv.minimumStock).length;
 
   return (
-    <div style={detailStyles.pageContainer}>
+    <div style={detailStyles.pageContainer} className="page-container-responsive">
       {/* Botón de regreso */}
       <button
         style={detailStyles.backButton}
@@ -279,8 +280,8 @@ const PointOfSaleDetailPage: React.FC = () => {
       </button>
 
       {/* Header con título y badge */}
-      <div style={detailStyles.detailHeader}>
-        <h1 style={detailStyles.detailTitle}>Point of Sale: {pointOfSale.name}</h1>
+      <div style={detailStyles.detailHeader} className="detail-header-responsive">
+        <h1 style={detailStyles.detailTitle} className="detail-title-responsive">Point of Sale: {pointOfSale.name}</h1>
         <span style={detailStyles.techBadge}>Tienda</span>
       </div>
 
@@ -291,7 +292,7 @@ const PointOfSaleDetailPage: React.FC = () => {
           INFO
         </h2>
         
-        <div style={detailStyles.infoGrid}>
+        <div style={detailStyles.infoGrid} className="info-grid-responsive">
           <div style={detailStyles.infoItem}>
             <span style={detailStyles.infoLabel}>ID</span>
             <span style={detailStyles.infoValueCode}>{pointOfSale.id}</span>
@@ -350,7 +351,7 @@ const PointOfSaleDetailPage: React.FC = () => {
       <div style={detailStyles.actionsSection}>
         <h2 style={detailStyles.actionsTitle}>ACCIONES</h2>
         
-        <div style={detailStyles.actionsGrid}>
+        <div style={detailStyles.actionsGrid} className="actions-grid-responsive">
           <button
             style={getActionButtonStyle('primary')}
             onClick={handleEdit}

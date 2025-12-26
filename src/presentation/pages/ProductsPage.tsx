@@ -6,6 +6,7 @@ import ProductForm from '../components/ProductForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import { tableStyles, getRowStyle, getStatusBadgeStyle } from '../../shared/tableStyles';
 import colors from '../../shared/colors';
+import { API_BASE_URL } from '../../config/apiConfig';
 
 type Product = {
   id: number;
@@ -18,7 +19,7 @@ type Product = {
   barcode?: string; // Código de barras
 };
 
-const BASE_PATH = "http://localhost:3000"
+const BASE_PATH = API_BASE_URL;
 const categories = ['Minifigura', 'Sets', 'Bases', 'Model Kits'];
 
 const ProductsPage: React.FC = () => {
@@ -144,10 +145,10 @@ const ProductsPage: React.FC = () => {
   }, [searchQuery]);
 
   return (
-    <div style={tableStyles.pageContainer}>
+    <div style={tableStyles.pageContainer} className="page-container-responsive">
       {/* Header de la página */}
-      <div style={tableStyles.pageHeader}>
-        <h1 style={tableStyles.pageTitle}>Productos</h1>
+      <div style={tableStyles.pageHeader} className="page-header-responsive">
+        <h1 style={tableStyles.pageTitle} className="page-title-responsive">Productos</h1>
         <button
           style={tableStyles.createButton}
           onClick={() => setIsCreating(true)}
@@ -166,17 +167,17 @@ const ProductsPage: React.FC = () => {
       </div>
 
       {/* Contenedor de la tabla */}
-      <div style={tableStyles.tableContainer}>
+      <div style={tableStyles.tableContainer} className="table-container-responsive">
         {/* Tabla */}
-        <table style={tableStyles.table}>
+        <table style={tableStyles.table} className="table-responsive">
           <thead style={tableStyles.tableHeader}>
             <tr>
-              <th style={tableStyles.tableHeaderCell}>Imagen</th>
-              <th style={tableStyles.tableHeaderCell}>Nombre</th>
-              <th style={tableStyles.tableHeaderCell}>Categoría</th>
-              <th style={tableStyles.tableHeaderCell}>Precio</th>
-              <th style={tableStyles.tableHeaderCell}>SKU</th>
-              <th style={tableStyles.tableHeaderCell}>Estado</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Imagen</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Nombre</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Categoría</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Precio</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">SKU</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -199,7 +200,7 @@ const ProductsPage: React.FC = () => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   {/* Columna de imagen */}
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ 
                       width: '50px', 
                       height: '50px', 
@@ -212,7 +213,7 @@ const ProductsPage: React.FC = () => {
                     }}>
                       {product.imagePath ? (
                         <img
-                          src={`http://localhost:3000/product/image/${product.imagePath}`}
+                          src={`${API_BASE_URL}/product/image/${product.imagePath}`}
                           alt={product.name}
                           style={{
                             width: '100%',
@@ -240,7 +241,7 @@ const ProductsPage: React.FC = () => {
                   </td>
                   
                   {/* Columna de nombre */}
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div 
                       style={{ 
                         display: 'flex', 
@@ -266,17 +267,17 @@ const ProductsPage: React.FC = () => {
                       </div>
                     </div>
                   </td>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <span style={getStatusBadgeStyle('active')}>
                       {product.category}
                     </span>
                   </td>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <span style={{ fontWeight: '600', color: colors.success }}>
                       ${product.price.toFixed(2)}
                     </span>
                   </td>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <code style={{
                       backgroundColor: colors.backgroundSecondary,
                       padding: '4px 8px',
@@ -287,7 +288,7 @@ const ProductsPage: React.FC = () => {
                       {product.sku}
                     </code>
                   </td>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <span style={getStatusBadgeStyle('active')}>
                       Activo
                     </span>
@@ -299,8 +300,8 @@ const ProductsPage: React.FC = () => {
         </table>
 
         {/* Footer con búsqueda y paginación */}
-        <div style={tableStyles.tableFooter}>
-          <div style={tableStyles.searchContainer}>
+        <div style={tableStyles.tableFooter} className="table-footer-responsive">
+          <div style={tableStyles.searchContainer} className="search-container-responsive">
             <FaSearch style={{ color: colors.textSecondary }} />
             <input
               type="text"
@@ -311,10 +312,11 @@ const ProductsPage: React.FC = () => {
                 ...tableStyles.searchInput,
                 ...(searchQuery ? tableStyles.searchInputFocus : {})
               }}
+              className="search-input-responsive"
             />
           </div>
           
-          <div style={tableStyles.paginationContainer}>
+          <div style={tableStyles.paginationContainer} className="pagination-container-responsive">
             <span style={tableStyles.paginationInfo}>
               Rows per page:
             </span>

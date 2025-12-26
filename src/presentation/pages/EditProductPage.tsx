@@ -5,7 +5,8 @@ import { formStyles, getInputStyles, getSelectStyles } from '../../shared/formSt
 import { authenticatedFetch } from '../../infrastructure/authService';
 import colors from '../../shared/colors';
 
-const BASE_PATH = 'http://localhost:3000';
+import { API_BASE_URL } from '../../config/apiConfig';
+const BASE_PATH = API_BASE_URL;
 
 type Product = {
   id: number;
@@ -153,7 +154,7 @@ const EditProductPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={formStyles.formContainer}>
+      <div style={formStyles.formContainer} className="form-container-responsive">
         <div style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '2rem', marginBottom: '16px' }}>⏳</div>
           <div style={{ color: colors.textSecondary }}>Cargando producto...</div>
@@ -164,7 +165,7 @@ const EditProductPage: React.FC = () => {
 
   if (error && !product) {
     return (
-      <div style={formStyles.formContainer}>
+      <div style={formStyles.formContainer} className="form-container-responsive">
         <button
           onClick={() => navigate('/dashboard/products')}
           style={{
@@ -203,7 +204,7 @@ const EditProductPage: React.FC = () => {
   }
 
   return (
-    <div style={formStyles.formContainer}>
+    <div style={formStyles.formContainer} className="form-container-responsive">
       {/* Botón de regreso */}
       <button
         onClick={() => navigate(`/dashboard/products/${product?.id}`)}
@@ -498,6 +499,7 @@ const EditProductPage: React.FC = () => {
           </button>
         </div>
       </form>
+
     </div>
   );
 };

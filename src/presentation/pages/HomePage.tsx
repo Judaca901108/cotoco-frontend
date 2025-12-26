@@ -21,7 +21,7 @@ const HomePage: React.FC = () => {
         display: 'flex',
         justifyContent: 'flex-start',
         alignItems: 'center',
-      }}>
+      }} className="home-header-responsive">
         <div style={{
           backgroundColor: colors.primaryColor,
           color: colors.white,
@@ -46,7 +46,7 @@ const HomePage: React.FC = () => {
         maxWidth: '1200px',
         margin: '0 auto',
         width: '100%',
-      }}>
+      }} className="home-main-responsive">
         {/* Hero Section */}
         <div style={{
           textAlign: 'center',
@@ -76,7 +76,7 @@ const HomePage: React.FC = () => {
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
-          }}>
+          }} className="home-h1-responsive">
             Página en Construcción
           </h1>
 
@@ -86,7 +86,7 @@ const HomePage: React.FC = () => {
             marginBottom: '40px',
             maxWidth: '600px',
             lineHeight: '1.6',
-          }}>
+          }} className="home-p-responsive">
             Estamos trabajando duro para ofrecerte la mejor experiencia de gestión empresarial. 
             Pronto tendrás acceso a todas las funcionalidades.
           </p>
@@ -195,7 +195,7 @@ const HomePage: React.FC = () => {
         padding: '30px 40px',
         borderTop: `1px solid ${colors.borderColor}`,
         textAlign: 'center',
-      }}>
+      }} className="home-footer-responsive">
         <p style={{
           fontSize: '0.9rem',
           color: colors.textMuted,

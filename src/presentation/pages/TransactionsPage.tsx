@@ -7,7 +7,8 @@ import { useAuth } from '../../application/contexts/AuthContext';
 import { transactionStyles, getTransactionTypeStyle, getQuantityStyle, getTransactionIcon, getTransactionTypeLabel } from '../../shared/transactionStyles';
 import colors from '../../shared/colors';
 
-const BASE_PATH = 'http://localhost:3000';
+import { API_BASE_URL } from '../../config/apiConfig';
+const BASE_PATH = API_BASE_URL;
 
 type Transaction = {
   id: number;
@@ -290,7 +291,7 @@ const TransactionsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={transactionStyles.pageContainer}>
+      <div style={transactionStyles.pageContainer} className="page-container-responsive">
         <div style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '2rem', marginBottom: '16px' }}>⏳</div>
           <div style={{ color: colors.textSecondary }}>Cargando transacciones...</div>
@@ -300,7 +301,7 @@ const TransactionsPage: React.FC = () => {
   }
 
   return (
-    <div style={transactionStyles.pageContainer}>
+    <div style={transactionStyles.pageContainer} className="page-container-responsive">
       {/* Header */}
       <div style={transactionStyles.pageHeader}>
         <h1 style={transactionStyles.pageTitle}>
@@ -316,9 +317,9 @@ const TransactionsPage: React.FC = () => {
       </div>
 
       {/* Barra de herramientas */}
-      <div style={transactionStyles.toolbar}>
+      <div style={transactionStyles.toolbar} className="toolbar-responsive">
         {/* Filtros y búsqueda */}
-        <div style={transactionStyles.filtersContainer}>
+        <div style={transactionStyles.filtersContainer} className="filters-container-responsive">
           {/* Búsqueda */}
           <div style={{ position: 'relative', minWidth: '300px' }}>
             <FaSearch style={{
@@ -491,6 +492,7 @@ const TransactionsPage: React.FC = () => {
             <div
               key={transaction.id}
               style={transactionStyles.transactionCard}
+              className="transaction-card-grid-responsive"
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';

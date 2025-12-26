@@ -7,6 +7,7 @@ export const detailStyles = {
     backgroundColor: colors.backgroundPrimary,
     color: colors.textPrimary,
     minHeight: '100vh',
+    // Responsive handled via CSS
   },
 
   // Botón de regreso
@@ -76,8 +77,9 @@ export const detailStyles = {
   // Grid de información clave-valor
   infoGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
     gap: '16px',
+    // Responsive handled via CSS
   },
 
   infoItem: {
@@ -132,6 +134,7 @@ export const detailStyles = {
     display: 'flex',
     gap: '16px',
     flexWrap: 'wrap' as const,
+    // Responsive handled via CSS
   },
 
   actionButton: {

@@ -5,7 +5,8 @@ import { formStyles, getInputStyles, getSelectStyles } from '../../shared/formSt
 import { authenticatedFetch } from '../../infrastructure/authService';
 import colors from '../../shared/colors';
 
-const BASE_PATH = 'http://localhost:3000';
+import { API_BASE_URL } from '../../config/apiConfig';
+const BASE_PATH = API_BASE_URL;
 
 type PointOfSale = {
   id: number;
@@ -127,7 +128,7 @@ const EditPointOfSalePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={formStyles.formContainer}>
+      <div style={formStyles.formContainer} className="form-container-responsive">
         <div style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '2rem', marginBottom: '16px' }}>⏳</div>
           <div style={{ color: colors.textSecondary }}>Cargando punto de venta...</div>
@@ -138,7 +139,7 @@ const EditPointOfSalePage: React.FC = () => {
 
   if (error && !pointOfSale) {
     return (
-      <div style={formStyles.formContainer}>
+      <div style={formStyles.formContainer} className="form-container-responsive">
         <button
           onClick={() => navigate('/dashboard/point-of-sales')}
           style={{
@@ -177,7 +178,7 @@ const EditPointOfSalePage: React.FC = () => {
   }
 
   return (
-    <div style={formStyles.formContainer}>
+    <div style={formStyles.formContainer} className="form-container-responsive">
       {/* Botón de regreso */}
       <button
         onClick={() => navigate(`/dashboard/point-of-sales/${pointOfSale?.id}`)}

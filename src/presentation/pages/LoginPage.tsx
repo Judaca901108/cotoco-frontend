@@ -47,7 +47,16 @@ const LoginPage: React.FC = () => {
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Error en login:', error);
-      setErrors({ general: error.message || 'Error al iniciar sesión' });
+      
+      // Mostrar mensaje de error más descriptivo
+      let errorMessage = error.message || 'Error al iniciar sesión';
+      
+      // Si es un error de red, mostrar información más útil
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError') || errorMessage.includes('No se puede conectar')) {
+        errorMessage = 'No se puede conectar al servidor. Verifica que el backend esté corriendo y accesible desde la red.';
+      }
+      
+      setErrors({ general: errorMessage });
     }
   };
 
@@ -64,7 +73,7 @@ const LoginPage: React.FC = () => {
       backgroundColor: colors.backgroundPrimary,
       color: colors.textPrimary,
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-    }}>
+    }} className="login-page-responsive">
       {/* Sección Principal del Login */}
       <div style={{
         flex: 1,
@@ -73,7 +82,7 @@ const LoginPage: React.FC = () => {
         justifyContent: 'space-between',
         padding: '40px',
         position: 'relative',
-      }}>
+      }} className="login-main-responsive">
         {/* Header con Logo */}
         <div>
           {/* Logo */}
@@ -102,14 +111,14 @@ const LoginPage: React.FC = () => {
           margin: '0 auto',
         }}>
           {/* Títulos */}
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '40px' }} className="login-title-responsive">
             <h1 style={{
               fontSize: '2.5rem',
               fontWeight: '700',
               color: colors.textPrimary,
               margin: '0 0 12px 0',
               letterSpacing: '-0.5px',
-            }}>
+            }} className="login-h1-responsive">
               Sign in to your account
             </h1>
             <p style={{
@@ -117,7 +126,7 @@ const LoginPage: React.FC = () => {
               color: colors.textSecondary,
               margin: 0,
               fontWeight: '400',
-            }}>
+            }} className="login-p-responsive">
               Welcome, ready to manage your business?
             </p>
           </div>
@@ -342,7 +351,7 @@ const LoginPage: React.FC = () => {
         justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden',
-      }}>
+      }} className="login-sidebar-responsive">
         <div style={{
           textAlign: 'center',
           color: colors.textMuted,

@@ -5,7 +5,8 @@ import { detailStyles, getActionButtonStyle } from '../../shared/detailStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import colors from '../../shared/colors';
 
-const BASE_PATH = "http://localhost:3000";
+import { API_BASE_URL, getImageUrl } from '../../config/apiConfig';
+const BASE_PATH = API_BASE_URL;
 
 type Product = {
   id: number;
@@ -38,7 +39,7 @@ const ProductDetailPage: React.FC = () => {
       .then((data) => {
         console.log('Datos del producto recibidos:', data);
         console.log('Imagen del producto:', data.imagePath);
-        console.log('URL completa de la imagen:', data.imagePath ? `http://localhost:3000/product/image/${data.imagePath}` : 'No hay imagen');
+        console.log('URL completa de la imagen:', data.imagePath ? getImageUrl(data.imagePath) : 'No hay imagen');
         
         setProduct({
           ...data,
@@ -117,10 +118,10 @@ const ProductDetailPage: React.FC = () => {
   // Debug: verificar el estado del producto antes del render
   console.log('Producto en render:', product);
   console.log('¿Tiene imagen?', product?.imagePath);
-  console.log('URL de imagen en render:', product?.imagePath ? `http://localhost:3000/product/image/${product.imagePath}` : 'No hay imagen');
+  console.log('URL de imagen en render:', product?.imagePath ? getImageUrl(product.imagePath) : 'No hay imagen');
 
   return (
-    <div style={detailStyles.pageContainer}>
+    <div style={detailStyles.pageContainer} className="page-container-responsive">
       {/* Botón de regreso */}
       <button
         style={detailStyles.backButton}
@@ -137,8 +138,8 @@ const ProductDetailPage: React.FC = () => {
       </button>
 
       {/* Header con título y badge */}
-      <div style={detailStyles.detailHeader}>
-        <h1 style={detailStyles.detailTitle}>Product: {product.name}</h1>
+      <div style={detailStyles.detailHeader} className="detail-header-responsive">
+        <h1 style={detailStyles.detailTitle} className="detail-title-responsive">Product: {product.name}</h1>
         <span style={detailStyles.techBadge}>Producto</span>
       </div>
 
@@ -188,7 +189,7 @@ const ProductDetailPage: React.FC = () => {
                 }} />
                 
                 <img
-                  src={`http://localhost:3000/product/image/${product.imagePath}`}
+                  src={getImageUrl(product.imagePath)}
                   alt={product.name}
                   style={{
                     width: '100%',
@@ -288,7 +289,7 @@ const ProductDetailPage: React.FC = () => {
           )}
 
           {/* Columna de información */}
-          <div style={detailStyles.infoGrid}>
+          <div style={detailStyles.infoGrid} className="info-grid-responsive">
           <div style={detailStyles.infoItem}>
             <span style={detailStyles.infoLabel}>ID</span>
             <span style={detailStyles.infoValueCode}>{product.id}</span>
@@ -352,7 +353,7 @@ const ProductDetailPage: React.FC = () => {
       <div style={detailStyles.actionsSection}>
         <h2 style={detailStyles.actionsTitle}>ACCIONES</h2>
         
-        <div style={detailStyles.actionsGrid}>
+        <div style={detailStyles.actionsGrid} className="actions-grid-responsive">
           <button
             style={getActionButtonStyle('primary')}
             onClick={handleEdit}

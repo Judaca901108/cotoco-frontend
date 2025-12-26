@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FaSave, FaTimes, FaImage, FaUpload } from 'react-icons/fa';
 import { formStyles, getInputStyles, getTextareaStyles, getSelectStyles } from '../../shared/formStyles';
 import colors from '../../shared/colors';
+import { getImageUrl } from '../../config/apiConfig';
 
 type ProductFormProps = {
   initialData?: { name: string; description: string; price: number | string; sku: string; category: string; imagePath?: string; barcode?: string };
@@ -30,7 +31,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.imagePath ? `http://localhost:3000/product/image/${initialData.imagePath}` : null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.imagePath ? getImageUrl(initialData.imagePath) : null);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -394,6 +395,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           </button>
         </div>
       </form>
+
     </div>
   );
 };

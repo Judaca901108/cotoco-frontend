@@ -5,7 +5,8 @@ import { detailStyles, getActionButtonStyle } from '../../shared/detailStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import colors from '../../shared/colors';
 
-const BASE_PATH = "http://localhost:3000";
+import { API_BASE_URL } from '../../config/apiConfig';
+const BASE_PATH = API_BASE_URL;
 
 type User = {
   id: number;
@@ -83,7 +84,7 @@ const UserDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={detailStyles.pageContainer}>
+      <div style={detailStyles.pageContainer} className="page-container-responsive">
         <div style={{ textAlign: 'center', padding: '40px', color: colors.textPrimary }}>Cargando usuario...</div>
       </div>
     );
@@ -91,7 +92,7 @@ const UserDetailPage: React.FC = () => {
 
   if (error || !user) {
     return (
-      <div style={detailStyles.pageContainer}>
+      <div style={detailStyles.pageContainer} className="page-container-responsive">
         <button
           style={detailStyles.backButton}
           onClick={() => navigate('/dashboard/users')}
@@ -118,7 +119,7 @@ const UserDetailPage: React.FC = () => {
   }
 
   return (
-    <div style={detailStyles.pageContainer}>
+    <div style={detailStyles.pageContainer} className="page-container-responsive">
       {/* Botón de regreso */}
       <button
         style={detailStyles.backButton}
@@ -135,7 +136,7 @@ const UserDetailPage: React.FC = () => {
       </button>
 
       {/* Header con título y badge */}
-      <div style={detailStyles.detailHeader}>
+      <div style={detailStyles.detailHeader} className="detail-header-responsive">
         <h1 style={detailStyles.detailTitle}>{user.name}</h1>
         <span style={{
           backgroundColor: colors.primaryColor,

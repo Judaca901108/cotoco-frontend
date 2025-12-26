@@ -6,6 +6,7 @@ import PointOfSaleForm from '../components/PointOfSaleForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
 import colors from '../../shared/colors';
+import { API_BASE_URL } from '../../config/apiConfig';
 
 type PointOfSale = {
   id: number;
@@ -15,7 +16,7 @@ type PointOfSale = {
   type: string;
 };
 
-const BASE_PATH = "http://localhost:3000"
+const BASE_PATH = API_BASE_URL;
 const type = ['Bodega', 'Puntos Fijos', 'Ferias'];
 
 const PointOfSalePage: React.FC = () => {
@@ -77,12 +78,13 @@ const PointOfSalePage: React.FC = () => {
   }, [searchQuery]);
 
   return (
-    <div style={tableStyles.pageContainer}>
+    <div style={tableStyles.pageContainer} className="page-container-responsive">
       {/* Header de la página */}
-      <div style={tableStyles.pageHeader}>
-        <h1 style={tableStyles.pageTitle}>Puntos de Venta</h1>
+      <div style={tableStyles.pageHeader} className="page-header-responsive">
+        <h1 style={tableStyles.pageTitle} className="page-title-responsive">Puntos de Venta</h1>
         <button
           style={tableStyles.createButton}
+          className="create-button-responsive"
           onClick={() => setIsCreating(true)}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-1px)';
@@ -99,16 +101,16 @@ const PointOfSalePage: React.FC = () => {
       </div>
 
       {/* Contenedor de la tabla */}
-      <div style={tableStyles.tableContainer}>
+      <div style={tableStyles.tableContainer} className="table-container-responsive table-responsive">
         {/* Tabla */}
-        <table style={tableStyles.table}>
+        <table style={tableStyles.table} className="table-responsive">
           <thead style={tableStyles.tableHeader}>
             <tr>
-              <th style={tableStyles.tableHeaderCell}>Nombre</th>
-              <th style={tableStyles.tableHeaderCell}>Dirección</th>
-              <th style={tableStyles.tableHeaderCell}>Ubicación</th>
-              <th style={tableStyles.tableHeaderCell}>Tipo</th>
-              <th style={tableStyles.tableHeaderCell}>Estado</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Nombre</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Dirección</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Ubicación</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Tipo</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -130,7 +132,7 @@ const PointOfSalePage: React.FC = () => {
                   onMouseEnter={() => setHoveredRow(pointOfSale.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                 >
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div 
                       style={{ 
                         display: 'flex', 
@@ -159,7 +161,7 @@ const PointOfSalePage: React.FC = () => {
                       </div>
                     </div>
                   </td>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <FaMapMarkerAlt style={{ color: colors.textSecondary, fontSize: '0.8rem' }} />
                       <span style={{ fontSize: '0.9rem' }}>
@@ -167,17 +169,17 @@ const PointOfSalePage: React.FC = () => {
                       </span>
                     </div>
                   </td>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <span style={{ color: colors.textSecondary }}>
                       {pointOfSale.location}
                     </span>
                   </td>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <span style={getStatusBadgeStyle('active')}>
                       {pointOfSale.type}
                     </span>
                   </td>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <span style={getStatusBadgeStyle('active')}>
                       Activo
                     </span>
@@ -190,7 +192,7 @@ const PointOfSalePage: React.FC = () => {
 
         {/* Footer con búsqueda y paginación */}
         <div style={tableStyles.tableFooter}>
-          <div style={tableStyles.searchContainer}>
+          <div style={tableStyles.searchContainer} className="search-container-responsive">
             <FaSearch style={{ color: colors.textSecondary }} />
             <input
               type="text"
@@ -201,10 +203,11 @@ const PointOfSalePage: React.FC = () => {
                 ...tableStyles.searchInput,
                 ...(searchQuery ? tableStyles.searchInputFocus : {})
               }}
+              className="search-input-responsive"
             />
           </div>
           
-          <div style={tableStyles.paginationContainer}>
+          <div style={tableStyles.paginationContainer} className="table-footer-responsive pagination-container-responsive">
             <span style={tableStyles.paginationInfo}>
               Rows per page:
             </span>

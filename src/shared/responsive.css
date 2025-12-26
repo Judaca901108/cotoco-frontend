@@ -1,0 +1,376 @@
+/* Responsive Design Styles */
+
+/* Mobile First Approach */
+@media (max-width: 768px) {
+  /* Page Container - Applied via inline styles with className */
+  .page-container-responsive,
+  [class*="page-container"] {
+    padding: 16px !important;
+  }
+
+  /* Page Header */
+  .page-header-responsive {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+
+  .page-title-responsive {
+    font-size: 1.5rem !important;
+  }
+
+  .create-button-responsive {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Tables */
+  .table-container-responsive {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-responsive {
+    min-width: 600px;
+  }
+
+  .table-header-cell-responsive {
+    padding: 12px 8px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .table-cell-responsive {
+    padding: 12px 8px !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Table Footer */
+  .table-footer-responsive {
+    flex-direction: column !important;
+    gap: 16px !important;
+    align-items: stretch !important;
+  }
+
+  .search-container-responsive {
+    width: 100% !important;
+  }
+
+  .search-input-responsive {
+    width: 100% !important;
+  }
+
+  .pagination-container-responsive {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px !important;
+  }
+
+  /* Forms */
+  .form-container-responsive,
+  [class*="form-container"] {
+    padding: 20px !important;
+    margin: 16px !important;
+    max-width: 100% !important;
+  }
+
+  .form-title-responsive {
+    font-size: 1.25rem !important;
+  }
+
+  .field-grid-responsive,
+  [class*="field-grid"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .button-container-responsive,
+  [class*="button-container"] {
+    flex-direction: column !important;
+  }
+
+  .button-container-responsive button,
+  [class*="button-container"] button {
+    width: 100% !important;
+  }
+
+  /* Detail Pages */
+  .detail-header-responsive,
+  [class*="detail-header"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .detail-title-responsive {
+    font-size: 1.75rem !important;
+  }
+
+  .info-grid-responsive,
+  [class*="info-grid"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .actions-grid-responsive,
+  [class*="actions-grid"] {
+    flex-direction: column !important;
+  }
+
+  .actions-grid-responsive button,
+  [class*="actions-grid"] button {
+    width: 100% !important;
+  }
+
+  /* Related Data Tables */
+  .related-table-container-responsive {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .related-table-responsive {
+    min-width: 500px;
+  }
+
+  /* Barcode Scanner */
+  .barcode-scanner-responsive {
+    padding: 10px !important;
+  }
+
+  .barcode-scanner-container-responsive {
+    max-width: 100% !important;
+    padding: 16px !important;
+  }
+
+  /* Product Detail Image Grid */
+  [style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Login Page */
+  .login-page-responsive {
+    flex-direction: column !important;
+  }
+
+  .login-sidebar-responsive {
+    display: none !important;
+  }
+
+  .login-main-responsive {
+    padding: 20px !important;
+  }
+
+  .login-h1-responsive {
+    font-size: 1.75rem !important;
+  }
+
+  .login-p-responsive {
+    font-size: 0.95rem !important;
+  }
+
+  .login-title-responsive {
+    margin-bottom: 24px !important;
+  }
+
+  /* Home Page */
+  .home-header-responsive {
+    padding: 16px 20px !important;
+  }
+
+  .home-main-responsive {
+    padding: 40px 20px !important;
+  }
+
+  .home-h1-responsive {
+    font-size: 2rem !important;
+  }
+
+  .home-p-responsive {
+    font-size: 1rem !important;
+  }
+
+  .home-footer-responsive {
+    padding: 20px !important;
+  }
+
+  /* Dashboard Home */
+  .dashboard-home-responsive {
+    padding: 0 16px !important;
+  }
+
+  .dashboard-h1-responsive {
+    font-size: 1.75rem !important;
+  }
+
+  .dashboard-greeting-responsive {
+    margin-bottom: 24px !important;
+  }
+
+  .dashboard-cards-grid-responsive {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Dashboard Main */
+  .dashboard-main-responsive {
+    padding: 16px !important;
+  }
+
+  /* Transactions Page */
+  .toolbar-responsive {
+    flex-direction: column !important;
+    gap: 16px !important;
+    align-items: stretch !important;
+  }
+
+  .filters-container-responsive {
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  .filters-container-responsive > div {
+    width: 100% !important;
+  }
+
+  .filters-container-responsive input,
+  .filters-container-responsive select {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  .transaction-card-grid-responsive {
+    padding: 16px !important;
+  }
+
+  .transaction-card-grid-responsive > div {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  /* Header Responsive */
+  .header-responsive {
+    padding: 0 16px !important;
+    height: 60px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .mobile-menu-toggle {
+    display: block !important;
+  }
+
+  .desktop-nav {
+    display: none !important;
+  }
+
+  .user-info-desktop {
+    display: none !important;
+  }
+
+  .user-info-mobile {
+    display: flex !important;
+  }
+
+  .header-user-section {
+    gap: 8px !important;
+  }
+
+  /* Mobile Navigation */
+  .mobile-nav {
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .mobile-nav-open {
+    transform: translateX(0) !important;
+  }
+
+  /* Footer Responsive */
+  .footer-responsive {
+    padding: 16px !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .page-container-responsive {
+    padding: 20px !important;
+  }
+
+  .form-container-responsive {
+    padding: 24px !important;
+  }
+
+  .field-grid-responsive {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .info-grid-responsive {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .header-responsive {
+    padding: 0 24px !important;
+  }
+
+  .desktop-nav {
+    gap: 20px !important;
+  }
+
+  .desktop-nav button {
+    font-size: 0.85rem !important;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .page-title-responsive {
+    font-size: 1.25rem !important;
+  }
+
+  .detail-title-responsive {
+    font-size: 1.5rem !important;
+  }
+
+  .form-title-responsive {
+    font-size: 1.1rem !important;
+  }
+
+  .table-header-cell-responsive {
+    padding: 8px 4px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .table-cell-responsive {
+    padding: 8px 4px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .create-button-responsive {
+    padding: 10px 16px !important;
+    font-size: 0.9rem !important;
+  }
+}
+
+/* Utility Classes */
+.hide-on-mobile {
+  display: none !important;
+}
+
+@media (min-width: 769px) {
+  .hide-on-mobile {
+    display: block !important;
+  }
+
+  .hide-on-desktop {
+    display: none !important;
+  }
+}
+
+.show-on-mobile {
+  display: block !important;
+}
+
+@media (min-width: 769px) {
+  .show-on-mobile {
+    display: none !important;
+  }
+}
+

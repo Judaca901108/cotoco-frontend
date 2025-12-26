@@ -7,7 +7,8 @@ import ModalComponent from '../components/ModalComponent';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
 
-const BASE_PATH = 'http://localhost:3000';
+import { API_BASE_URL } from '../../config/apiConfig';
+const BASE_PATH = API_BASE_URL;
 
 type Inventory = {
   id: number;
@@ -197,7 +198,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
   const currentPointOfSale = pointsOfSale.find(pos => pos.id === parseInt(id!));
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }} className="page-container-responsive">
       {/* Botón de regreso */}
       <button
         onClick={() => navigate(`/dashboard/point-of-sales/${id}`)}
@@ -345,15 +346,15 @@ const PointOfSaleInventoryPage: React.FC = () => {
       )}
 
       {/* Tabla de inventario */}
-      <div style={tableStyles.tableContainer}>
-        <table style={tableStyles.table}>
+      <div style={tableStyles.tableContainer} className="table-container-responsive">
+        <table style={tableStyles.table} className="table-responsive">
           <thead style={tableStyles.tableHeader}>
             <tr>
-              <th style={tableStyles.tableHeaderCell}>Producto</th>
-              <th style={tableStyles.tableHeaderCell}>Stock Actual</th>
-              <th style={tableStyles.tableHeaderCell}>Stock Mínimo</th>
-              <th style={tableStyles.tableHeaderCell}>En Exhibición</th>
-              <th style={tableStyles.tableHeaderCell}>Estado</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Producto</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Stock Actual</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Stock Mínimo</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">En Exhibición</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Estado</th>
           </tr>
         </thead>
         <tbody>
@@ -392,7 +393,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
             ) : (
               filteredInventories.map((inventory, index) => (
                 <tr key={inventory.id} style={getRowStyle(index, false)}>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div style={getTechIconStyle('gradle')}>
                         <FaBox />
@@ -407,7 +408,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                       </div>
                     </div>
                   </td>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <FaWarehouse style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
                       <span style={{ fontWeight: '600', color: colors.textPrimary }}>
@@ -415,12 +416,12 @@ const PointOfSaleInventoryPage: React.FC = () => {
                       </span>
                     </div>
                   </td>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <span style={{ color: colors.textSecondary }}>
                 {inventory.minimumStock}
                     </span>
                   </td>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     {editingDisplay === inventory.id ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <input
@@ -541,7 +542,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                       </div>
                     )}
                   </td>
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <span style={getStatusBadgeStyle(
                       inventory.stockQuantity <= inventory.minimumStock ? 'inactive' : 'active'
                     )}>

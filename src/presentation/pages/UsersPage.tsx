@@ -8,7 +8,8 @@ import { useAuth } from '../../application/contexts/AuthContext';
 import { tableStyles, getRowStyle, getStatusBadgeStyle } from '../../shared/tableStyles';
 import colors from '../../shared/colors';
 
-const BASE_PATH = "http://localhost:3000";
+import { API_BASE_URL } from '../../config/apiConfig';
+const BASE_PATH = API_BASE_URL;
 
 type User = {
   id: number;
@@ -109,12 +110,13 @@ const UsersPage: React.FC = () => {
   }, [searchQuery]);
 
   return (
-    <div style={tableStyles.pageContainer}>
+    <div style={tableStyles.pageContainer} className="page-container-responsive">
       {/* Header de la página */}
-      <div style={tableStyles.pageHeader}>
-        <h1 style={tableStyles.pageTitle}>Gestión de Usuarios</h1>
+      <div style={tableStyles.pageHeader} className="page-header-responsive">
+        <h1 style={tableStyles.pageTitle} className="page-title-responsive">Gestión de Usuarios</h1>
         <button
           style={tableStyles.createButton}
+          className="create-button-responsive"
           onClick={() => setIsCreating(true)}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-1px)';
@@ -131,7 +133,7 @@ const UsersPage: React.FC = () => {
       </div>
 
       {/* Barra de búsqueda */}
-      <div style={tableStyles.searchContainer}>
+      <div style={tableStyles.searchContainer} className="search-container-responsive">
         <FaSearch style={{ color: colors.textSecondary, fontSize: '1rem' }} />
         <input
           type="text"
@@ -139,6 +141,7 @@ const UsersPage: React.FC = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           style={tableStyles.searchInput}
+          className="search-input-responsive"
         />
       </div>
 
@@ -158,16 +161,16 @@ const UsersPage: React.FC = () => {
       )}
 
       {/* Contenedor de la tabla */}
-      <div style={tableStyles.tableContainer}>
+      <div style={tableStyles.tableContainer} className="table-container-responsive table-responsive">
         {/* Tabla */}
-        <table style={tableStyles.table}>
+        <table style={tableStyles.table} className="table-responsive">
           <thead style={tableStyles.tableHeader}>
             <tr>
-              <th style={tableStyles.tableHeaderCell}>Usuario</th>
-              <th style={tableStyles.tableHeaderCell}>Nombre</th>
-              <th style={tableStyles.tableHeaderCell}>Celular</th>
-              <th style={tableStyles.tableHeaderCell}>Documento</th>
-              <th style={tableStyles.tableHeaderCell}>Estado</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Usuario</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Nombre</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Celular</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Documento</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -193,7 +196,7 @@ const UsersPage: React.FC = () => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   {/* Columna de usuario */}
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div 
                       style={{ 
                         display: 'flex', 
@@ -235,7 +238,7 @@ const UsersPage: React.FC = () => {
                   </td>
                   
                   {/* Columna de nombre */}
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <FaUser style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
                       <span style={{ fontWeight: '500', color: colors.textPrimary }}>
@@ -245,7 +248,7 @@ const UsersPage: React.FC = () => {
                   </td>
                   
                   {/* Columna de celular */}
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <FaPhone style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
                       <span style={{ color: colors.textPrimary }}>
@@ -255,7 +258,7 @@ const UsersPage: React.FC = () => {
                   </td>
                   
                   {/* Columna de documento */}
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <FaIdCard style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
                       <span style={{ color: colors.textPrimary }}>
@@ -265,7 +268,7 @@ const UsersPage: React.FC = () => {
                   </td>
                   
                   {/* Columna de estado */}
-                  <td style={tableStyles.tableCell}>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <span style={getStatusBadgeStyle(user.isActive ? 'active' : 'inactive')}>
                       {user.isActive ? 'Activo' : 'Inactivo'}
                     </span>
@@ -279,7 +282,7 @@ const UsersPage: React.FC = () => {
 
       {/* Paginación */}
       {totalPages > 1 && (
-        <div style={tableStyles.paginationContainer}>
+        <div style={tableStyles.paginationContainer} className="table-footer-responsive pagination-container-responsive">
           <button
             onClick={() => paginate(currentPage - 1)}
             disabled={currentPage === 1}

@@ -52,7 +52,7 @@ const DashboardPage: React.FC = () => {
         padding: '30px',
         backgroundColor: colors.backgroundPrimary,
         overflow: 'auto',
-      }}>
+      }} className="dashboard-main-responsive">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/products" element={isAdmin ? <ProductsPage /> : <Navigate to="/dashboard/transactions" replace />} />

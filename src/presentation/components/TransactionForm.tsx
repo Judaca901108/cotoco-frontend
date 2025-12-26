@@ -4,6 +4,7 @@ import { formStyles, getInputStyles, getSelectStyles, getTextareaStyles } from '
 import { authenticatedFetch } from '../../infrastructure/authService';
 import { useAuth } from '../../application/contexts/AuthContext';
 import colors from '../../shared/colors';
+import { API_BASE_URL } from '../../config/apiConfig';
 
 type Inventory = {
   id: number;
@@ -62,7 +63,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   useEffect(() => {
     const loadPointsOfSale = async () => {
       try {
-        const response = await authenticatedFetch('http://localhost:3000/point-of-sale');
+        const response = await authenticatedFetch(`${API_BASE_URL}/point-of-sale`);
         if (response.ok) {
           const data = await response.json();
           setPointsOfSale(data);

@@ -1,5 +1,7 @@
 // Servicio de autenticación para manejar JWT
-const BASE_PATH = "http://localhost:3000";
+import { API_BASE_URL } from '../config/apiConfig';
+
+const BASE_PATH = API_BASE_URL;
 
 export interface User {
   id: number;
@@ -33,18 +35,31 @@ class AuthService {
    * Realizar login y obtener token JWT
    */
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
+    const loginUrl = `${BASE_PATH}/auth/login`;
+    
     try {
-      const response = await fetch(`${BASE_PATH}/auth/login`, {
+      console.log('🔐 Intentando login en:', loginUrl);
+      
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(credentials),
       });
+      
+      console.log('📡 Respuesta del servidor:', response.status, response.statusText);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+        console.error('❌ Error en login:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: loginUrl,
+          error: errorData,
+          message: 'Verifica que el backend esté corriendo y accesible en: ' + BASE_PATH
+        });
+        throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}. URL intentada: ${loginUrl}`);
       }
 
       const data: LoginResponse = await response.json();
@@ -54,8 +69,8 @@ class AuthService {
       this.setUser(data.user);
       
       return data;
-    } catch (error) {
-      console.error('Error en login:', error);
+    } catch (error: any) {
+      console.error('❌ Error completo en login:', error);
       throw error;
     }
   }

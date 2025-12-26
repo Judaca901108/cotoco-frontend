@@ -4,7 +4,8 @@ import { FaWarehouse, FaBox, FaChevronRight } from 'react-icons/fa';
 import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
 import colors from '../../shared/colors';
 
-const BASE_PATH = 'http://localhost:3000';
+import { API_BASE_URL } from '../../config/apiConfig';
+const BASE_PATH = API_BASE_URL;
 
 type PointOfSaleSummary = {
   id: number;
@@ -47,9 +48,9 @@ const InventoryPage: React.FC = () => {
   }, [searchQuery]);
 
   return (
-    <div style={tableStyles.pageContainer}>
+    <div style={tableStyles.pageContainer} className="page-container-responsive">
       {/* Header de la página */}
-      <div style={tableStyles.pageHeader}>
+      <div style={tableStyles.pageHeader} className="page-header-responsive">
         <h1 style={tableStyles.pageTitle}>Inventario por Puntos de Venta</h1>
       </div>
 

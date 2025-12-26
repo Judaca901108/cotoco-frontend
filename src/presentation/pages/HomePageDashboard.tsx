@@ -113,9 +113,9 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }} className="dashboard-home-responsive">
       {/* Saludo personalizado */}
-      <div style={{ marginBottom: '40px' }}>
+      <div style={{ marginBottom: '40px' }} className="dashboard-greeting-responsive">
         <h1 style={{
           fontSize: '2.5rem',
           fontWeight: '700',
@@ -125,7 +125,7 @@ const HomePage: React.FC = () => {
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
-        }}>
+        }} className="dashboard-h1-responsive">
           {isAdmin ? '¿Listo Usuario Admin?' : `¡Hola ${user?.name || 'Usuario'}!`}
         </h1>
         <p style={{
@@ -156,7 +156,7 @@ const HomePage: React.FC = () => {
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
           gap: '20px',
-        }}>
+        }} className="dashboard-cards-grid-responsive">
           {frequentLinks.map((link) => (
             <div
               key={link.id}

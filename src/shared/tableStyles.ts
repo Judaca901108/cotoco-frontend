@@ -15,6 +15,8 @@ export const tableStyles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '30px',
+    flexWrap: 'wrap' as const,
+    gap: '16px',
   },
 
   pageTitle: {
@@ -46,6 +48,8 @@ export const tableStyles = {
     borderRadius: '12px',
     overflow: 'hidden',
     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    overflowX: 'auto' as const,
+    WebkitOverflowScrolling: 'touch' as const,
   },
 
   // Tabla principal
@@ -53,6 +57,7 @@ export const tableStyles = {
     width: '100%',
     borderCollapse: 'collapse' as const,
     fontSize: '0.9rem',
+    minWidth: '600px', // Para permitir scroll horizontal en móviles
   },
 
   // Cabeceras de la tabla
@@ -70,6 +75,7 @@ export const tableStyles = {
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
     borderBottom: `1px solid ${colors.borderColor}`,
+    whiteSpace: 'nowrap' as const,
   },
 
   // Filas de la tabla
@@ -91,6 +97,7 @@ export const tableStyles = {
     color: colors.textPrimary,
     borderBottom: `1px solid ${colors.borderColor}`,
     verticalAlign: 'middle' as const,
+    fontSize: '0.9rem',
   },
 
   // Etiquetas de estado
@@ -197,6 +204,8 @@ export const tableStyles = {
     padding: '20px',
     backgroundColor: colors.backgroundSecondary,
     borderTop: `1px solid ${colors.borderColor}`,
+    flexWrap: 'wrap' as const,
+    gap: '16px',
   },
 
   searchContainer: {
@@ -225,6 +234,7 @@ export const tableStyles = {
     display: 'flex',
     alignItems: 'center',
     gap: '16px',
+    flexWrap: 'wrap' as const,
   },
 
   paginationInfo: {

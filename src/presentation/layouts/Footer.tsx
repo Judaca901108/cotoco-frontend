@@ -3,7 +3,7 @@ import colors from '../../shared/colors';
 
 const Footer: React.FC = () => {
   return (
-    <footer style={{
+    <footer className="footer-responsive" style={{
       backgroundColor: colors.backgroundSecondary,
       padding: '20px',
       textAlign: 'center',

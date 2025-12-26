@@ -4,7 +4,8 @@ import { useAuth } from '../../application/contexts/AuthContext';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import colors from '../../shared/colors';
 
-const BASE_PATH = "http://localhost:3000";
+import { API_BASE_URL } from '../../config/apiConfig';
+const BASE_PATH = API_BASE_URL;
 
 const SettingsPage: React.FC = () => {
   const { user } = useAuth();
