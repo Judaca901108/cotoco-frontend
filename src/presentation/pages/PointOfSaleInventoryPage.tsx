@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse, FaEye } from 'react-icons/fa';
+import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse, FaEye, FaEdit } from 'react-icons/fa';
 import colors from '../../shared/colors';
 import InventoryForm from '../components/InventoryForm';
 import ModalComponent from '../components/ModalComponent';
@@ -48,6 +48,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
   const [error, setError] = useState('');
   const [editingDisplay, setEditingDisplay] = useState<number | null>(null);
   const [displayValue, setDisplayValue] = useState('');
+  const [editingMinimumStock, setEditingMinimumStock] = useState<number | null>(null);
+  const [minimumStockValue, setMinimumStockValue] = useState('');
   const navigate = useNavigate();
   
   // Función para cargar inventarios
@@ -190,6 +192,47 @@ const PointOfSaleInventoryPage: React.FC = () => {
   const cancelEditingDisplay = () => {
     setEditingDisplay(null);
     setDisplayValue('');
+    setError(''); // Limpiar errores previos
+  };
+
+  const handleUpdateMinimumStock = async (inventoryId: number, newMinimumStockValue: number) => {
+    try {
+      // Validar que el valor sea válido
+      if (isNaN(newMinimumStockValue) || newMinimumStockValue < 0) {
+        setError('El stock mínimo debe ser un número válido mayor o igual a 0');
+        return;
+      }
+
+      const res = await authenticatedFetch(`${BASE_PATH}/inventory/${inventoryId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ minimumStock: newMinimumStockValue }),
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Error al actualizar: ${res.status} - ${errorText}`);
+      }
+      
+      // Recargar la lista de inventarios
+      await loadInventories();
+      setEditingMinimumStock(null);
+      setMinimumStockValue('');
+      setError(''); // Limpiar errores previos
+    } catch (err: any) {
+      console.error('Error en handleUpdateMinimumStock:', err);
+      setError(`Error: ${err.message}`);
+    }
+  };
+
+  const startEditingMinimumStock = (inventory: Inventory) => {
+    setEditingMinimumStock(inventory.id);
+    setMinimumStockValue(inventory.minimumStock.toString());
+    setError(''); // Limpiar errores previos
+  };
+
+  const cancelEditingMinimumStock = () => {
+    setEditingMinimumStock(null);
+    setMinimumStockValue('');
     setError(''); // Limpiar errores previos
   };
 
@@ -417,9 +460,124 @@ const PointOfSaleInventoryPage: React.FC = () => {
                     </div>
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
-                    <span style={{ color: colors.textSecondary }}>
-                {inventory.minimumStock}
-                    </span>
+                    {editingMinimumStock === inventory.id ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="number"
+                          value={minimumStockValue}
+                          onChange={(e) => setMinimumStockValue(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleUpdateMinimumStock(inventory.id, parseInt(minimumStockValue));
+                            }
+                          }}
+                          style={{
+                            width: '80px',
+                            padding: '6px 8px',
+                            border: `2px solid ${colors.primaryColor}`,
+                            borderRadius: '6px',
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
+                            textAlign: 'center',
+                            backgroundColor: colors.backgroundTertiary,
+                          }}
+                          min="0"
+                          placeholder="0"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => handleUpdateMinimumStock(inventory.id, parseInt(minimumStockValue))}
+                          style={{
+                            backgroundColor: '#10b981',
+                            color: colors.white,
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#059669';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#10b981';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                          }}
+                        >
+                          ✓ Guardar
+                        </button>
+                        <button
+                          onClick={cancelEditingMinimumStock}
+                          style={{
+                            backgroundColor: '#ef4444',
+                            color: colors.white,
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#dc2626';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ef4444';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                          }}
+                        >
+                          ✕ Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ color: colors.textPrimary, fontWeight: '600', fontSize: '1rem' }}>
+                          {inventory.minimumStock}
+                        </span>
+                        <button
+                          onClick={() => startEditingMinimumStock(inventory)}
+                          style={{
+                            backgroundColor: colors.primaryColor,
+                            color: colors.white,
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#7c3aed';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = colors.primaryColor;
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                          }}
+                        >
+                          <FaEdit />
+                          Editar
+                        </button>
+                      </div>
+                    )}
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
                     {editingDisplay === inventory.id ? (
