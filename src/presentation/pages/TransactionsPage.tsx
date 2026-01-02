@@ -116,42 +116,22 @@ const TransactionsPage: React.FC = () => {
     }
   };
 
-  // Cargar transacciones
-  useEffect(() => {
-    const loadTransactions = async () => {
-      try {
-        setLoading(true);
-        
-        // Construir endpoint base
-        let endpoint = isAdmin 
-          ? `${BASE_PATH}/inventory-transaction`  // Admin ve todas las transacciones
-          : `${BASE_PATH}/inventory-transaction?userId=${user?.id}`;  // Usuario ve solo sus transacciones
-        
-        // Agregar filtros de fecha si están seleccionados
-        const dateRange = getDateRange(dateFilter);
-        if (dateRange && dateRange.startDate && dateRange.endDate) {
-          const separator = endpoint.includes('?') ? '&' : '?';
-          endpoint += `${separator}startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
-        }
-        
-        const response = await authenticatedFetch(endpoint);
-        if (!response.ok) throw new Error('Error al cargar transacciones');
-        const data = await response.json();
+  // Función para enriquecer transacciones
+  const enrichTransactions = async (transactionsData: any[]) => {
+    // Enriquecer transacciones con nombres de productos, puntos de venta y usuarios
+    const [productsResponse, pointsOfSaleResponse, inventoriesResponse, usersResponse] = await Promise.all([
+      authenticatedFetch(`${BASE_PATH}/product`),
+      authenticatedFetch(`${BASE_PATH}/point-of-sale`),
+      authenticatedFetch(`${BASE_PATH}/inventory`),
+      authenticatedFetch(`${BASE_PATH}/users`)
+    ]);
 
-        // Enriquecer transacciones con nombres de productos, puntos de venta y usuarios
-        const [productsResponse, pointsOfSaleResponse, inventoriesResponse, usersResponse] = await Promise.all([
-          authenticatedFetch(`${BASE_PATH}/product`),
-          authenticatedFetch(`${BASE_PATH}/point-of-sale`),
-          authenticatedFetch(`${BASE_PATH}/inventory`),
-          authenticatedFetch(`${BASE_PATH}/users`)
-        ]);
+    const productsData = await productsResponse.json();
+    const pointsOfSaleData = await pointsOfSaleResponse.json();
+    const inventoriesData = await inventoriesResponse.json();
+    const usersData = await usersResponse.json();
 
-        const productsData = await productsResponse.json();
-        const pointsOfSaleData = await pointsOfSaleResponse.json();
-        const inventoriesData = await inventoriesResponse.json();
-        const usersData = await usersResponse.json();
-
-        const enrichedTransactions = data.map((transaction: any) => {
+    const enrichedTransactions = transactionsData.map((transaction: any) => {
           // Para transferencias, buscar puntos de venta origen y destino
           const sourcePointOfSale = pointsOfSaleData.find((pos: any) => pos.id === transaction.sourcePointOfSaleId);
           const destinationPointOfSale = pointsOfSaleData.find((pos: any) => pos.id === transaction.destinationPointOfSaleId);
@@ -226,6 +206,32 @@ const TransactionsPage: React.FC = () => {
           };
         });
 
+    return enrichedTransactions;
+  };
+
+  // Cargar transacciones
+  const loadTransactions = async () => {
+    try {
+      setLoading(true);
+      
+      // Construir endpoint base
+      let endpoint = isAdmin 
+        ? `${BASE_PATH}/inventory-transaction`  // Admin ve todas las transacciones
+        : `${BASE_PATH}/inventory-transaction?userId=${user?.id}`;  // Usuario ve solo sus transacciones
+      
+      // Agregar filtros de fecha si están seleccionados
+      const dateRange = getDateRange(dateFilter);
+      if (dateRange && dateRange.startDate && dateRange.endDate) {
+        const separator = endpoint.includes('?') ? '&' : '?';
+        endpoint += `${separator}startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
+      }
+      
+      const response = await authenticatedFetch(endpoint);
+      if (!response.ok) throw new Error('Error al cargar transacciones');
+      const data = await response.json();
+
+      // Enriquecer transacciones
+      const enrichedTransactions = await enrichTransactions(data);
         setTransactions(enrichedTransactions);
       } catch (err: any) {
         setError(err.message);
@@ -234,6 +240,8 @@ const TransactionsPage: React.FC = () => {
       }
     };
 
+  // Cargar transacciones cuando cambian los filtros
+  useEffect(() => {
     loadTransactions();
   }, [isAdmin, user?.id, dateFilter, customStartDate, customEndDate]);
 
@@ -320,105 +328,16 @@ const TransactionsPage: React.FC = () => {
       }
       
       const responseData = await response.json();
-      console.log('✅ Respuesta del servidor:', responseData);
+      console.log('✅ Transacción creada exitosamente');
       
-      // El endpoint bulk devuelve un array de transacciones
-      const newTransactions = Array.isArray(responseData) ? responseData : [responseData];
-      
-      // Enriquecer las nuevas transacciones con nombres de productos, puntos de venta y usuarios
-      const [productsResponse, pointsOfSaleResponse, inventoriesResponse, usersResponse] = await Promise.all([
-        authenticatedFetch(`${BASE_PATH}/product`),
-        authenticatedFetch(`${BASE_PATH}/point-of-sale`),
-        authenticatedFetch(`${BASE_PATH}/inventory`),
-        authenticatedFetch(`${BASE_PATH}/users`)
-      ]);
-
-      const productsData = await productsResponse.json();
-      const pointsOfSaleData = await pointsOfSaleResponse.json();
-      const inventoriesData = await inventoriesResponse.json();
-      const usersData = await usersResponse.json();
-
-      // Enriquecer cada transacción usando la misma lógica que en loadTransactions
-      const enrichedTransactions = newTransactions.map((newTransaction: any) => {
-        // Para transferencias, buscar puntos de venta origen y destino
-        const sourcePointOfSale = pointsOfSaleData.find((pos: any) => pos.id === newTransaction.sourcePointOfSaleId);
-        const destinationPointOfSale = pointsOfSaleData.find((pos: any) => pos.id === newTransaction.destinationPointOfSaleId);
-
-        // Buscar el usuario que realizó la transacción
-        const user = usersData.find((u: any) => u.id === newTransaction.userId);
-
-        // Si es una transacción agrupada, enriquecer los items
-        let enrichedItems: any[] = [];
-        let totalValue = 0;
-        
-        if (newTransaction.isGrouped && newTransaction.items && Array.isArray(newTransaction.items)) {
-          enrichedItems = newTransaction.items.map((item: any) => {
-            const inventory = item.inventory || inventoriesData.find((inv: any) => inv.id === item.inventoryId);
-            const product = inventory ? productsData.find((p: any) => p.id === inventory.productId) : null;
-            const pointOfSale = inventory ? pointsOfSaleData.find((pos: any) => pos.id === inventory.pointOfSaleId) : null;
-            
-            const price = product?.price || 0;
-            const subtotal = price * item.quantity;
-            
-            // Solo calcular total para ventas
-            if (newTransaction.transactionType === 'sale') {
-              totalValue += subtotal;
-            }
-            
-            return {
-              inventoryId: item.inventoryId,
-              quantity: item.quantity,
-              productName: product?.name || `Producto ${inventory?.productId || 'N/A'}`,
-              productSku: product?.sku || 'N/A',
-              barcode: product?.barcode,
-              pointOfSaleName: pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || 'N/A'}`,
-              price: price,
-              subtotal: subtotal,
-            };
-          });
-        }
-
-        // Para transacciones individuales, enriquecer como antes
-        let productName = '';
-        let productSku = 'N/A';
-        let pointOfSaleName = '';
-        
-        if (!newTransaction.isGrouped && newTransaction.inventoryId) {
-          const inventory = newTransaction.inventory || inventoriesData.find((inv: any) => inv.id === newTransaction.inventoryId);
-          const product = inventory ? productsData.find((p: any) => p.id === inventory.productId) : null;
-          const pointOfSale = inventory ? pointsOfSaleData.find((pos: any) => pos.id === inventory.pointOfSaleId) : null;
-          
-          productName = product?.name || `Producto ${inventory?.productId || newTransaction.productId || 'N/A'}`;
-          productSku = product?.sku || 'N/A';
-          pointOfSaleName = pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || newTransaction.pointOfSaleId || 'N/A'}`;
-        }
-
-        return {
-          ...newTransaction,
-          productName,
-          productSku,
-          pointOfSaleName,
-          sourcePointOfSaleName: sourcePointOfSale?.name || `Punto de Venta ${newTransaction.sourcePointOfSaleId || 'N/A'}`,
-          destinationPointOfSaleName: destinationPointOfSale?.name || `Punto de Venta ${newTransaction.destinationPointOfSaleId || 'N/A'}`,
-          // Información del usuario
-          userName: user?.name || newTransaction.user?.name || 'Usuario no encontrado',
-          userUsername: user?.username || newTransaction.user?.username || 'N/A',
-          // Items enriquecidos para transacciones agrupadas
-          enrichedItems: enrichedItems.length > 0 ? enrichedItems : undefined,
-          // Valor total (solo para ventas)
-          totalValue: newTransaction.transactionType === 'sale' ? totalValue : undefined,
-          // Asegurar que remarks siempre tenga un valor
-          remarks: newTransaction.remarks || '',
-          // Usar date si está disponible, sino createdAt
-          createdAt: newTransaction.date || newTransaction.createdAt,
-        };
-      });
-
-      setTransactions(prev => [...enrichedTransactions, ...prev]);
+      // Recargar todas las transacciones para obtener la información completa
+      await loadTransactions();
       
       // Recargar inventarios para obtener los datos actualizados después de la transacción
       await loadInventories();
+      
       setIsCreating(false);
+      setError(''); // Limpiar cualquier error previo
     } catch (err: any) {
       console.error('❌ Error completo al crear transacción:', err);
       setError(err.message || 'Error al crear la transacción. Verifica que el backend esté corriendo y accesible.');
@@ -776,29 +695,29 @@ const TransactionsPage: React.FC = () => {
                 ) : (
                   <>
                     {/* Información del producto (transacción individual) */}
-                    <div style={transactionStyles.productInfo}>
-                      <FaBox style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
-                      <div>
-                        <div style={transactionStyles.productName}>
-                          {transaction.productName || 'Producto no encontrado'}
-                        </div>
-                        <div style={transactionStyles.productDetails}>
-                          SKU: {transaction.productSku || 'N/A'} • 
-                          <FaStore style={{ margin: '0 4px 0 8px', fontSize: '0.8rem' }} />
-                          {transaction.pointOfSaleName || 'Punto de venta no encontrado'}
-                        </div>
-                      </div>
+                <div style={transactionStyles.productInfo}>
+                  <FaBox style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
+                  <div>
+                    <div style={transactionStyles.productName}>
+                      {transaction.productName || 'Producto no encontrado'}
                     </div>
+                    <div style={transactionStyles.productDetails}>
+                      SKU: {transaction.productSku || 'N/A'} • 
+                      <FaStore style={{ margin: '0 4px 0 8px', fontSize: '0.8rem' }} />
+                      {transaction.pointOfSaleName || 'Punto de venta no encontrado'}
+                    </div>
+                  </div>
+                </div>
 
-                    {/* Cantidad */}
-                    <div style={transactionStyles.quantityInfo}>
-                      <span style={{ color: colors.textSecondary, fontSize: '0.9rem' }}>
-                        Cantidad:
-                      </span>
+                {/* Cantidad */}
+                <div style={transactionStyles.quantityInfo}>
+                  <span style={{ color: colors.textSecondary, fontSize: '0.9rem' }}>
+                    Cantidad:
+                  </span>
                       <span style={getQuantityStyle(transaction.quantity || 0, transaction.transactionType)}>
                         {transaction.quantity || 0}
-                      </span>
-                    </div>
+                  </span>
+                </div>
                   </>
                 )}
 
