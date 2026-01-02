@@ -10,15 +10,35 @@ import colors from '../../shared/colors';
 import { API_BASE_URL } from '../../config/apiConfig';
 const BASE_PATH = API_BASE_URL;
 
-type Transaction = {
+type TransactionItem = {
   id: number;
   inventoryId: number;
-  transactionType: 'sale' | 'restock' | 'adjustment' | 'transfer';
   quantity: number;
+  inventory?: {
+    id: number;
+    productId: number;
+    pointOfSaleId: number;
+    stockQuantity: number;
+    minimumStock: number;
+    onDisplay: number;
+  };
+};
+
+type Transaction = {
+  id: number;
+  inventoryId?: number | null;
+  transactionType: 'sale' | 'restock' | 'adjustment' | 'transfer';
+  quantity?: number;
   remarks: string;
   createdAt: string;
-  sourcePointOfSaleId?: number;
-  destinationPointOfSaleId?: number;
+  date?: string;
+  sourcePointOfSaleId?: number | null;
+  destinationPointOfSaleId?: number | null;
+  transactionGroupId?: string | null;
+  isGrouped?: boolean;
+  items?: TransactionItem[];
+  totalQuantity?: number;
+  itemsCount?: number;
   // Información relacionada
   productName?: string;
   productSku?: string;
@@ -29,6 +49,18 @@ type Transaction = {
   userId?: number;
   userName?: string;
   userUsername?: string;
+  // Datos enriquecidos de items
+  enrichedItems?: Array<{
+    inventoryId: number;
+    quantity: number;
+    productName: string;
+    productSku: string;
+    barcode?: string;
+    pointOfSaleName: string;
+    price?: number;
+    subtotal?: number;
+  }>;
+  totalValue?: number;
 };
 
 type Inventory = {
@@ -120,15 +152,6 @@ const TransactionsPage: React.FC = () => {
         const usersData = await usersResponse.json();
 
         const enrichedTransactions = data.map((transaction: any) => {
-          // Buscar el inventario relacionado con la transacción
-          const inventory = inventoriesData.find((inv: any) => inv.id === transaction.inventoryId);
-          
-          // Buscar el producto usando el productId del inventario
-          const product = inventory ? productsData.find((p: any) => p.id === inventory.productId) : null;
-          
-          // Buscar el punto de venta usando el pointOfSaleId del inventario
-          const pointOfSale = inventory ? pointsOfSaleData.find((pos: any) => pos.id === inventory.pointOfSaleId) : null;
-          
           // Para transferencias, buscar puntos de venta origen y destino
           const sourcePointOfSale = pointsOfSaleData.find((pos: any) => pos.id === transaction.sourcePointOfSaleId);
           const destinationPointOfSale = pointsOfSaleData.find((pos: any) => pos.id === transaction.destinationPointOfSaleId);
@@ -136,18 +159,70 @@ const TransactionsPage: React.FC = () => {
           // Buscar el usuario que realizó la transacción
           const user = usersData.find((u: any) => u.id === transaction.userId);
 
+          // Si es una transacción agrupada, enriquecer los items
+          let enrichedItems: any[] = [];
+          let totalValue = 0;
+          
+          if (transaction.isGrouped && transaction.items && Array.isArray(transaction.items)) {
+            enrichedItems = transaction.items.map((item: any) => {
+              const inventory = item.inventory || inventoriesData.find((inv: any) => inv.id === item.inventoryId);
+              const product = inventory ? productsData.find((p: any) => p.id === inventory.productId) : null;
+              const pointOfSale = inventory ? pointsOfSaleData.find((pos: any) => pos.id === inventory.pointOfSaleId) : null;
+              
+              const price = product?.price || 0;
+              const subtotal = price * item.quantity;
+              
+              // Solo calcular total para ventas
+              if (transaction.transactionType === 'sale') {
+                totalValue += subtotal;
+              }
+              
+              return {
+                inventoryId: item.inventoryId,
+                quantity: item.quantity,
+                productName: product?.name || `Producto ${inventory?.productId || 'N/A'}`,
+                productSku: product?.sku || 'N/A',
+                barcode: product?.barcode,
+                pointOfSaleName: pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || 'N/A'}`,
+                price: price,
+                subtotal: subtotal,
+              };
+            });
+          }
+
+          // Para transacciones individuales, enriquecer como antes
+          let productName = '';
+          let productSku = 'N/A';
+          let pointOfSaleName = '';
+          
+          if (!transaction.isGrouped && transaction.inventoryId) {
+            const inventory = transaction.inventory || inventoriesData.find((inv: any) => inv.id === transaction.inventoryId);
+            const product = inventory ? productsData.find((p: any) => p.id === inventory.productId) : null;
+            const pointOfSale = inventory ? pointsOfSaleData.find((pos: any) => pos.id === inventory.pointOfSaleId) : null;
+            
+            productName = product?.name || `Producto ${inventory?.productId || transaction.productId || 'N/A'}`;
+            productSku = product?.sku || 'N/A';
+            pointOfSaleName = pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || transaction.pointOfSaleId || 'N/A'}`;
+          }
+
           return {
             ...transaction,
-            productId: inventory?.productId || transaction.productId,
-            pointOfSaleId: inventory?.pointOfSaleId || transaction.pointOfSaleId,
-            productName: product?.name || `Producto ${inventory?.productId || transaction.productId || 'N/A'}`,
-            productSku: product?.sku || 'N/A',
-            pointOfSaleName: pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || transaction.pointOfSaleId || 'N/A'}`,
+            productName,
+            productSku,
+            pointOfSaleName,
             sourcePointOfSaleName: sourcePointOfSale?.name || `Punto de Venta ${transaction.sourcePointOfSaleId || 'N/A'}`,
             destinationPointOfSaleName: destinationPointOfSale?.name || `Punto de Venta ${transaction.destinationPointOfSaleId || 'N/A'}`,
             // Información del usuario
-            userName: user?.name || 'Usuario no encontrado',
-            userUsername: user?.username || 'N/A',
+            userName: user?.name || transaction.user?.name || 'Usuario no encontrado',
+            userUsername: user?.username || transaction.user?.username || 'N/A',
+            // Items enriquecidos para transacciones agrupadas
+            enrichedItems: enrichedItems.length > 0 ? enrichedItems : undefined,
+            // Valor total (solo para ventas)
+            totalValue: transaction.transactionType === 'sale' ? totalValue : undefined,
+            // Asegurar que remarks siempre tenga un valor
+            remarks: transaction.remarks || '',
+            // Usar date si está disponible, sino createdAt
+            createdAt: transaction.date || transaction.createdAt,
           };
         });
 
@@ -202,11 +277,27 @@ const TransactionsPage: React.FC = () => {
 
   // Filtrar transacciones
   const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch = 
-      transaction.remarks.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      transaction.productName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      transaction.pointOfSaleName?.toLowerCase().includes(searchQuery.toLowerCase());
+    const searchLower = searchQuery.toLowerCase();
     
+    // Buscar en remarks
+    const matchesRemarks = (transaction.remarks || '').toLowerCase().includes(searchLower);
+    
+    // Buscar en producto principal (transacciones individuales)
+    const matchesProduct = transaction.productName?.toLowerCase().includes(searchLower) ||
+                          transaction.productSku?.toLowerCase().includes(searchLower);
+    
+    // Buscar en punto de venta
+    const matchesPointOfSale = transaction.pointOfSaleName?.toLowerCase().includes(searchLower);
+    
+    // Buscar en items de transacciones agrupadas
+    const matchesItems = transaction.enrichedItems?.some((item: any) =>
+      item.productName?.toLowerCase().includes(searchLower) ||
+      item.productSku?.toLowerCase().includes(searchLower) ||
+      item.barcode?.toLowerCase().includes(searchLower) ||
+      item.pointOfSaleName?.toLowerCase().includes(searchLower)
+    ) || false;
+    
+    const matchesSearch = matchesRemarks || matchesProduct || matchesPointOfSale || matchesItems;
     const matchesType = typeFilter === 'all' || transaction.transactionType === typeFilter;
     
     return matchesSearch && matchesType;
@@ -215,17 +306,26 @@ const TransactionsPage: React.FC = () => {
   // Crear nueva transacción
   const handleCreateTransaction = async (data: any) => {
     try {
-      const response = await authenticatedFetch(`${BASE_PATH}/inventory-transaction`, {
+      console.log('📤 Enviando transacción bulk:', data);
+      const response = await authenticatedFetch(`${BASE_PATH}/inventory-transaction/bulk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error('Error al crear transacción');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error en respuesta:', response.status, errorText);
+        throw new Error(`Error al crear transacción: ${response.status} - ${errorText}`);
+      }
       
-      const newTransaction = await response.json();
+      const responseData = await response.json();
+      console.log('✅ Respuesta del servidor:', responseData);
       
-      // Enriquecer la nueva transacción con nombres de productos, puntos de venta y usuarios
+      // El endpoint bulk devuelve un array de transacciones
+      const newTransactions = Array.isArray(responseData) ? responseData : [responseData];
+      
+      // Enriquecer las nuevas transacciones con nombres de productos, puntos de venta y usuarios
       const [productsResponse, pointsOfSaleResponse, inventoriesResponse, usersResponse] = await Promise.all([
         authenticatedFetch(`${BASE_PATH}/product`),
         authenticatedFetch(`${BASE_PATH}/point-of-sale`),
@@ -238,43 +338,90 @@ const TransactionsPage: React.FC = () => {
       const inventoriesData = await inventoriesResponse.json();
       const usersData = await usersResponse.json();
 
-      // Buscar el inventario relacionado con la nueva transacción
-      const inventory = inventoriesData.find((inv: any) => inv.id === newTransaction.inventoryId);
-      
-      // Buscar el producto usando el productId del inventario
-      const product = inventory ? productsData.find((p: any) => p.id === inventory.productId) : null;
-      
-      // Buscar el punto de venta usando el pointOfSaleId del inventario
-      const pointOfSale = inventory ? pointsOfSaleData.find((pos: any) => pos.id === inventory.pointOfSaleId) : null;
-      
-      // Para transferencias, buscar puntos de venta origen y destino
-      const sourcePointOfSale = pointsOfSaleData.find((pos: any) => pos.id === newTransaction.sourcePointOfSaleId);
-      const destinationPointOfSale = pointsOfSaleData.find((pos: any) => pos.id === newTransaction.destinationPointOfSaleId);
+      // Enriquecer cada transacción usando la misma lógica que en loadTransactions
+      const enrichedTransactions = newTransactions.map((newTransaction: any) => {
+        // Para transferencias, buscar puntos de venta origen y destino
+        const sourcePointOfSale = pointsOfSaleData.find((pos: any) => pos.id === newTransaction.sourcePointOfSaleId);
+        const destinationPointOfSale = pointsOfSaleData.find((pos: any) => pos.id === newTransaction.destinationPointOfSaleId);
 
-      // Buscar el usuario que realizó la transacción
-      const user = usersData.find((u: any) => u.id === newTransaction.userId);
+        // Buscar el usuario que realizó la transacción
+        const user = usersData.find((u: any) => u.id === newTransaction.userId);
 
-      const enrichedNewTransaction = {
-        ...newTransaction,
-        productId: inventory?.productId || newTransaction.productId,
-        pointOfSaleId: inventory?.pointOfSaleId || newTransaction.pointOfSaleId,
-        productName: product?.name || `Producto ${inventory?.productId || newTransaction.productId || 'N/A'}`,
-        productSku: product?.sku || 'N/A',
-        pointOfSaleName: pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || newTransaction.pointOfSaleId || 'N/A'}`,
-        sourcePointOfSaleName: sourcePointOfSale?.name || `Punto de Venta ${newTransaction.sourcePointOfSaleId || 'N/A'}`,
-        destinationPointOfSaleName: destinationPointOfSale?.name || `Punto de Venta ${newTransaction.destinationPointOfSaleId || 'N/A'}`,
-        // Información del usuario
-        userName: user?.name || 'Usuario no encontrado',
-        userUsername: user?.username || 'N/A',
-      };
+        // Si es una transacción agrupada, enriquecer los items
+        let enrichedItems: any[] = [];
+        let totalValue = 0;
+        
+        if (newTransaction.isGrouped && newTransaction.items && Array.isArray(newTransaction.items)) {
+          enrichedItems = newTransaction.items.map((item: any) => {
+            const inventory = item.inventory || inventoriesData.find((inv: any) => inv.id === item.inventoryId);
+            const product = inventory ? productsData.find((p: any) => p.id === inventory.productId) : null;
+            const pointOfSale = inventory ? pointsOfSaleData.find((pos: any) => pos.id === inventory.pointOfSaleId) : null;
+            
+            const price = product?.price || 0;
+            const subtotal = price * item.quantity;
+            
+            // Solo calcular total para ventas
+            if (newTransaction.transactionType === 'sale') {
+              totalValue += subtotal;
+            }
+            
+            return {
+              inventoryId: item.inventoryId,
+              quantity: item.quantity,
+              productName: product?.name || `Producto ${inventory?.productId || 'N/A'}`,
+              productSku: product?.sku || 'N/A',
+              barcode: product?.barcode,
+              pointOfSaleName: pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || 'N/A'}`,
+              price: price,
+              subtotal: subtotal,
+            };
+          });
+        }
 
-      setTransactions(prev => [enrichedNewTransaction, ...prev]);
+        // Para transacciones individuales, enriquecer como antes
+        let productName = '';
+        let productSku = 'N/A';
+        let pointOfSaleName = '';
+        
+        if (!newTransaction.isGrouped && newTransaction.inventoryId) {
+          const inventory = newTransaction.inventory || inventoriesData.find((inv: any) => inv.id === newTransaction.inventoryId);
+          const product = inventory ? productsData.find((p: any) => p.id === inventory.productId) : null;
+          const pointOfSale = inventory ? pointsOfSaleData.find((pos: any) => pos.id === inventory.pointOfSaleId) : null;
+          
+          productName = product?.name || `Producto ${inventory?.productId || newTransaction.productId || 'N/A'}`;
+          productSku = product?.sku || 'N/A';
+          pointOfSaleName = pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || newTransaction.pointOfSaleId || 'N/A'}`;
+        }
+
+        return {
+          ...newTransaction,
+          productName,
+          productSku,
+          pointOfSaleName,
+          sourcePointOfSaleName: sourcePointOfSale?.name || `Punto de Venta ${newTransaction.sourcePointOfSaleId || 'N/A'}`,
+          destinationPointOfSaleName: destinationPointOfSale?.name || `Punto de Venta ${newTransaction.destinationPointOfSaleId || 'N/A'}`,
+          // Información del usuario
+          userName: user?.name || newTransaction.user?.name || 'Usuario no encontrado',
+          userUsername: user?.username || newTransaction.user?.username || 'N/A',
+          // Items enriquecidos para transacciones agrupadas
+          enrichedItems: enrichedItems.length > 0 ? enrichedItems : undefined,
+          // Valor total (solo para ventas)
+          totalValue: newTransaction.transactionType === 'sale' ? totalValue : undefined,
+          // Asegurar que remarks siempre tenga un valor
+          remarks: newTransaction.remarks || '',
+          // Usar date si está disponible, sino createdAt
+          createdAt: newTransaction.date || newTransaction.createdAt,
+        };
+      });
+
+      setTransactions(prev => [...enrichedTransactions, ...prev]);
       
       // Recargar inventarios para obtener los datos actualizados después de la transacción
       await loadInventories();
       setIsCreating(false);
     } catch (err: any) {
-      setError(err.message);
+      console.error('❌ Error completo al crear transacción:', err);
+      setError(err.message || 'Error al crear la transacción. Verifica que el backend esté corriendo y accesible.');
     }
   };
 
@@ -513,36 +660,147 @@ const TransactionsPage: React.FC = () => {
                   </span>
                 </div>
                 <div style={transactionStyles.transactionDate}>
-                  {formatDate(transaction.createdAt)}
+                  {formatDate(transaction.date || transaction.createdAt)}
                 </div>
               </div>
 
               {/* Contenido de la tarjeta */}
               <div style={transactionStyles.cardContent}>
-                {/* Información del producto */}
-                <div style={transactionStyles.productInfo}>
-                  <FaBox style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
-                  <div>
-                    <div style={transactionStyles.productName}>
-                      {transaction.productName || 'Producto no encontrado'}
+                {/* Si es transacción agrupada, mostrar items */}
+                {transaction.isGrouped && transaction.enrichedItems && transaction.enrichedItems.length > 0 ? (
+                  <>
+                    <div style={{ marginBottom: '12px' }}>
+                      <div style={{ 
+                        fontSize: '0.85rem', 
+                        color: colors.textSecondary, 
+                        marginBottom: '8px',
+                        fontWeight: '600'
+                      }}>
+                        Items ({transaction.itemsCount || transaction.enrichedItems.length}):
+                      </div>
+                      <div style={{
+                        border: `1px solid ${colors.borderColor}`,
+                        borderRadius: '6px',
+                        overflow: 'hidden',
+                      }}>
+                        {transaction.enrichedItems.map((item, index) => (
+                          <div
+                            key={item.inventoryId}
+                            style={{
+                              padding: '10px 12px',
+                              borderBottom: index < transaction.enrichedItems!.length - 1 ? `1px solid ${colors.borderColor}` : 'none',
+                              backgroundColor: index % 2 === 0 ? colors.cardBackground : colors.backgroundTertiary,
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontWeight: '600', color: colors.textPrimary, marginBottom: '2px' }}>
+                                  {item.productName}
+                                </div>
+                                <div style={{ fontSize: '0.8rem', color: colors.textSecondary }}>
+                                  SKU: {item.productSku}
+                                  {item.barcode && ` • Código: ${item.barcode}`}
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: colors.textSecondary, marginTop: '2px' }}>
+                                  <FaStore style={{ marginRight: '4px', fontSize: '0.7rem' }} />
+                                  {item.pointOfSaleName}
+                                </div>
+                              </div>
+                              <div style={{ 
+                                marginLeft: '12px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'flex-end',
+                                gap: '4px'
+                              }}>
+                                <div style={{ 
+                                  fontWeight: '600',
+                                  color: colors.primaryColor,
+                                  fontSize: '0.9rem'
+                                }}>
+                                  {item.quantity}
+                                </div>
+                                {transaction.transactionType === 'sale' && item.price && item.price > 0 && (
+                                  <div style={{ 
+                                    fontSize: '0.75rem',
+                                    color: colors.textSecondary
+                                  }}>
+                                    ${(item.subtotal || 0).toLocaleString('es-CO')}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div style={transactionStyles.productDetails}>
-                      SKU: {transaction.productSku || 'N/A'} • 
-                      <FaStore style={{ margin: '0 4px 0 8px', fontSize: '0.8rem' }} />
-                      {transaction.pointOfSaleName || 'Punto de venta no encontrado'}
+                    {/* Total de cantidad */}
+                    <div style={transactionStyles.quantityInfo}>
+                      <span style={{ color: colors.textSecondary, fontSize: '0.9rem' }}>
+                        Total:
+                      </span>
+                      <span style={getQuantityStyle(transaction.totalQuantity || 0, transaction.transactionType)}>
+                        {transaction.totalQuantity || 0}
+                      </span>
                     </div>
-                  </div>
-                </div>
+                    
+                    {/* Valor total de la venta (solo para ventas) */}
+                    {transaction.transactionType === 'sale' && transaction.totalValue !== undefined && transaction.totalValue > 0 && (
+                      <div style={{
+                        marginTop: '12px',
+                        padding: '12px',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        border: `1px solid ${colors.success}30`,
+                        borderRadius: '6px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}>
+                        <span style={{ 
+                          color: colors.textSecondary, 
+                          fontSize: '0.9rem',
+                          fontWeight: '600'
+                        }}>
+                          Valor Total:
+                        </span>
+                        <span style={{ 
+                          color: colors.success, 
+                          fontSize: '1.1rem',
+                          fontWeight: '700'
+                        }}>
+                          ${transaction.totalValue.toLocaleString('es-CO')}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {/* Información del producto (transacción individual) */}
+                    <div style={transactionStyles.productInfo}>
+                      <FaBox style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
+                      <div>
+                        <div style={transactionStyles.productName}>
+                          {transaction.productName || 'Producto no encontrado'}
+                        </div>
+                        <div style={transactionStyles.productDetails}>
+                          SKU: {transaction.productSku || 'N/A'} • 
+                          <FaStore style={{ margin: '0 4px 0 8px', fontSize: '0.8rem' }} />
+                          {transaction.pointOfSaleName || 'Punto de venta no encontrado'}
+                        </div>
+                      </div>
+                    </div>
 
-                {/* Cantidad */}
-                <div style={transactionStyles.quantityInfo}>
-                  <span style={{ color: colors.textSecondary, fontSize: '0.9rem' }}>
-                    Cantidad:
-                  </span>
-                  <span style={getQuantityStyle(transaction.quantity, transaction.transactionType)}>
-                    {transaction.quantity}
-                  </span>
-                </div>
+                    {/* Cantidad */}
+                    <div style={transactionStyles.quantityInfo}>
+                      <span style={{ color: colors.textSecondary, fontSize: '0.9rem' }}>
+                        Cantidad:
+                      </span>
+                      <span style={getQuantityStyle(transaction.quantity || 0, transaction.transactionType)}>
+                        {transaction.quantity || 0}
+                      </span>
+                    </div>
+                  </>
+                )}
 
                 {/* Comentarios */}
                 {transaction.remarks && (
