@@ -220,7 +220,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   const getAllTransactionTypes = () => [
     { value: 'sale', label: 'Venta', description: 'Reduce el inventario por venta de productos' },
     { value: 'restock', label: 'Reabastecimiento', description: 'Aumenta el inventario por compra o reposición' },
-    { value: 'adjustment', label: 'Ajuste', description: 'Corrección de inventario (productos dañados, pérdidas, etc.)' },
+    { value: 'adjustment', label: 'Ajuste', description: 'Corrección de inventario (productos dañados, pérdidas, etc.). Permite cantidades negativas para reducir stock.' },
     { value: 'transfer', label: 'Transferencia', description: 'Movimiento de productos entre puntos de venta' },
   ];
 
@@ -346,7 +346,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     setShowDropdown(false);
     setSearchResults([]);
     setIsSearching(false);
-    setItemQuantity(1); // Resetear cantidad a 1
+    // Resetear cantidad: 1 para otros tipos, 0 para ajustes (permite negativos)
+    setItemQuantity(formData.transactionType === 'adjustment' ? 0 : 1);
   };
 
   // Agregar item a la lista de transacción
@@ -379,7 +380,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     // Limpiar selección
     setSelectedProduct(null);
     setProductSearchQuery('');
-    setItemQuantity(1);
+    // Resetear cantidad: 1 para otros tipos, 0 para ajustes (permite negativos)
+    setItemQuantity(formData.transactionType === 'adjustment' ? 0 : 1);
   };
 
   // Eliminar item de la lista
@@ -389,7 +391,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
   // Actualizar cantidad de un item
   const handleUpdateItemQuantity = (inventoryId: number, newQuantity: number) => {
-    if (newQuantity <= 0) {
+    // Para ajustes, permitir valores negativos y cero
+    // Para otros tipos, solo permitir valores positivos
+    if (formData.transactionType !== 'adjustment' && newQuantity <= 0) {
       handleRemoveItem(inventoryId);
       return;
     }
@@ -762,6 +766,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   )}
                   <div style={{ marginTop: '4px', fontSize: '0.85rem' }}>
                     Stock disponible: <strong>{selectedProduct.stockQuantity} unidades</strong>
+                    {formData.transactionType === 'adjustment' && (
+                      <div style={{ marginTop: '4px', fontSize: '0.8rem', color: colors.warning }}>
+                        💡 Para ajustes, puedes usar valores negativos (ej: -5) para reducir el stock
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -769,17 +778,27 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ ...formStyles.label, fontSize: '0.85rem', marginBottom: '4px' }}>
-                    Cantidad
+                    Cantidad {formData.transactionType === 'adjustment' && '(puede ser negativa)'}
                   </label>
                   <input
                     type="number"
-                    min="1"
+                    min={formData.transactionType === 'adjustment' ? undefined : '1'}
                     value={itemQuantity}
-                    onChange={(e) => setItemQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 0;
+                      // Para ajustes, permitir cualquier valor (negativo, cero, positivo)
+                      // Para otros tipos, forzar mínimo 1
+                      if (formData.transactionType === 'adjustment') {
+                        setItemQuantity(value);
+                      } else {
+                        setItemQuantity(Math.max(1, value));
+                      }
+                    }}
                     style={{
                       ...getInputStyles(false, false),
                       width: '100%',
                     }}
+                    placeholder={formData.transactionType === 'adjustment' ? 'Ej: -5, 0, 10' : '1'}
                   />
                 </div>
                 <button
@@ -881,14 +900,24 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                       <label style={{ fontSize: '0.85rem', color: colors.textSecondary }}>Cantidad:</label>
                       <input
                         type="number"
-                        min="1"
+                        min={formData.transactionType === 'adjustment' ? undefined : '1'}
                         value={item.quantity}
-                        onChange={(e) => handleUpdateItemQuantity(item.inventoryId, parseInt(e.target.value) || 1)}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value) || 0;
+                          // Para ajustes, permitir cualquier valor
+                          // Para otros tipos, forzar mínimo 1
+                          if (formData.transactionType === 'adjustment') {
+                            handleUpdateItemQuantity(item.inventoryId, value);
+                          } else {
+                            handleUpdateItemQuantity(item.inventoryId, Math.max(1, value));
+                          }
+                        }}
                         style={{
                           ...getInputStyles(false, false),
                           width: '80px',
                           textAlign: 'center',
                         }}
+                        placeholder={formData.transactionType === 'adjustment' ? 'Ej: -5' : '1'}
                       />
                     </div>
                     <button
