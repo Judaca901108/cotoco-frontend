@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaSave, FaTimes, FaBox, FaStore, FaExchangeAlt, FaInfoCircle, FaSearch, FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
+import { FaSave, FaTimes, FaBox, FaStore, FaExchangeAlt, FaInfoCircle, FaSearch, FaPlus, FaTrash, FaEdit, FaCreditCard, FaMoneyBill, FaQrcode, FaDollarSign } from 'react-icons/fa';
 import { formStyles, getInputStyles, getSelectStyles, getTextareaStyles } from '../../shared/formStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import { useAuth } from '../../application/contexts/AuthContext';
@@ -25,6 +25,7 @@ type SearchInventoryResult = {
   stockQuantity: number;
   minimumStock: number;
   onDisplay: number;
+  price?: number;
 };
 
 type PointOfSale = {
@@ -42,6 +43,7 @@ type TransactionItem = {
   productSku: string;
   barcode?: string;
   stockQuantity: number;
+  price?: number;
 };
 
 type TransactionFormProps = {
@@ -70,6 +72,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   const [formData, setFormData] = useState({
     pointOfSaleId: 0,
     transactionType: 'sale' as 'sale' | 'restock' | 'adjustment' | 'transfer',
+    paymentMethod: '' as 'card' | 'qr' | 'cash' | '',
     remarks: '',
     destinationPointOfSaleId: 0,
   });
@@ -136,6 +139,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           stockQuantity: item.stockQuantity || item.stock || 0,
           minimumStock: item.minimumStock || 0,
           onDisplay: item.onDisplay || 0,
+          price: item.product?.price || item.price || undefined,
         }));
         setSearchResults(formattedData);
         setShowDropdown(true);
@@ -247,6 +251,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     }
     
     // Validaciones específicas por tipo
+    if (formData.transactionType === 'sale') {
+      if (!formData.paymentMethod) {
+        newErrors.paymentMethod = 'Debe seleccionar un método de pago.';
+      }
+    }
+    
     if (formData.transactionType === 'transfer') {
       if (!formData.destinationPointOfSaleId) {
         newErrors.destinationPointOfSaleId = 'Debe seleccionar el punto de venta destino.';
@@ -275,6 +285,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       if (name === 'transactionType') {
         newData.pointOfSaleId = 0;
         newData.destinationPointOfSaleId = 0;
+        newData.paymentMethod = ''; // Resetear método de pago
         setProductSearchQuery('');
         setSearchResults([]);
         setSelectedProduct(null);
@@ -311,6 +322,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           inventoryId: item.inventoryId,
           quantity: item.quantity,
         })),
+        ...(formData.transactionType === 'sale' && formData.paymentMethod && {
+          paymentMethod: formData.paymentMethod,
+        }),
         ...(formData.transactionType === 'transfer' && {
           sourcePointOfSaleId: formData.pointOfSaleId, // El origen es el punto de venta seleccionado
           destinationPointOfSaleId: formData.destinationPointOfSaleId,
@@ -373,6 +387,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         productSku: selectedProduct.productSku,
         barcode: selectedProduct.barcode,
         stockQuantity: selectedProduct.stockQuantity,
+        price: selectedProduct.price,
       };
       setTransactionItems([...transactionItems, newItem]);
     }
@@ -953,6 +968,35 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           </div>
         )}
 
+        {/* Método de pago (solo para ventas) */}
+        {formData.transactionType === 'sale' && (
+          <div style={formStyles.fieldContainer}>
+            <label htmlFor="paymentMethod" style={formStyles.label}>
+              <FaCreditCard style={{ marginRight: '8px' }} />
+              Método de Pago *
+            </label>
+            <select
+              id="paymentMethod"
+              name="paymentMethod"
+              value={formData.paymentMethod}
+              onChange={handleChange}
+              onFocus={() => handleFocus('paymentMethod')}
+              onBlur={handleBlur}
+              style={getSelectStyles(!!errors.paymentMethod, focusedField === 'paymentMethod')}
+            >
+              <option value="">Seleccione un método de pago</option>
+              <option value="card">Tarjeta</option>
+              <option value="qr">Pago con QR</option>
+              <option value="cash">Efectivo</option>
+            </select>
+            {errors.paymentMethod && (
+              <div style={formStyles.errorMessage}>
+                <span>{errors.paymentMethod}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Comentarios */}
         <div style={formStyles.fieldContainer}>
           <label htmlFor="remarks" style={formStyles.label}>
@@ -975,6 +1019,63 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             </div>
           )}
         </div>
+
+        {/* Total a pagar (solo para ventas) */}
+        {formData.transactionType === 'sale' && transactionItems.length > 0 && (
+          <div style={formStyles.fieldContainer}>
+            <div style={{
+              padding: '20px',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              border: `2px solid ${colors.success}40`,
+              borderRadius: '12px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <FaDollarSign style={{ 
+                  fontSize: '1.5rem', 
+                  color: colors.success,
+                }} />
+                <div>
+                  <div style={{ 
+                    fontSize: '0.9rem', 
+                    color: colors.textSecondary,
+                    marginBottom: '4px',
+                  }}>
+                    Total a Pagar
+                  </div>
+                  <div style={{ 
+                    fontSize: '2rem', 
+                    fontWeight: '700', 
+                    color: colors.success,
+                  }}>
+                    {transactionItems.reduce((total, item) => {
+                      const itemPrice = item.price || 0;
+                      const itemQuantity = item.quantity || 0;
+                      return total + (itemPrice * itemQuantity);
+                    }, 0).toLocaleString('es-CO', { 
+                      style: 'currency', 
+                      currency: 'COP',
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}
+                  </div>
+                </div>
+              </div>
+              <div style={{
+                fontSize: '0.85rem',
+                color: colors.textSecondary,
+                textAlign: 'right',
+              }}>
+                <div>{transactionItems.length} {transactionItems.length === 1 ? 'producto' : 'productos'}</div>
+                <div style={{ marginTop: '4px' }}>
+                  {transactionItems.reduce((total, item) => total + (item.quantity || 0), 0)} {transactionItems.reduce((total, item) => total + (item.quantity || 0), 0) === 1 ? 'unidad' : 'unidades'}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Botones */}
         <div style={formStyles.buttonContainer}>
