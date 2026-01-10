@@ -126,7 +126,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
     }
   };
 
-  // Efecto para manejar el debounce de búsqueda (2 segundos)
+  // Efecto para manejar el debounce de búsqueda (0.5 segundos)
   useEffect(() => {
     // Limpiar timeout anterior
     if (searchTimeoutRef.current) {
@@ -139,10 +139,10 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
 
     // Si hay texto de búsqueda (mínimo 2 caracteres)
     if (trimmedQuery.length >= 2) {
-      // Esperar 2 segundos antes de buscar
+      // Esperar 0.5 segundos antes de buscar
       searchTimeoutRef.current = setTimeout(() => {
         searchProducts(trimmedQuery);
-      }, 2000);
+      }, 500);
     } else if (!trimmedQuery || trimmedQuery.length < 2) {
       setSearchResults([]);
       setIsSearching(false);
@@ -269,7 +269,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
                     ...getInputStyles(!!errors.productId, focusedField === 'productId'),
                     paddingLeft: '40px',
                   }}
-                  placeholder="Buscar producto por nombre o SKU (espera 2 segundos después de escribir)..."
+                  placeholder="Buscar producto por nombre o SKU..."
                 />
                 {isSearching && (
                   <div style={{
@@ -416,7 +416,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
                 color: colors.textSecondary,
               }}>
                 <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem' }} />
-                Escribe al menos 2 caracteres y espera 2 segundos para buscar productos
+                Escribe al menos 2 caracteres para buscar productos
               </div>
             )}
 

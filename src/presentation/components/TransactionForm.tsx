@@ -38,6 +38,7 @@ type PointOfSale = {
 
 type TransactionItem = {
   inventoryId: number;
+  productId?: number; // Para reabastecimiento de productos nuevos
   quantity: number;
   productName: string;
   productSku: string;
@@ -52,7 +53,8 @@ type TransactionFormProps = {
     transactionType: 'sale' | 'restock' | 'adjustment' | 'transfer';
     remarks: string;
     items: Array<{
-      inventoryId: number;
+      inventoryId?: number;
+      productId?: number;
       quantity: number;
     }>;
     sourcePointOfSaleId?: number;
@@ -112,8 +114,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     loadPointsOfSale();
   }, []);
 
-  // Función para buscar productos en el inventario del punto de venta
-  const searchProducts = async (pointOfSaleId: number, query: string) => {
+  // Función para buscar productos en el inventario del punto de venta o productos generales
+  const searchProducts = async (pointOfSaleId: number, query: string, transactionType: string) => {
     const trimmedQuery = (query || '').trim();
     if (!trimmedQuery || trimmedQuery.length < 2) {
       setSearchResults([]);
@@ -123,24 +125,52 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
     setIsSearching(true);
     try {
-      const response = await authenticatedFetch(
-        `${API_BASE_URL}/point-of-sale/${pointOfSaleId}/inventory/search?q=${encodeURIComponent(trimmedQuery)}`
-      );
+      let response;
+      
+      // Para reabastecimiento, usar el endpoint general de productos
+      if (transactionType === 'restock') {
+        response = await authenticatedFetch(
+          `${API_BASE_URL}/product/search?q=${encodeURIComponent(trimmedQuery)}`
+        );
+      } else {
+        // Para otros tipos, usar el endpoint de inventario del punto de venta
+        response = await authenticatedFetch(
+          `${API_BASE_URL}/point-of-sale/${pointOfSaleId}/inventory/search?q=${encodeURIComponent(trimmedQuery)}`
+        );
+      }
       
       if (response.ok) {
         const data = await response.json();
-        // Asegurarse de que los datos tengan la estructura correcta
-        const formattedData = (Array.isArray(data) ? data : []).map((item: any) => ({
-          id: item.id,
-          productId: item.productId || item.product?.id,
-          productName: item.productName || item.product?.name || 'Producto sin nombre',
-          productSku: item.productSku || item.product?.sku || 'N/A',
-          barcode: item.barcode || item.product?.barcode || undefined,
-          stockQuantity: item.stockQuantity || item.stock || 0,
-          minimumStock: item.minimumStock || 0,
-          onDisplay: item.onDisplay || 0,
-          price: item.product?.price || item.price || undefined,
-        }));
+        // Formatear los datos según el tipo de endpoint usado
+        const formattedData = (Array.isArray(data) ? data : []).map((item: any) => {
+          // Si es reabastecimiento, los datos vienen del endpoint de productos
+          if (transactionType === 'restock') {
+            return {
+              id: item.id,
+              productId: item.id, // El id del producto es el mismo que el id del resultado
+              productName: item.name || 'Producto sin nombre',
+              productSku: item.sku || 'N/A',
+              barcode: item.barcode || undefined,
+              stockQuantity: 0, // No hay stock en el endpoint de productos
+              minimumStock: 0,
+              onDisplay: 0,
+              price: item.price || undefined,
+            };
+          } else {
+            // Para otros tipos, los datos vienen del endpoint de inventario
+            return {
+              id: item.id,
+              productId: item.productId || item.product?.id,
+              productName: item.productName || item.product?.name || 'Producto sin nombre',
+              productSku: item.productSku || item.product?.sku || 'N/A',
+              barcode: item.barcode || item.product?.barcode || undefined,
+              stockQuantity: item.stockQuantity || item.stock || 0,
+              minimumStock: item.minimumStock || 0,
+              onDisplay: item.onDisplay || 0,
+              price: item.product?.price || item.price || undefined,
+            };
+          }
+        });
         setSearchResults(formattedData);
         setShowDropdown(true);
       } else {
@@ -155,7 +185,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     }
   };
 
-  // Efecto para manejar el debounce de búsqueda (2 segundos)
+  // Efecto para manejar el debounce de búsqueda (0.5 segundos)
   useEffect(() => {
     // Limpiar timeout anterior
     if (searchTimeoutRef.current) {
@@ -166,13 +196,20 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     const query = productSearchQuery || '';
     const trimmedQuery = query.trim();
 
-    // Si hay un tipo de transacción, punto de venta seleccionado y hay texto de búsqueda (mínimo 2 caracteres)
+    // Si hay un tipo de transacción, punto de venta seleccionado (excepto para restock) y hay texto de búsqueda (mínimo 2 caracteres)
     // Y no hay un producto seleccionado (para evitar buscar cuando se selecciona)
-    if (formData.transactionType && formData.pointOfSaleId && trimmedQuery.length >= 2 && !selectedProduct) {
-      // Esperar 2 segundos antes de buscar
+    const canSearch = formData.transactionType && 
+      (formData.transactionType === 'restock' || formData.pointOfSaleId) && 
+      trimmedQuery.length >= 2 && 
+      !selectedProduct;
+    
+    if (canSearch) {
+      // Esperar 0.5 segundos antes de buscar
       searchTimeoutRef.current = setTimeout(() => {
-        searchProducts(formData.pointOfSaleId, trimmedQuery);
-      }, 2000);
+        // Para restock no necesitamos pointOfSaleId, pero lo pasamos para mantener la firma
+        const pointOfSaleId = formData.transactionType === 'restock' ? 0 : formData.pointOfSaleId;
+        searchProducts(pointOfSaleId, trimmedQuery, formData.transactionType);
+      }, 500);
     } else if (!trimmedQuery || trimmedQuery.length < 2) {
       setSearchResults([]);
       setIsSearching(false);
@@ -318,10 +355,39 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       const submissionData = {
         transactionType: formData.transactionType,
         remarks: formData.remarks,
-        items: transactionItems.map(item => ({
-          inventoryId: item.inventoryId,
-          quantity: item.quantity,
-        })),
+        items: transactionItems.map(item => {
+          // Para reabastecimiento, siempre usar productId con pointOfSaleId (ya que buscamos productos generales)
+          if (formData.transactionType === 'restock') {
+            // Para restock, siempre usar productId ya que buscamos en productos generales
+            // inventoryId será 0 para productos nuevos, así que verificamos productId
+            if (item.productId && item.inventoryId === 0) {
+              return {
+                productId: item.productId,
+                pointOfSaleId: formData.pointOfSaleId,
+                quantity: item.quantity,
+              };
+            } else if (item.inventoryId && item.inventoryId > 0) {
+              // Si el producto ya está en inventario (caso raro pero posible)
+              return {
+                inventoryId: item.inventoryId,
+                quantity: item.quantity,
+              };
+            } else {
+              // Fallback: intentar con productId si existe
+              return {
+                productId: item.productId,
+                pointOfSaleId: formData.pointOfSaleId,
+                quantity: item.quantity,
+              };
+            }
+          } else {
+            // Para otros tipos, usar inventoryId
+            return {
+              inventoryId: item.inventoryId,
+              quantity: item.quantity,
+            };
+          }
+        }),
         ...(formData.transactionType === 'sale' && formData.paymentMethod && {
           paymentMethod: formData.paymentMethod,
         }),
@@ -369,8 +435,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     if (!selectedProduct) return;
     
     // Verificar si el item ya existe en la lista
+    // Para reabastecimiento, comparar por productId; para otros tipos, por inventoryId
     const existingItemIndex = transactionItems.findIndex(
-      item => item.inventoryId === selectedProduct.id
+      item => formData.transactionType === 'restock' && item.productId
+        ? item.productId === selectedProduct.productId
+        : item.inventoryId === selectedProduct.id
     );
 
     if (existingItemIndex >= 0) {
@@ -381,7 +450,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     } else {
       // Si no existe, agregarlo
       const newItem: TransactionItem = {
-        inventoryId: selectedProduct.id,
+        // Para reabastecimiento de productos nuevos (que no están en inventario), usar productId
+        // Para otros casos, usar inventoryId
+        inventoryId: formData.transactionType === 'restock' ? 0 : selectedProduct.id,
+        productId: formData.transactionType === 'restock' ? selectedProduct.productId : undefined,
         quantity: itemQuantity,
         productName: selectedProduct.productName,
         productSku: selectedProduct.productSku,
@@ -446,10 +518,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           100% { transform: rotate(360deg); }
         }
       `}</style>
-      <div style={formStyles.formContainer}>
-        <h2 style={formStyles.formTitle}>{title}</h2>
+    <div style={formStyles.formContainer}>
+      <h2 style={formStyles.formTitle}>{title}</h2>
 
-        <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         {/* Tipo de transacción */}
         <div style={formStyles.fieldContainer}>
           <label htmlFor="transactionType" style={formStyles.label}>
@@ -550,45 +622,45 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
         {/* Selección de punto de venta destino (solo para transferencias) */}
         {formData.transactionType === 'transfer' && (
-          <div style={formStyles.fieldContainer}>
+        <div style={formStyles.fieldContainer}>
             <label htmlFor="destinationPointOfSaleId" style={formStyles.label}>
               <FaStore style={{ marginRight: '8px' }} />
               Punto de Venta Destino *
-            </label>
-            <select
+          </label>
+          <select
               id="destinationPointOfSaleId"
               name="destinationPointOfSaleId"
               value={formData.destinationPointOfSaleId}
-              onChange={handleChange}
+            onChange={handleChange}
               onFocus={() => handleFocus('destinationPointOfSaleId')}
-              onBlur={handleBlur}
-              style={{
+            onBlur={handleBlur}
+            style={{
                 ...getSelectStyles(!!errors.destinationPointOfSaleId, focusedField === 'destinationPointOfSaleId'),
-                opacity: formData.pointOfSaleId ? 1 : 0.6,
-              }}
-              disabled={!formData.pointOfSaleId}
-            >
-              <option value={0}>
-                {formData.pointOfSaleId 
+              opacity: formData.pointOfSaleId ? 1 : 0.6,
+            }}
+            disabled={!formData.pointOfSaleId}
+          >
+            <option value={0}>
+              {formData.pointOfSaleId 
                   ? 'Seleccione el punto de venta destino'
                   : 'Primero seleccione el punto de venta origen'
-                }
-              </option>
+              }
+            </option>
               {pointsOfSaleWithInventory
                 .filter(pos => pos.id !== formData.pointOfSaleId) // Excluir el punto de venta origen
                 .map((pos) => (
                   <option key={pos.id} value={pos.id}>
                     {pos.name}
-                  </option>
-                ))}
-            </select>
+              </option>
+            ))}
+          </select>
             {errors.destinationPointOfSaleId && (
-              <div style={formStyles.errorMessage}>
+            <div style={formStyles.errorMessage}>
                 <span>{errors.destinationPointOfSaleId}</span>
-              </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+            </div>
+          )}
 
         {/* Búsqueda de producto en inventario */}
         <div style={formStyles.fieldContainer}>
@@ -642,7 +714,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                     ? 'Primero seleccione un punto de venta'
                     : formData.transactionType === 'transfer' && !formData.destinationPointOfSaleId
                     ? 'Primero seleccione el punto de venta destino'
-                    : 'Buscar producto por nombre o SKU (espera 2 segundos después de escribir)...'
+                    : formData.transactionType === 'restock'
+                    ? 'Buscar producto general...'
+                    : 'Buscar producto por nombre o SKU...'
                 }
               />
               {isSearching && (
@@ -702,7 +776,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                         : 'transparent';
                     }}
                   >
-                    <div style={{
+          <div style={{
                       fontWeight: '600',
                       color: colors.textPrimary,
                       marginBottom: '4px',
@@ -710,8 +784,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                       {product.productName}
                     </div>
                     <div style={{
-                      fontSize: '0.85rem',
-                      color: colors.textSecondary,
+            fontSize: '0.85rem',
+            color: colors.textSecondary,
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '2px',
@@ -720,7 +794,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                       {product.barcode && (
                         <span>Código de Barras: {product.barcode}</span>
                       )}
-                    </div>
+          </div>
                   </div>
                 ))}
               </div>
@@ -777,8 +851,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   {selectedProduct.barcode && (
                     <div style={{ fontSize: '0.85rem', color: colors.textSecondary }}>
                       Código de Barras: {selectedProduct.barcode}
-                    </div>
-                  )}
+            </div>
+          )}
                   <div style={{ marginTop: '4px', fontSize: '0.85rem' }}>
                     Stock disponible: <strong>{selectedProduct.stockQuantity} unidades</strong>
                     {formData.transactionType === 'adjustment' && (
@@ -788,15 +862,15 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                     )}
                   </div>
                 </div>
-              </div>
-              
+        </div>
+
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ ...formStyles.label, fontSize: '0.85rem', marginBottom: '4px' }}>
                     Cantidad {formData.transactionType === 'adjustment' && '(puede ser negativa)'}
-                  </label>
-                  <input
-                    type="number"
+          </label>
+          <input
+            type="number"
                     min={formData.transactionType === 'adjustment' ? undefined : '1'}
                     value={itemQuantity}
                     onChange={(e) => {
@@ -850,32 +924,32 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               </div>
             </div>
           )}
-
+          
           {/* Mensaje informativo sobre el debounce */}
           {formData.pointOfSaleId && formData.transactionType && !selectedProduct && (
-            <div style={{
-              marginTop: '8px',
-              padding: '8px 12px',
+                <div style={{
+                  marginTop: '8px',
+                  padding: '8px 12px',
               backgroundColor: 'rgba(139, 92, 246, 0.1)',
               border: `1px solid ${colors.primaryColor}30`,
-              borderRadius: '6px',
-              fontSize: '0.85rem',
+                  borderRadius: '6px',
+                  fontSize: '0.85rem',
               color: colors.textSecondary,
-            }}>
-              <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem' }} />
-              Escribe al menos 2 caracteres y espera 2 segundos para buscar productos
-            </div>
+                }}>
+                  <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem' }} />
+              Escribe al menos 2 caracteres para buscar productos
+                </div>
           )}
         </div>
 
         {/* Lista de items agregados */}
         {transactionItems.length > 0 && (
-          <div style={formStyles.fieldContainer}>
-            <label style={formStyles.label}>
+            <div style={formStyles.fieldContainer}>
+              <label style={formStyles.label}>
               <FaBox style={{ marginRight: '8px' }} />
               Items de la Transacción ({transactionItems.length})
-            </label>
-            <div style={{
+              </label>
+              <div style={{
               border: `1px solid ${colors.borderColor}`,
               borderRadius: '8px',
               overflow: 'hidden',
@@ -896,14 +970,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: '600', color: colors.textPrimary, marginBottom: '4px' }}>
                       {item.productName}
-                    </div>
+              </div>
                     <div style={{ fontSize: '0.85rem', color: colors.textSecondary }}>
                       SKU: {item.productSku}
                       {item.barcode && ` • Código de Barras: ${item.barcode}`}
-                    </div>
+              </div>
                     <div style={{ fontSize: '0.8rem', color: colors.textSecondary, marginTop: '4px' }}>
                       Stock disponible: {item.stockQuantity} unidades
-                    </div>
+            </div>
                     {errors[`item_${index}`] && (
                       <div style={{ fontSize: '0.8rem', color: colors.error, marginTop: '4px' }}>
                         {errors[`item_${index}`]}
@@ -970,30 +1044,30 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
         {/* Método de pago (solo para ventas) */}
         {formData.transactionType === 'sale' && (
-          <div style={formStyles.fieldContainer}>
+            <div style={formStyles.fieldContainer}>
             <label htmlFor="paymentMethod" style={formStyles.label}>
               <FaCreditCard style={{ marginRight: '8px' }} />
               Método de Pago *
-            </label>
-            <select
+              </label>
+              <select
               id="paymentMethod"
               name="paymentMethod"
               value={formData.paymentMethod}
-              onChange={handleChange}
+                onChange={handleChange}
               onFocus={() => handleFocus('paymentMethod')}
-              onBlur={handleBlur}
+                onBlur={handleBlur}
               style={getSelectStyles(!!errors.paymentMethod, focusedField === 'paymentMethod')}
             >
               <option value="">Seleccione un método de pago</option>
               <option value="card">Tarjeta</option>
               <option value="qr">Pago con QR</option>
               <option value="cash">Efectivo</option>
-            </select>
+              </select>
             {errors.paymentMethod && (
-              <div style={formStyles.errorMessage}>
+                <div style={formStyles.errorMessage}>
                 <span>{errors.paymentMethod}</span>
-              </div>
-            )}
+                </div>
+              )}
           </div>
         )}
 
