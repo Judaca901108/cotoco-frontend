@@ -723,6 +723,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
         >
           <InventoryForm
             products={products}
+            pointOfSaleId={parseInt(id!, 10)}
             onSubmit={handleCreateInventory}
             onCancel={() => setIsCreating(false)}
           />
