@@ -384,9 +384,13 @@ const PointOfSaleDetailPage: React.FC = () => {
             VER INVENTARIO
           </button>
           
-          {inventories.length > 0 && (
+          {inventories.length > 0 && pointOfSale?.type === 'Ferias' && (
             <button
-              style={getActionButtonStyle('secondary')}
+              style={{
+                ...getActionButtonStyle('secondary'),
+                backgroundColor: '#fbbf24', // Amarillo
+                color: colors.textPrimary,
+              }}
               onClick={() => {
                 console.log('Botón MOVER INVENTARIO clickeado');
                 console.log('Inventories length:', inventories.length);
@@ -396,10 +400,12 @@ const PointOfSaleDetailPage: React.FC = () => {
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                e.currentTarget.style.backgroundColor = '#f59e0b'; // Amarillo más oscuro al hover
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.backgroundColor = '#fbbf24'; // Volver al amarillo original
               }}
             >
               <FaTruck />

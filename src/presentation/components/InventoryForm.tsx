@@ -11,9 +11,6 @@ type SearchProductResult = {
   productName: string;
   productSku: string;
   barcode?: string;
-  stockQuantity: number;
-  minimumStock: number;
-  onDisplay: number;
 };
 
 type InventoryFormProps = {
@@ -90,8 +87,8 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
     setFocusedField(null);
   };
 
-  // Función para buscar productos en el inventario del punto de venta
-  const searchProducts = async (pointOfSaleId: number, query: string) => {
+  // Función para buscar productos
+  const searchProducts = async (query: string) => {
     const trimmedQuery = (query || '').trim();
     if (!trimmedQuery || trimmedQuery.length < 2) {
       setSearchResults([]);
@@ -102,7 +99,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
     setIsSearching(true);
     try {
       const response = await authenticatedFetch(
-        `${API_BASE_URL}/point-of-sale/${pointOfSaleId}/inventory/search?q=${encodeURIComponent(trimmedQuery)}`
+        `${API_BASE_URL}/product/search?q=${encodeURIComponent(trimmedQuery)}`
       );
       
       if (response.ok) {
@@ -110,13 +107,10 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
         // Formatear los datos para que coincidan con el tipo SearchProductResult
         const formattedData = (Array.isArray(data) ? data : []).map((item: any) => ({
           id: item.id,
-          productId: item.productId || item.product?.id,
-          productName: item.productName || item.product?.name || 'Producto sin nombre',
-          productSku: item.productSku || item.product?.sku || 'N/A',
-          barcode: item.barcode || item.product?.barcode || undefined,
-          stockQuantity: item.stockQuantity || item.stock || 0,
-          minimumStock: item.minimumStock || 0,
-          onDisplay: item.onDisplay || 0,
+          productId: item.id, // El id del producto es el mismo que el id del resultado
+          productName: item.name || 'Producto sin nombre',
+          productSku: item.sku || 'N/A',
+          barcode: item.barcode || undefined,
         }));
         setSearchResults(formattedData);
         setShowDropdown(true);
@@ -143,11 +137,11 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
     const query = productSearchQuery || '';
     const trimmedQuery = query.trim();
 
-    // Si hay un punto de venta seleccionado y hay texto de búsqueda (mínimo 2 caracteres)
-    if (pointOfSaleId && trimmedQuery.length >= 2) {
+    // Si hay texto de búsqueda (mínimo 2 caracteres)
+    if (trimmedQuery.length >= 2) {
       // Esperar 2 segundos antes de buscar
       searchTimeoutRef.current = setTimeout(() => {
-        searchProducts(pointOfSaleId, trimmedQuery);
+        searchProducts(trimmedQuery);
       }, 2000);
     } else if (!trimmedQuery || trimmedQuery.length < 2) {
       setSearchResults([]);
@@ -160,7 +154,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [productSearchQuery, pointOfSaleId]);
+  }, [productSearchQuery]);
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {

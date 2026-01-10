@@ -17,6 +17,8 @@ type Product = {
   category: string;
   imagePath?: string;
   barcode?: string; // Código de barras
+  subcategory?: string; // Subcategoría
+  number_of_piece?: number; // Número de piezas (solo para sets)
 };
 
 const EditProductPage: React.FC = () => {
@@ -34,8 +36,56 @@ const EditProductPage: React.FC = () => {
     sku: '',
     category: '',
     barcode: '',
+    subcategory: '',
+    number_of_piece: '',
     image: null as File | null
   });
+
+  // Definir subcategorías según la categoría seleccionada
+  const getSubcategories = (category: string): string[] => {
+    if (category === 'sets') {
+      return [
+        'Arquitectura',
+        'Aviones',
+        'Bolsas amarillas',
+        'Carros',
+        'Digimon',
+        'F1',
+        'Flores',
+        'Minecraft',
+        'Motos',
+        'One Piece',
+        'Anime',
+        'Otros',
+        'Películas',
+        'Series',
+        'Perros',
+        'Pokemon',
+        'Animales',
+        'Marvel'
+      ];
+    } else if (category === 'minifiguras') {
+      return [
+        'Series y Películas',
+        'Marvel',
+        'DC',
+        'Anime',
+        'Caballeros',
+        'One Piece',
+        'Naruto',
+        'Videojuegos',
+        'Dragón Ball',
+        'Jujutsu Kaisen',
+        'Star Wars',
+        'Señor de los Anillos',
+        'Deportistas',
+        'Demon Slayer',
+        'Terror',
+        'Harry Potter'
+      ];
+    }
+    return [];
+  };
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -63,6 +113,8 @@ const EditProductPage: React.FC = () => {
         sku: productData.sku || '',
         category: productData.category || '',
         barcode: productData.barcode || '',
+        subcategory: productData.subcategory || '',
+        number_of_piece: productData.number_of_piece ? String(productData.number_of_piece) : '',
         image: null
       });
     } catch (err: any) {
@@ -83,6 +135,12 @@ const EditProductPage: React.FC = () => {
     }
     if (!formData.sku.trim()) newErrors.sku = 'El SKU es obligatorio.';
     if (!formData.category.trim()) newErrors.category = 'La categoría es obligatoria.';
+    if (formData.category && !formData.subcategory) {
+      newErrors.subcategory = 'La subcategoría es obligatoria.';
+    }
+    if (formData.category === 'sets' && (!formData.number_of_piece || Number(formData.number_of_piece) <= 0)) {
+      newErrors.number_of_piece = 'El número de piezas es obligatorio y debe ser mayor a 0.';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -90,7 +148,21 @@ const EditProductPage: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    setFormData(prev => {
+      const newData: any = {
+        ...prev,
+        [name]: value
+      };
+      
+      // Si cambia la categoría, resetear subcategoría y número de piezas
+      if (name === 'category') {
+        newData.subcategory = '';
+        newData.number_of_piece = '';
+      }
+      
+      return newData;
+    });
     
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -119,6 +191,14 @@ const EditProductPage: React.FC = () => {
       
       if (formData.barcode) {
         formDataToSend.append('barcode', formData.barcode);
+      }
+      
+      if (formData.subcategory) {
+        formDataToSend.append('subcategory', formData.subcategory);
+      }
+      
+      if (formData.category === 'sets' && formData.number_of_piece) {
+        formDataToSend.append('number_of_piece', formData.number_of_piece);
       }
       
       if (formData.image) {
@@ -382,23 +462,82 @@ const EditProductPage: React.FC = () => {
           <label htmlFor="category" style={formStyles.label}>
             Categoría *
           </label>
-          <input
-            type="text"
+          <select
             id="category"
             name="category"
             value={formData.category}
             onChange={handleChange}
             onFocus={() => handleFocus('category')}
             onBlur={handleBlur}
-            style={getInputStyles(!!errors.category, focusedField === 'category')}
-            placeholder="Ej: Electrónicos, Ropa, Hogar..."
-          />
+            style={getSelectStyles(!!errors.category, focusedField === 'category')}
+          >
+            <option value="">Seleccione una categoría</option>
+            <option value="sets">Sets</option>
+            <option value="minifiguras">Minifiguras</option>
+          </select>
           {errors.category && (
             <div style={formStyles.errorMessage}>
               <span>{errors.category}</span>
             </div>
           )}
         </div>
+
+        {/* Subcategoría (solo si hay categoría seleccionada) */}
+        {formData.category && (
+          <div style={formStyles.fieldContainer}>
+            <label htmlFor="subcategory" style={formStyles.label}>
+              Subcategoría *
+            </label>
+            <select
+              id="subcategory"
+              name="subcategory"
+              value={formData.subcategory || ''}
+              onChange={handleChange}
+              onFocus={() => handleFocus('subcategory')}
+              onBlur={handleBlur}
+              style={getSelectStyles(!!errors.subcategory, focusedField === 'subcategory')}
+            >
+              <option value="">Seleccione una subcategoría</option>
+              {getSubcategories(formData.category).map((subcat) => (
+                <option key={subcat} value={subcat}>
+                  {subcat}
+                </option>
+              ))}
+            </select>
+            {errors.subcategory && (
+              <div style={formStyles.errorMessage}>
+                <span>{errors.subcategory}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Número de piezas (solo para sets) */}
+        {formData.category === 'sets' && (
+          <div style={formStyles.fieldContainer}>
+            <label htmlFor="number_of_piece" style={formStyles.label}>
+              Número de Piezas *
+            </label>
+            <input
+              type="number"
+              id="number_of_piece"
+              name="number_of_piece"
+              value={formData.number_of_piece || ''}
+              onChange={handleChange}
+              onFocus={() => handleFocus('number_of_piece')}
+              onBlur={handleBlur}
+              style={getInputStyles(!!errors.number_of_piece, focusedField === 'number_of_piece')}
+              placeholder="Ej: 1000"
+              min="1"
+              step="1"
+            />
+            {errors.number_of_piece && (
+              <div style={formStyles.errorMessage}>
+                <span>{errors.number_of_piece}</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Imagen */}
         <div style={formStyles.fieldContainer}>

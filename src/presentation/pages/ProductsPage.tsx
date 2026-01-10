@@ -15,12 +15,12 @@ type Product = {
   price: number; // Aseguramos que `price` sea un número
   sku: string;
   category: string;
+  subcategory?: string; // Subcategoría
   imagePath?: string; // URL de la imagen
   barcode?: string; // Código de barras
 };
 
 const BASE_PATH = API_BASE_URL;
-const categories = ['Minifigura', 'Sets', 'Bases', 'Model Kits'];
 
 const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -47,7 +47,7 @@ const ProductsPage: React.FC = () => {
   }, []);
 
 
-  const handleCreateProduct = async (data: { name: string; description: string; price: number; sku: string; category: string; barcode?: string; image?: File }) => {
+  const handleCreateProduct = async (data: { name: string; description: string; price: number; sku: string; category: string; barcode?: string; subcategory?: string; number_of_piece?: string; image?: File }) => {
     try {
       console.log('Datos recibidos:', data);
       
@@ -61,6 +61,12 @@ const ProductsPage: React.FC = () => {
         formData.append('category', data.category);
         if (data.barcode) {
           formData.append('barcode', data.barcode);
+        }
+        if (data.subcategory) {
+          formData.append('subcategory', data.subcategory);
+        }
+        if (data.number_of_piece !== undefined) {
+          formData.append('number_of_piece', data.number_of_piece);
         }
         formData.append('image', data.image);
         
@@ -96,6 +102,12 @@ const ProductsPage: React.FC = () => {
         if (data.barcode) {
           jsonData.barcode = data.barcode;
         }
+        if (data.subcategory) {
+          jsonData.subcategory = data.subcategory;
+        }
+        if (data.number_of_piece !== undefined) {
+          jsonData.number_of_piece = String(data.number_of_piece);
+        }
         
         console.log('Enviando como JSON (sin imagen):', jsonData);
         
@@ -130,7 +142,8 @@ const ProductsPage: React.FC = () => {
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchQuery.toLowerCase())
+    product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (product.subcategory && product.subcategory.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   // Paginación
@@ -175,6 +188,7 @@ const ProductsPage: React.FC = () => {
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Imagen</th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Nombre</th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Categoría</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Subcategoría</th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Precio</th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">SKU</th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Estado</th>
@@ -183,7 +197,7 @@ const ProductsPage: React.FC = () => {
           <tbody>
             {paginatedProducts.length === 0 ? (
               <tr>
-                <td colSpan={6} style={tableStyles.emptyState}>
+                <td colSpan={7} style={tableStyles.emptyState}>
                   <div style={tableStyles.emptyStateIcon}>📦</div>
                   <div style={tableStyles.emptyStateTitle}>No hay productos</div>
                   <div style={tableStyles.emptyStateDescription}>
@@ -271,6 +285,22 @@ const ProductsPage: React.FC = () => {
                     <span style={getStatusBadgeStyle('active')}>
                       {product.category}
                     </span>
+                  </td>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
+                    {product.subcategory ? (
+                      <span style={{
+                        ...getStatusBadgeStyle('active'),
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        color: colors.primaryColor,
+                        border: `1px solid ${colors.primaryColor}30`,
+                      }}>
+                        {product.subcategory}
+                      </span>
+                    ) : (
+                      <span style={{ color: colors.textSecondary, fontSize: '0.85rem' }}>
+                        -
+                      </span>
+                    )}
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <span style={{ fontWeight: '600', color: colors.success }}>
@@ -370,7 +400,7 @@ const ProductsPage: React.FC = () => {
           title="Crear Producto"
         >
           {error && <p className="text-danger">{error}</p>}
-          <ProductForm onSubmit={handleCreateProduct} categories={categories} />
+          <ProductForm onSubmit={handleCreateProduct} />
         </ModalComponent>
       )}
 
