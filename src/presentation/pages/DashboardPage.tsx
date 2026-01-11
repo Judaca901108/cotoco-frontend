@@ -14,6 +14,7 @@ import TransactionsPage from './TransactionsPage'; // Página de transacciones
 import UsersPage from './UsersPage'; // Página de usuarios
 import UserDetailPage from './UserDetailPage'; // Vista de detalle de usuario
 import SettingsPage from './SettingsPage'; // Página de configuración
+import AnalyticsPage from './AnalyticsPage'; // Página de analytics
 import { useAuth } from '../../application/contexts/AuthContext';
 import colors from '../../shared/colors';
 
@@ -28,6 +29,7 @@ const DashboardPage: React.FC = () => {
     if (path.includes('/products')) return 'Products';
     if (path.includes('/point-of-sales')) return 'PointOfSales';
         if (path.includes('/transactions')) return 'Transactions';
+        if (path.includes('/analytics')) return 'Analytics';
         if (path.includes('/users')) return 'Users';
         if (path.includes('/settings')) return 'Settings';
         return 'Home';
@@ -63,6 +65,7 @@ const DashboardPage: React.FC = () => {
               <Route path="/point-of-sales/edit/:id" element={isAdmin ? <EditPointOfSalePage /> : <Navigate to="/dashboard/transactions" replace />} />
               <Route path="/point-of-sales/:id/inventory" element={isAdmin ? <PointOfSaleInventoryPage /> : <Navigate to="/dashboard/transactions" replace />} />
               <Route path="/transactions" element={<TransactionsPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/users" element={isAdmin ? <UsersPage /> : <Navigate to="/dashboard/transactions" replace />} />
               <Route path="/users/:id" element={isAdmin ? <UserDetailPage /> : <Navigate to="/dashboard/transactions" replace />} />
               <Route path="/settings" element={<SettingsPage />} />

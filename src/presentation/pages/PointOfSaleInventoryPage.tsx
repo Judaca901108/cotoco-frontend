@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse, FaEye, FaEdit, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
+import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse, FaEye, FaEdit, FaSort, FaSortUp, FaSortDown, FaDownload } from 'react-icons/fa';
 import colors from '../../shared/colors';
 import InventoryForm from '../components/InventoryForm';
 import ModalComponent from '../components/ModalComponent';
@@ -270,6 +270,52 @@ const PointOfSaleInventoryPage: React.FC = () => {
       : <FaSortDown style={{ marginLeft: '4px', color: colors.primaryColor }} />;
   };
 
+  // Función para exportar inventario a CSV
+  const handleExportToCSV = () => {
+    // Preparar los datos para CSV
+    const csvHeaders = ['Producto', 'SKU', 'ID Producto', 'Stock Actual', 'Stock Mínimo', 'En Exhibición', 'Estado'];
+    
+    // Convertir inventarios a filas CSV
+    const csvRows = filteredInventories.map(inventory => {
+      const estado = inventory.stockQuantity <= inventory.minimumStock ? 'Stock Bajo' : 'Stock OK';
+      return [
+        `"${inventory.productName}"`,
+        `"${inventory.productSku}"`,
+        inventory.productId,
+        inventory.stockQuantity,
+        inventory.minimumStock,
+        inventory.onDisplay,
+        `"${estado}"`
+      ].join(',');
+    });
+
+    // Combinar headers y filas
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvRows
+    ].join('\n');
+
+    // Crear BOM para UTF-8 (para Excel)
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // Crear enlace de descarga
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    
+    // Nombre del archivo con fecha y nombre del punto de venta
+    const date = new Date().toISOString().split('T')[0];
+    const fileName = `inventario_${currentPointOfSale?.name || 'punto-venta'}_${date}.csv`;
+    link.setAttribute('download', fileName);
+    
+    // Trigger descarga
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
 
   const currentPointOfSale = pointsOfSale.find(pos => pos.id === parseInt(id!));
@@ -374,36 +420,78 @@ const PointOfSaleInventoryPage: React.FC = () => {
           />
         </div>
 
-        {/* Botón crear */}
-        <button
-          onClick={() => setIsCreating(true)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: colors.primaryColor,
-            color: colors.white,
-            border: 'none',
-            padding: '12px 20px',
-            borderRadius: '8px',
-            fontSize: '0.95rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            whiteSpace: 'nowrap',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-1px)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        >
-          <FaPlus />
-          Agregar Producto
-        </button>
+        {/* Botones de acción */}
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          {/* Botón exportar CSV */}
+          <button
+            onClick={handleExportToCSV}
+            disabled={filteredInventories.length === 0}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              backgroundColor: filteredInventories.length === 0 ? colors.buttonSecondary : '#10b981',
+              color: filteredInventories.length === 0 ? colors.textSecondary : colors.white,
+              border: 'none',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              fontSize: '0.95rem',
+              fontWeight: '600',
+              cursor: filteredInventories.length === 0 ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap',
+              opacity: filteredInventories.length === 0 ? 0.6 : 1,
+            }}
+            onMouseEnter={(e) => {
+              if (filteredInventories.length > 0) {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                e.currentTarget.style.backgroundColor = '#059669';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (filteredInventories.length > 0) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.backgroundColor = '#10b981';
+              }
+            }}
+          >
+            <FaDownload />
+            Exportar CSV
+          </button>
+
+          {/* Botón crear */}
+          <button
+            onClick={() => setIsCreating(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              backgroundColor: colors.primaryColor,
+              color: colors.white,
+              border: 'none',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              fontSize: '0.95rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          >
+            <FaPlus />
+            Agregar Producto
+          </button>
+        </div>
         
       </div>
 

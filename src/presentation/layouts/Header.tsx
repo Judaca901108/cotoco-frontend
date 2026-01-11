@@ -20,6 +20,7 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
       { id: 'Products', label: 'PRODUCTOS', path: '/dashboard/products', adminOnly: true },
       { id: 'PointOfSales', label: 'PUNTOS DE VENTA', path: '/dashboard/point-of-sales', adminOnly: true },
       { id: 'Transactions', label: 'TRANSACCIONES', path: '/dashboard/transactions' },
+      { id: 'Analytics', label: 'ANALYTICS', path: '/dashboard/analytics' },
       { id: 'Users', label: 'USUARIOS', path: '/dashboard/users', adminOnly: true },
     ];
 

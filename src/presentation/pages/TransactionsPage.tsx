@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaFilter, FaBox, FaStore, FaArrowRight, FaUser, FaCalendarAlt } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaFilter, FaBox, FaStore, FaArrowRight, FaUser, FaCalendarAlt, FaDownload } from 'react-icons/fa';
 import ModalComponent from '../components/ModalComponent';
 import TransactionForm from '../components/TransactionForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
@@ -355,6 +355,122 @@ const TransactionsPage: React.FC = () => {
     });
   };
 
+  // Función para exportar transacciones a CSV
+  const handleExportToCSV = () => {
+    // Headers del CSV
+    const csvHeaders = [
+      'ID Transacción',
+      'Tipo',
+      'Fecha',
+      'Usuario',
+      'Producto',
+      'SKU',
+      'Código de Barras',
+      'Punto de Venta',
+      'Origen',
+      'Destino',
+      'Cantidad',
+      'Precio Unitario',
+      'Subtotal',
+      'Valor Total',
+      'Comentarios'
+    ];
+
+    // Convertir transacciones a filas CSV
+    const csvRows: string[] = [];
+
+    filteredTransactions.forEach(transaction => {
+      const tipo = getTransactionTypeLabel(transaction.transactionType);
+      const fecha = formatDate(transaction.date || transaction.createdAt);
+      const usuario = transaction.userName || 'N/A';
+      const comentarios = `"${(transaction.remarks || '').replace(/"/g, '""')}"`;
+      const origen = transaction.sourcePointOfSaleName || '';
+      const destino = transaction.destinationPointOfSaleName || '';
+      const valorTotal = transaction.transactionType === 'sale' && transaction.totalValue 
+        ? transaction.totalValue.toString() 
+        : '';
+
+      // Si es transacción agrupada, crear una fila por cada item
+      if (transaction.isGrouped && transaction.enrichedItems && transaction.enrichedItems.length > 0) {
+        transaction.enrichedItems.forEach((item, index) => {
+          const precioUnitario = item.price ? item.price.toString() : '';
+          const subtotal = item.subtotal ? item.subtotal.toString() : '';
+          
+          // Solo mostrar valor total en la primera fila de la transacción agrupada
+          const mostrarValorTotal = index === 0 ? valorTotal : '';
+
+          csvRows.push([
+            transaction.id.toString(),
+            `"${tipo}"`,
+            `"${fecha}"`,
+            `"${usuario}"`,
+            `"${item.productName}"`,
+            `"${item.productSku}"`,
+            item.barcode ? `"${item.barcode}"` : '',
+            `"${item.pointOfSaleName}"`,
+            `"${origen}"`,
+            `"${destino}"`,
+            item.quantity.toString(),
+            precioUnitario,
+            subtotal,
+            mostrarValorTotal,
+            index === 0 ? comentarios : '' // Solo comentarios en la primera fila
+          ].join(','));
+        });
+      } else {
+        // Transacción individual
+        const producto = transaction.productName || 'N/A';
+        const sku = transaction.productSku || 'N/A';
+        const puntoVenta = transaction.pointOfSaleName || '';
+        const cantidad = (transaction.quantity || 0).toString();
+
+        csvRows.push([
+          transaction.id.toString(),
+          `"${tipo}"`,
+          `"${fecha}"`,
+          `"${usuario}"`,
+          `"${producto}"`,
+          `"${sku}"`,
+          '',
+          `"${puntoVenta}"`,
+          `"${origen}"`,
+          `"${destino}"`,
+          cantidad,
+          '',
+          '',
+          valorTotal,
+          comentarios
+        ].join(','));
+      }
+    });
+
+    // Combinar headers y filas
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvRows
+    ].join('\n');
+
+    // Crear BOM para UTF-8 (para Excel)
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // Crear enlace de descarga
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    
+    // Nombre del archivo con fecha
+    const date = new Date().toISOString().split('T')[0];
+    const fileName = `transacciones_${date}.csv`;
+    link.setAttribute('download', fileName);
+    
+    // Trigger descarga
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <div style={transactionStyles.pageContainer} className="page-container-responsive">
@@ -480,22 +596,55 @@ const TransactionsPage: React.FC = () => {
           )}
         </div>
 
-        {/* Botón crear */}
-        <button
-          onClick={() => setIsCreating(true)}
-          style={transactionStyles.actionButton}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-1px)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        >
-          <FaPlus />
-          Nueva Transacción
-        </button>
+        {/* Botones de acción */}
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          {/* Botón exportar CSV */}
+          <button
+            onClick={handleExportToCSV}
+            disabled={filteredTransactions.length === 0}
+            style={{
+              ...transactionStyles.actionButton,
+              backgroundColor: filteredTransactions.length === 0 ? colors.buttonSecondary : '#10b981',
+              color: filteredTransactions.length === 0 ? colors.textSecondary : colors.white,
+              cursor: filteredTransactions.length === 0 ? 'not-allowed' : 'pointer',
+              opacity: filteredTransactions.length === 0 ? 0.6 : 1,
+            }}
+            onMouseEnter={(e) => {
+              if (filteredTransactions.length > 0) {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                e.currentTarget.style.backgroundColor = '#059669';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (filteredTransactions.length > 0) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.backgroundColor = '#10b981';
+              }
+            }}
+          >
+            <FaDownload />
+            Exportar CSV
+          </button>
+
+          {/* Botón crear */}
+          <button
+            onClick={() => setIsCreating(true)}
+            style={transactionStyles.actionButton}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          >
+            <FaPlus />
+            Nueva Transacción
+          </button>
+        </div>
       </div>
 
       {/* Error message */}
