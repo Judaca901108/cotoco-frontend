@@ -275,26 +275,57 @@ const PointOfSaleInventoryPage: React.FC = () => {
   // Función para exportar inventario a CSV
   const handleExportToCSV = () => {
     // Preparar los datos para CSV
-    const csvHeaders = ['Producto', 'SKU', 'ID Producto', 'Stock Actual', 'Stock Mínimo', 'En Exhibición', 'Estado'];
+    const csvHeaders = ['Producto', 'SKU', 'ID Producto', 'Stock Actual', 'Stock Mínimo', 'En Exhibición', 'Valor Unitario', 'Valor Total', 'Estado'];
     
-    // Convertir inventarios a filas CSV
+    // Convertir inventarios a filas CSV y calcular totales
+    let totalInventario = 0;
     const csvRows = filteredInventories.map(inventory => {
       const estado = inventory.stockQuantity <= inventory.minimumStock ? 'Stock Bajo' : 'Stock OK';
+      
+      // Buscar el producto correspondiente para obtener el precio
+      // Manejar casos donde productId puede ser null o undefined
+      const productId = inventory.productId != null ? Number(inventory.productId) : null;
+      const product = productId != null ? products.find(p => p.id === productId) : null;
+      
+      // Convertir el precio a número, asegurándose de que sea un número válido
+      const precioUnitario = product?.price ? Number(product.price) : 0;
+      const stockQuantity = Number(inventory.stockQuantity) || 0;
+      const valorTotal = precioUnitario * stockQuantity;
+      
+      // Acumular el valor total del inventario
+      totalInventario += valorTotal;
+      
       return [
-        `"${inventory.productName}"`,
-        `"${inventory.productSku}"`,
-        inventory.productId,
+        `"${inventory.productName || 'N/A'}"`,
+        `"${inventory.productSku || 'N/A'}"`,
+        productId != null ? productId : 'N/A',
         inventory.stockQuantity,
         inventory.minimumStock,
         inventory.onDisplay,
+        precioUnitario.toFixed(2),
+        valorTotal.toFixed(2),
         `"${estado}"`
       ].join(',');
     });
 
-    // Combinar headers y filas
+    // Agregar fila de sumatoria al final
+    const sumatoriaRow = [
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '"TOTAL INVENTARIO"',
+      totalInventario.toFixed(2),
+      ''
+    ].join(',');
+
+    // Combinar headers, filas y sumatoria
     const csvContent = [
       csvHeaders.join(','),
-      ...csvRows
+      ...csvRows,
+      sumatoriaRow
     ].join('\n');
 
     // Crear BOM para UTF-8 (para Excel)
