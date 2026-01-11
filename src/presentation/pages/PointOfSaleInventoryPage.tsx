@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse, FaEye, FaEdit } from 'react-icons/fa';
+import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse, FaEye, FaEdit, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import colors from '../../shared/colors';
 import InventoryForm from '../components/InventoryForm';
 import ModalComponent from '../components/ModalComponent';
@@ -50,6 +50,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
   const [displayValue, setDisplayValue] = useState('');
   const [editingMinimumStock, setEditingMinimumStock] = useState<number | null>(null);
   const [minimumStockValue, setMinimumStockValue] = useState('');
+  const [sortBy, setSortBy] = useState<string>('');
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
   
   // Función para cargar inventarios
@@ -57,9 +59,19 @@ const PointOfSaleInventoryPage: React.FC = () => {
     if (!id) return;
 
     try {
+      // Construir URL con parámetros de ordenamiento
+      // El endpoint correcto es /inventory con pointOfSaleId como parámetro
+      const params = new URLSearchParams();
+      params.append('pointOfSaleId', id);
+      if (sortBy) {
+        params.append('sortBy', sortBy);
+        params.append('order', order);
+      }
+      const inventoriesUrl = `${BASE_PATH}/inventory?${params.toString()}`;
+      
       // Cargar inventarios y productos en paralelo
       const [inventoriesResponse, productsResponse] = await Promise.all([
-        authenticatedFetch(`${BASE_PATH}/point-of-sale/${id}/inventories`),
+        authenticatedFetch(inventoriesUrl),
         authenticatedFetch(`${BASE_PATH}/product`)
       ]);
 
@@ -114,7 +126,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
       console.error('Error fetching data:', err);
       setError(`Error: ${err.message}`);
     }
-  }, [id]);
+  }, [id, sortBy, order]);
   
   useEffect(() => {
     loadInventories();
@@ -234,6 +246,28 @@ const PointOfSaleInventoryPage: React.FC = () => {
     setEditingMinimumStock(null);
     setMinimumStockValue('');
     setError(''); // Limpiar errores previos
+  };
+
+  // Manejar ordenamiento
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      // Si ya está ordenado por esta columna, cambiar el orden
+      setOrder(order === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Si es una nueva columna, ordenar ascendente por defecto
+      setSortBy(column);
+      setOrder('asc');
+    }
+  };
+
+  // Obtener icono de ordenamiento
+  const getSortIcon = (column: string) => {
+    if (sortBy !== column) {
+      return <FaSort style={{ marginLeft: '4px', opacity: 0.3 }} />;
+    }
+    return order === 'asc' 
+      ? <FaSortUp style={{ marginLeft: '4px', color: colors.primaryColor }} />
+      : <FaSortDown style={{ marginLeft: '4px', color: colors.primaryColor }} />;
   };
 
 
@@ -393,11 +427,56 @@ const PointOfSaleInventoryPage: React.FC = () => {
         <table style={tableStyles.table} className="table-responsive">
           <thead style={tableStyles.tableHeader}>
             <tr>
-              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Producto</th>
-              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Stock Actual</th>
+              <th 
+                style={{ ...tableStyles.tableHeaderCell, cursor: 'pointer', userSelect: 'none' }} 
+                className="table-header-cell-responsive"
+                onClick={() => handleSort('product')}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  Producto
+                  {getSortIcon('product')}
+                </div>
+              </th>
+              <th 
+                style={{ ...tableStyles.tableHeaderCell, cursor: 'pointer', userSelect: 'none' }} 
+                className="table-header-cell-responsive"
+                onClick={() => handleSort('stockQuantity')}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  Stock Actual
+                  {getSortIcon('stockQuantity')}
+                </div>
+              </th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Stock Mínimo</th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">En Exhibición</th>
-              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Estado</th>
+              <th 
+                style={{ ...tableStyles.tableHeaderCell, cursor: 'pointer', userSelect: 'none' }} 
+                className="table-header-cell-responsive"
+                onClick={() => handleSort('status')}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  Estado
+                  {getSortIcon('status')}
+                </div>
+              </th>
           </tr>
         </thead>
         <tbody>
@@ -543,8 +622,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
                     ) : (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ color: colors.textPrimary, fontWeight: '600', fontSize: '1rem' }}>
-                          {inventory.minimumStock}
-                        </span>
+                {inventory.minimumStock}
+                    </span>
                         <button
                           onClick={() => startEditingMinimumStock(inventory)}
                           style={{

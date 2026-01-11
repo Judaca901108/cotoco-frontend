@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaPlus, FaSearch, FaBox, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaBox, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import ModalComponent from '../components/ModalComponent';
 import ProductForm from '../components/ProductForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
@@ -30,11 +30,20 @@ const ProductsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<string>('');
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
 
   // Fetch products from backend
   useEffect(() => {
-    authenticatedFetch(`${BASE_PATH}/product`)
+    const params = new URLSearchParams();
+    if (sortBy) {
+      params.append('sortBy', sortBy);
+      params.append('order', order);
+    }
+    const url = `${BASE_PATH}/product${params.toString() ? `?${params.toString()}` : ''}`;
+    
+    authenticatedFetch(url)
       .then((res) => res.json())
       .then((data) => {
         const parsedProducts = data.map((product: any) => ({
@@ -44,8 +53,31 @@ const ProductsPage: React.FC = () => {
         setProducts(parsedProducts);
       })
       .catch((error) => console.error('Error fetching products:', error));
-  }, []);
+  }, [sortBy, order]);
 
+
+  // Manejar ordenamiento
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      // Si ya está ordenado por esta columna, cambiar el orden
+      setOrder(order === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Si es una nueva columna, ordenar ascendente por defecto
+      setSortBy(column);
+      setOrder('asc');
+    }
+    setCurrentPage(1); // Resetear a la primera página
+  };
+
+  // Obtener icono de ordenamiento
+  const getSortIcon = (column: string) => {
+    if (sortBy !== column) {
+      return <FaSort style={{ marginLeft: '4px', opacity: 0.3 }} />;
+    }
+    return order === 'asc' 
+      ? <FaSortUp style={{ marginLeft: '4px', color: colors.primaryColor }} />
+      : <FaSortDown style={{ marginLeft: '4px', color: colors.primaryColor }} />;
+  };
 
   const handleCreateProduct = async (data: { name: string; description: string; price: number; sku: string; category: string; barcode?: string; subcategory?: string; number_of_piece?: string; image?: File }) => {
     try {
@@ -186,10 +218,55 @@ const ProductsPage: React.FC = () => {
           <thead style={tableStyles.tableHeader}>
             <tr>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Imagen</th>
-              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Nombre</th>
-              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Categoría</th>
+              <th 
+                style={{ ...tableStyles.tableHeaderCell, cursor: 'pointer', userSelect: 'none' }} 
+                className="table-header-cell-responsive"
+                onClick={() => handleSort('name')}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  Nombre
+                  {getSortIcon('name')}
+                </div>
+              </th>
+              <th 
+                style={{ ...tableStyles.tableHeaderCell, cursor: 'pointer', userSelect: 'none' }} 
+                className="table-header-cell-responsive"
+                onClick={() => handleSort('category')}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  Categoría
+                  {getSortIcon('category')}
+                </div>
+              </th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Subcategoría</th>
-              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Precio</th>
+              <th 
+                style={{ ...tableStyles.tableHeaderCell, cursor: 'pointer', userSelect: 'none' }} 
+                className="table-header-cell-responsive"
+                onClick={() => handleSort('price')}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  Precio
+                  {getSortIcon('price')}
+                </div>
+              </th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">SKU</th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Estado</th>
             </tr>

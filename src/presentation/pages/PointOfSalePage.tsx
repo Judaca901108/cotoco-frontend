@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaPlus, FaSearch, FaStore, FaMapMarkerAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaStore, FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import ModalComponent from '../components/ModalComponent';
 import PointOfSaleForm from '../components/PointOfSaleForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
@@ -27,18 +27,50 @@ const PointOfSalePage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<string>('');
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
 
   useEffect(() => {
-    authenticatedFetch(`${BASE_PATH}/point-of-sale`)
+    const params = new URLSearchParams();
+    if (sortBy) {
+      params.append('sortBy', sortBy);
+      params.append('order', order);
+    }
+    const url = `${BASE_PATH}/point-of-sale${params.toString() ? `?${params.toString()}` : ''}`;
+    
+    authenticatedFetch(url)
       .then((res) => res.json())
       .then((data) => setPointsOfSale(data))
       .catch((err) => {
         console.error('Error fetching points of sale:', err);
         setPointsOfSale([]); // Asegurarse de inicializar como un arreglo vacío en caso de error
       });
-  }, []);
+  }, [sortBy, order]);
 
+
+  // Manejar ordenamiento
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      // Si ya está ordenado por esta columna, cambiar el orden
+      setOrder(order === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Si es una nueva columna, ordenar ascendente por defecto
+      setSortBy(column);
+      setOrder('asc');
+    }
+    setCurrentPage(1); // Resetear a la primera página
+  };
+
+  // Obtener icono de ordenamiento
+  const getSortIcon = (column: string) => {
+    if (sortBy !== column) {
+      return <FaSort style={{ marginLeft: '4px', opacity: 0.3 }} />;
+    }
+    return order === 'asc' 
+      ? <FaSortUp style={{ marginLeft: '4px', color: colors.primaryColor }} />
+      : <FaSortDown style={{ marginLeft: '4px', color: colors.primaryColor }} />;
+  };
 
   const handleCreatePointOfSale = async (data: { name: string; address: string; location: string; type: string }) => {
     try {
@@ -106,10 +138,40 @@ const PointOfSalePage: React.FC = () => {
         <table style={tableStyles.table} className="table-responsive">
           <thead style={tableStyles.tableHeader}>
             <tr>
-              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Nombre</th>
+              <th 
+                style={{ ...tableStyles.tableHeaderCell, cursor: 'pointer', userSelect: 'none' }} 
+                className="table-header-cell-responsive"
+                onClick={() => handleSort('name')}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  Nombre
+                  {getSortIcon('name')}
+                </div>
+              </th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Dirección</th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Ubicación</th>
-              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Tipo</th>
+              <th 
+                style={{ ...tableStyles.tableHeaderCell, cursor: 'pointer', userSelect: 'none' }} 
+                className="table-header-cell-responsive"
+                onClick={() => handleSort('type')}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  Tipo
+                  {getSortIcon('type')}
+                </div>
+              </th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Estado</th>
             </tr>
           </thead>
