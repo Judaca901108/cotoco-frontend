@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { FaChartBar, FaStore, FaBox, FaCalendarAlt, FaDollarSign, FaShoppingCart, FaCreditCard, FaMoneyBill, FaQrcode } from 'react-icons/fa';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import { API_BASE_URL } from '../../config/apiConfig';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
+import { useAuth } from '../../application/contexts/AuthContext';
 import {
   BarChart,
   Bar,
@@ -79,6 +80,8 @@ type SummaryResponse = {
 };
 
 const AnalyticsPage: React.FC = () => {
+  const { isAdmin } = useAuth();
+  const { theme } = useTheme();
   const [salesByPointOfSale, setSalesByPointOfSale] = useState<SalesByPointOfSale[]>([]);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [summary, setSummary] = useState<SummaryData | null>(null);
@@ -240,7 +243,7 @@ const AnalyticsPage: React.FC = () => {
         textAlign: 'center'
       }}>
         <div style={{ fontSize: '2rem', marginBottom: '16px' }}>⏳</div>
-        <div style={{ color: colors.textSecondary }}>Cargando datos de analytics...</div>
+        <div style={{ color: theme.textSecondary }}>Cargando datos de analytics...</div>
       </div>
     );
   }
@@ -256,18 +259,18 @@ const AnalyticsPage: React.FC = () => {
         <h1 style={{
           fontSize: '2rem',
           fontWeight: '700',
-          color: colors.textPrimary,
+          color: theme.textPrimary,
           marginBottom: '8px',
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
         }}>
-          <FaChartBar style={{ color: colors.primaryColor }} />
+          <FaChartBar style={{ color: theme.primaryColor }} />
           Analytics de Ventas
         </h1>
         <p style={{
           fontSize: '1rem',
-          color: colors.textSecondary,
+          color: theme.textSecondary,
           margin: 0,
         }}>
           Análisis detallado de ventas, productos y puntos de venta
@@ -276,8 +279,8 @@ const AnalyticsPage: React.FC = () => {
 
       {/* Filtros de fecha */}
       <div style={{
-        backgroundColor: colors.cardBackground,
-        border: `1px solid ${colors.cardBorder}`,
+        backgroundColor: theme.cardBackground,
+        border: `1px solid ${theme.cardBorder}`,
         borderRadius: '12px',
         padding: '20px',
         marginBottom: '30px',
@@ -287,17 +290,17 @@ const AnalyticsPage: React.FC = () => {
         alignItems: 'center',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <FaCalendarAlt style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
+          <FaCalendarAlt style={{ color: theme.textSecondary, fontSize: '0.9rem' }} />
           <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
             style={{
               padding: '10px 16px',
               fontSize: '0.95rem',
-              backgroundColor: colors.backgroundTertiary,
-              border: `1px solid ${colors.borderColor}`,
+              backgroundColor: theme.backgroundTertiary,
+              border: `1px solid ${theme.borderColor}`,
               borderRadius: '8px',
-              color: colors.textPrimary,
+              color: theme.textPrimary,
               cursor: 'pointer',
               outline: 'none',
             }}
@@ -318,14 +321,14 @@ const AnalyticsPage: React.FC = () => {
               style={{
                 padding: '10px 16px',
                 fontSize: '0.95rem',
-                backgroundColor: colors.backgroundTertiary,
-                border: `1px solid ${colors.borderColor}`,
+                backgroundColor: theme.backgroundTertiary,
+                border: `1px solid ${theme.borderColor}`,
                 borderRadius: '8px',
-                color: colors.textPrimary,
+                color: theme.textPrimary,
                 outline: 'none',
               }}
             />
-            <span style={{ color: colors.textSecondary }}>a</span>
+            <span style={{ color: theme.textSecondary }}>a</span>
             <input
               type="date"
               value={customEndDate}
@@ -333,10 +336,10 @@ const AnalyticsPage: React.FC = () => {
               style={{
                 padding: '10px 16px',
                 fontSize: '0.95rem',
-                backgroundColor: colors.backgroundTertiary,
-                border: `1px solid ${colors.borderColor}`,
+                backgroundColor: theme.backgroundTertiary,
+                border: `1px solid ${theme.borderColor}`,
                 borderRadius: '8px',
-                color: colors.textPrimary,
+                color: theme.textPrimary,
                 outline: 'none',
               }}
             />
@@ -347,7 +350,7 @@ const AnalyticsPage: React.FC = () => {
           <div style={{ 
             marginLeft: 'auto',
             fontSize: '0.9rem',
-            color: colors.textSecondary,
+            color: theme.textSecondary,
           }}>
             Período: {summary.dateRange.startDate} a {summary.dateRange.endDate}
           </div>
@@ -358,11 +361,11 @@ const AnalyticsPage: React.FC = () => {
       {error && (
         <div style={{
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          border: `1px solid ${colors.error}`,
+          border: `1px solid ${theme.error}`,
           borderRadius: '8px',
           padding: '12px 16px',
           marginBottom: '20px',
-          color: colors.error,
+          color: theme.error,
           fontSize: '0.9rem',
         }}>
           {error}
@@ -378,14 +381,14 @@ const AnalyticsPage: React.FC = () => {
           marginBottom: '30px',
         }}>
           <div style={{
-            backgroundColor: colors.cardBackground,
-            border: `1px solid ${colors.cardBorder}`,
+            backgroundColor: theme.cardBackground,
+            border: `1px solid ${theme.cardBorder}`,
             borderRadius: '12px',
             padding: '20px',
           }}>
             <div style={{ 
               fontSize: '0.9rem', 
-              color: colors.textSecondary, 
+              color: theme.textSecondary, 
               marginBottom: '8px' 
             }}>
               Total de Transacciones
@@ -393,21 +396,21 @@ const AnalyticsPage: React.FC = () => {
             <div style={{ 
               fontSize: '2rem', 
               fontWeight: '700', 
-              color: colors.primaryColor 
+              color: theme.primaryColor 
             }}>
               {summary.totalTransactions}
             </div>
           </div>
 
           <div style={{
-            backgroundColor: colors.cardBackground,
-            border: `1px solid ${colors.cardBorder}`,
+            backgroundColor: theme.cardBackground,
+            border: `1px solid ${theme.cardBorder}`,
             borderRadius: '12px',
             padding: '20px',
           }}>
             <div style={{ 
               fontSize: '0.9rem', 
-              color: colors.textSecondary, 
+              color: theme.textSecondary, 
               marginBottom: '8px' 
             }}>
               Total Vendido
@@ -415,21 +418,21 @@ const AnalyticsPage: React.FC = () => {
             <div style={{ 
               fontSize: '2rem', 
               fontWeight: '700', 
-              color: colors.success 
+              color: theme.success 
             }}>
               {formatCurrency(summary.totalSales)}
             </div>
           </div>
 
           <div style={{
-            backgroundColor: colors.cardBackground,
-            border: `1px solid ${colors.cardBorder}`,
+            backgroundColor: theme.cardBackground,
+            border: `1px solid ${theme.cardBorder}`,
             borderRadius: '12px',
             padding: '20px',
           }}>
             <div style={{ 
               fontSize: '0.9rem', 
-              color: colors.textSecondary, 
+              color: theme.textSecondary, 
               marginBottom: '8px' 
             }}>
               Cantidad Total
@@ -437,21 +440,21 @@ const AnalyticsPage: React.FC = () => {
             <div style={{ 
               fontSize: '2rem', 
               fontWeight: '700', 
-              color: colors.info 
+              color: theme.info 
             }}>
               {summary.totalQuantity}
             </div>
           </div>
 
           <div style={{
-            backgroundColor: colors.cardBackground,
-            border: `1px solid ${colors.cardBorder}`,
+            backgroundColor: theme.cardBackground,
+            border: `1px solid ${theme.cardBorder}`,
             borderRadius: '12px',
             padding: '20px',
           }}>
             <div style={{ 
               fontSize: '0.9rem', 
-              color: colors.textSecondary, 
+              color: theme.textSecondary, 
               marginBottom: '8px' 
             }}>
               Ticket Promedio
@@ -459,7 +462,7 @@ const AnalyticsPage: React.FC = () => {
             <div style={{ 
               fontSize: '2rem', 
               fontWeight: '700', 
-              color: colors.warning 
+              color: theme.warning 
             }}>
               {formatCurrency(summary.averageTransactionValue)}
             </div>
@@ -476,58 +479,58 @@ const AnalyticsPage: React.FC = () => {
       }}>
         {/* Ventas por punto de venta */}
         <div style={{
-          backgroundColor: colors.cardBackground,
-          border: `1px solid ${colors.cardBorder}`,
+          backgroundColor: theme.cardBackground,
+          border: `1px solid ${theme.cardBorder}`,
           borderRadius: '12px',
           padding: '24px',
         }}>
           <h2 style={{
             fontSize: '1.3rem',
             fontWeight: '600',
-            color: colors.textPrimary,
+            color: theme.textPrimary,
             marginBottom: '20px',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
           }}>
-            <FaStore style={{ color: colors.primaryColor }} />
+            <FaStore style={{ color: theme.primaryColor }} />
             Ventas por Punto de Venta
           </h2>
           {salesByPointOfSale.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={salesByPointOfSale}>
-                <CartesianGrid strokeDasharray="3 3" stroke={colors.borderColor} />
+                <CartesianGrid strokeDasharray="3 3" stroke={theme.borderColor} />
                 <XAxis 
                   dataKey="pointOfSaleName" 
-                  stroke={colors.textSecondary}
+                  stroke={theme.textSecondary}
                   fontSize={12}
                   angle={-45}
                   textAnchor="end"
                   height={80}
                 />
                 <YAxis 
-                  stroke={colors.textSecondary}
+                  stroke={theme.textSecondary}
                   fontSize={12}
                   tickFormatter={(value) => formatCurrency(value)}
                 />
                 <Tooltip 
                   formatter={(value: number | undefined) => value ? formatCurrency(value) : ''}
                   contentStyle={{
-                    backgroundColor: colors.cardBackground,
-                    border: `1px solid ${colors.borderColor}`,
+                    backgroundColor: theme.cardBackground,
+                    border: `1px solid ${theme.borderColor}`,
                     borderRadius: '8px',
                   }}
                 />
                 <Legend />
-                <Bar dataKey="totalSales" fill={colors.primaryColor} name="Ventas Totales" />
-                <Bar dataKey="totalQuantity" fill={colors.success} name="Cantidad Total" />
+                <Bar dataKey="totalSales" fill={theme.primaryColor} name="Ventas Totales" />
+                <Bar dataKey="totalQuantity" fill={theme.success} name="Cantidad Total" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
             <div style={{ 
               textAlign: 'center', 
               padding: '40px',
-              color: colors.textSecondary 
+              color: theme.textSecondary 
             }}>
               No hay datos de ventas para mostrar
             </div>
@@ -537,21 +540,21 @@ const AnalyticsPage: React.FC = () => {
         {/* Métodos de pago */}
         {summary && paymentMethodData.length > 0 && (
           <div style={{
-            backgroundColor: colors.cardBackground,
-            border: `1px solid ${colors.cardBorder}`,
+            backgroundColor: theme.cardBackground,
+            border: `1px solid ${theme.cardBorder}`,
             borderRadius: '12px',
             padding: '24px',
           }}>
             <h2 style={{
               fontSize: '1.3rem',
               fontWeight: '600',
-              color: colors.textPrimary,
+              color: theme.textPrimary,
               marginBottom: '20px',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
             }}>
-              <FaCreditCard style={{ color: colors.primaryColor }} />
+              <FaCreditCard style={{ color: theme.primaryColor }} />
               Métodos de Pago
             </h2>
             <ResponsiveContainer width="100%" height={300}>
@@ -579,8 +582,8 @@ const AnalyticsPage: React.FC = () => {
 
       {/* Productos más vendidos */}
       <div style={{
-        backgroundColor: colors.cardBackground,
-        border: `1px solid ${colors.cardBorder}`,
+        backgroundColor: theme.cardBackground,
+        border: `1px solid ${theme.cardBorder}`,
         borderRadius: '12px',
         padding: '24px',
         marginBottom: '30px',
@@ -588,29 +591,29 @@ const AnalyticsPage: React.FC = () => {
         <h2 style={{
           fontSize: '1.3rem',
           fontWeight: '600',
-          color: colors.textPrimary,
+          color: theme.textPrimary,
           marginBottom: '20px',
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
         }}>
-          <FaBox style={{ color: colors.primaryColor }} />
+          <FaBox style={{ color: theme.primaryColor }} />
           Productos Más Vendidos
         </h2>
         {topProducts.length > 0 ? (
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={topProducts} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke={colors.borderColor} />
+              <CartesianGrid strokeDasharray="3 3" stroke={theme.borderColor} />
               <XAxis 
                 type="number"
-                stroke={colors.textSecondary}
+                stroke={theme.textSecondary}
                 fontSize={12}
                 tickFormatter={(value) => value.toString()}
               />
               <YAxis 
                 type="category"
                 dataKey="productName"
-                stroke={colors.textSecondary}
+                stroke={theme.textSecondary}
                 fontSize={12}
                 width={150}
               />
@@ -621,21 +624,21 @@ const AnalyticsPage: React.FC = () => {
                   return value.toString();
                 }}
                 contentStyle={{
-                  backgroundColor: colors.cardBackground,
-                  border: `1px solid ${colors.borderColor}`,
+                  backgroundColor: theme.cardBackground,
+                  border: `1px solid ${theme.borderColor}`,
                   borderRadius: '8px',
                 }}
               />
               <Legend />
-              <Bar dataKey="totalQuantity" fill={colors.primaryColor} name="Cantidad Vendida" />
-              <Bar dataKey="totalSales" fill={colors.success} name="Ventas Totales" />
+              <Bar dataKey="totalQuantity" fill={theme.primaryColor} name="Cantidad Vendida" />
+              <Bar dataKey="totalSales" fill={theme.success} name="Ventas Totales" />
             </BarChart>
           </ResponsiveContainer>
         ) : (
           <div style={{ 
             textAlign: 'center', 
             padding: '40px',
-            color: colors.textSecondary 
+            color: theme.textSecondary 
           }}>
             No hay productos vendidos para mostrar
           </div>
@@ -644,21 +647,21 @@ const AnalyticsPage: React.FC = () => {
 
       {/* Últimas transacciones */}
       <div style={{
-        backgroundColor: colors.cardBackground,
-        border: `1px solid ${colors.cardBorder}`,
+        backgroundColor: theme.cardBackground,
+        border: `1px solid ${theme.cardBorder}`,
         borderRadius: '12px',
         padding: '24px',
       }}>
         <h2 style={{
           fontSize: '1.3rem',
           fontWeight: '600',
-          color: colors.textPrimary,
+          color: theme.textPrimary,
           marginBottom: '20px',
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
         }}>
-          <FaShoppingCart style={{ color: colors.primaryColor }} />
+          <FaShoppingCart style={{ color: theme.primaryColor }} />
           Últimas Transacciones de Ventas
         </h2>
         {transactions.length > 0 ? (
@@ -669,56 +672,56 @@ const AnalyticsPage: React.FC = () => {
             }}>
               <thead>
                 <tr style={{
-                  borderBottom: `2px solid ${colors.borderColor}`,
+                  borderBottom: `2px solid ${theme.borderColor}`,
                 }}>
                   <th style={{
                     padding: '12px',
                     textAlign: 'left',
                     fontSize: '0.9rem',
                     fontWeight: '600',
-                    color: colors.textSecondary,
+                    color: theme.textSecondary,
                   }}>Fecha</th>
                   <th style={{
                     padding: '12px',
                     textAlign: 'left',
                     fontSize: '0.9rem',
                     fontWeight: '600',
-                    color: colors.textSecondary,
+                    color: theme.textSecondary,
                   }}>Producto</th>
                   <th style={{
                     padding: '12px',
                     textAlign: 'left',
                     fontSize: '0.9rem',
                     fontWeight: '600',
-                    color: colors.textSecondary,
+                    color: theme.textSecondary,
                   }}>Punto de Venta</th>
                   <th style={{
                     padding: '12px',
                     textAlign: 'center',
                     fontSize: '0.9rem',
                     fontWeight: '600',
-                    color: colors.textSecondary,
+                    color: theme.textSecondary,
                   }}>Cantidad</th>
                   <th style={{
                     padding: '12px',
                     textAlign: 'right',
                     fontSize: '0.9rem',
                     fontWeight: '600',
-                    color: colors.textSecondary,
+                    color: theme.textSecondary,
                   }}>Total</th>
                   <th style={{
                     padding: '12px',
                     textAlign: 'center',
                     fontSize: '0.9rem',
                     fontWeight: '600',
-                    color: colors.textSecondary,
+                    color: theme.textSecondary,
                   }}>Pago</th>
                   <th style={{
                     padding: '12px',
                     textAlign: 'left',
                     fontSize: '0.9rem',
                     fontWeight: '600',
-                    color: colors.textSecondary,
+                    color: theme.textSecondary,
                   }}>Usuario</th>
                 </tr>
               </thead>
@@ -727,20 +730,20 @@ const AnalyticsPage: React.FC = () => {
                   <tr 
                     key={transaction.id}
                     style={{
-                      borderBottom: `1px solid ${colors.borderColor}`,
-                      backgroundColor: index % 2 === 0 ? 'transparent' : colors.backgroundTertiary,
+                      borderBottom: `1px solid ${theme.borderColor}`,
+                      backgroundColor: index % 2 === 0 ? 'transparent' : theme.backgroundTertiary,
                     }}
                   >
-                    <td style={{ padding: '12px', fontSize: '0.9rem', color: colors.textPrimary }}>
+                    <td style={{ padding: '12px', fontSize: '0.9rem', color: theme.textPrimary }}>
                       {formatDate(transaction.date)}
                     </td>
-                    <td style={{ padding: '12px', fontSize: '0.9rem', color: colors.textPrimary }}>
+                    <td style={{ padding: '12px', fontSize: '0.9rem', color: theme.textPrimary }}>
                       <div style={{ fontWeight: '600' }}>{transaction.productName}</div>
-                      <div style={{ fontSize: '0.8rem', color: colors.textSecondary }}>
+                      <div style={{ fontSize: '0.8rem', color: theme.textSecondary }}>
                         {transaction.productSku}
                       </div>
                     </td>
-                    <td style={{ padding: '12px', fontSize: '0.9rem', color: colors.textPrimary }}>
+                    <td style={{ padding: '12px', fontSize: '0.9rem', color: theme.textPrimary }}>
                       {transaction.pointOfSaleName}
                     </td>
                     <td style={{ 
@@ -748,7 +751,7 @@ const AnalyticsPage: React.FC = () => {
                       textAlign: 'center',
                       fontSize: '0.9rem', 
                       fontWeight: '600',
-                      color: colors.primaryColor 
+                      color: theme.primaryColor 
                     }}>
                       {transaction.quantity}
                     </td>
@@ -757,7 +760,7 @@ const AnalyticsPage: React.FC = () => {
                       textAlign: 'right',
                       fontSize: '0.9rem', 
                       fontWeight: '600',
-                      color: colors.success 
+                      color: theme.success 
                     }}>
                       {formatCurrency(transaction.total)}
                     </td>
@@ -765,7 +768,7 @@ const AnalyticsPage: React.FC = () => {
                       padding: '12px', 
                       textAlign: 'center',
                       fontSize: '0.9rem', 
-                      color: colors.textSecondary 
+                      color: theme.textSecondary 
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                         {getPaymentMethodIcon(transaction.paymentMethod)}
@@ -774,7 +777,7 @@ const AnalyticsPage: React.FC = () => {
                         </span>
                       </div>
                     </td>
-                    <td style={{ padding: '12px', fontSize: '0.9rem', color: colors.textPrimary }}>
+                    <td style={{ padding: '12px', fontSize: '0.9rem', color: theme.textPrimary }}>
                       {transaction.userName}
                     </td>
                   </tr>
@@ -786,7 +789,7 @@ const AnalyticsPage: React.FC = () => {
           <div style={{ 
             textAlign: 'center', 
             padding: '40px',
-            color: colors.textSecondary 
+            color: theme.textSecondary 
           }}>
             No hay transacciones para mostrar
           </div>

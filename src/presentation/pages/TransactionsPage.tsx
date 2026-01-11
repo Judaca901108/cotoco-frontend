@@ -4,8 +4,8 @@ import ModalComponent from '../components/ModalComponent';
 import TransactionForm from '../components/TransactionForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import { useAuth } from '../../application/contexts/AuthContext';
-import { transactionStyles, getTransactionTypeStyle, getQuantityStyle, getTransactionIcon, getTransactionTypeLabel } from '../../shared/transactionStyles';
-import colors from '../../shared/colors';
+import { getTransactionStyles, getTransactionTypeStyle, getQuantityStyle, getTransactionIcon, getTransactionTypeLabel } from '../../shared/transactionStyles';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 import { API_BASE_URL } from '../../config/apiConfig';
 const BASE_PATH = API_BASE_URL;
@@ -74,6 +74,8 @@ type Inventory = {
 };
 
 const TransactionsPage: React.FC = () => {
+  const { theme } = useTheme();
+  const transactionStyles = getTransactionStyles(theme);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [inventories, setInventories] = useState<Inventory[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -210,25 +212,25 @@ const TransactionsPage: React.FC = () => {
   };
 
   // Cargar transacciones
-  const loadTransactions = async () => {
-    try {
-      setLoading(true);
-      
-      // Construir endpoint base
-      let endpoint = isAdmin 
-        ? `${BASE_PATH}/inventory-transaction`  // Admin ve todas las transacciones
-        : `${BASE_PATH}/inventory-transaction?userId=${user?.id}`;  // Usuario ve solo sus transacciones
-      
-      // Agregar filtros de fecha si están seleccionados
-      const dateRange = getDateRange(dateFilter);
-      if (dateRange && dateRange.startDate && dateRange.endDate) {
-        const separator = endpoint.includes('?') ? '&' : '?';
-        endpoint += `${separator}startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
-      }
-      
-      const response = await authenticatedFetch(endpoint);
-      if (!response.ok) throw new Error('Error al cargar transacciones');
-      const data = await response.json();
+    const loadTransactions = async () => {
+      try {
+        setLoading(true);
+        
+        // Construir endpoint base
+        let endpoint = isAdmin 
+          ? `${BASE_PATH}/inventory-transaction`  // Admin ve todas las transacciones
+          : `${BASE_PATH}/inventory-transaction?userId=${user?.id}`;  // Usuario ve solo sus transacciones
+        
+        // Agregar filtros de fecha si están seleccionados
+        const dateRange = getDateRange(dateFilter);
+        if (dateRange && dateRange.startDate && dateRange.endDate) {
+          const separator = endpoint.includes('?') ? '&' : '?';
+          endpoint += `${separator}startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
+        }
+        
+        const response = await authenticatedFetch(endpoint);
+        if (!response.ok) throw new Error('Error al cargar transacciones');
+        const data = await response.json();
 
       // Enriquecer transacciones
       const enrichedTransactions = await enrichTransactions(data);
@@ -476,7 +478,7 @@ const TransactionsPage: React.FC = () => {
       <div style={transactionStyles.pageContainer} className="page-container-responsive">
         <div style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '2rem', marginBottom: '16px' }}>⏳</div>
-          <div style={{ color: colors.textSecondary }}>Cargando transacciones...</div>
+          <div style={{ color: theme.textSecondary }}>Cargando transacciones...</div>
         </div>
       </div>
     );
@@ -487,7 +489,7 @@ const TransactionsPage: React.FC = () => {
       {/* Header */}
       <div style={transactionStyles.pageHeader}>
         <h1 style={transactionStyles.pageTitle}>
-          <FaBox style={{ color: colors.primaryColor }} />
+          <FaBox style={{ color: theme.primaryColor }} />
           {isAdmin ? 'Transacciones de Inventario' : 'Mis Transacciones'}
         </h1>
         <p style={transactionStyles.pageSubtitle}>
@@ -509,7 +511,7 @@ const TransactionsPage: React.FC = () => {
               left: '12px',
               top: '50%',
               transform: 'translateY(-50%)',
-              color: colors.textSecondary,
+              color: theme.textSecondary,
               fontSize: '0.9rem',
             }} />
             <input
@@ -521,25 +523,25 @@ const TransactionsPage: React.FC = () => {
                 width: '100%',
                 padding: '12px 12px 12px 40px',
                 fontSize: '1rem',
-                backgroundColor: colors.backgroundTertiary,
-                border: `1px solid ${colors.borderColor}`,
+                backgroundColor: theme.backgroundTertiary,
+                border: `1px solid ${theme.borderColor}`,
                 borderRadius: '8px',
-                color: colors.textPrimary,
+                color: theme.textPrimary,
                 outline: 'none',
                 transition: 'border-color 0.2s ease',
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = colors.primaryColor;
+                e.target.style.borderColor = theme.primaryColor;
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = colors.borderColor;
+                e.target.style.borderColor = theme.borderColor;
               }}
             />
           </div>
 
           {/* Filtro por tipo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FaFilter style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
+            <FaFilter style={{ color: theme.textSecondary, fontSize: '0.9rem' }} />
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
@@ -555,7 +557,7 @@ const TransactionsPage: React.FC = () => {
 
           {/* Filtro por fecha */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FaCalendarAlt style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
+            <FaCalendarAlt style={{ color: theme.textSecondary, fontSize: '0.9rem' }} />
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
@@ -581,7 +583,7 @@ const TransactionsPage: React.FC = () => {
                 }}
                 placeholder="Fecha inicio"
               />
-              <span style={{ color: colors.textSecondary, fontSize: '0.9rem' }}>a</span>
+              <span style={{ color: theme.textSecondary, fontSize: '0.9rem' }}>a</span>
               <input
                 type="date"
                 value={customEndDate}
@@ -604,8 +606,8 @@ const TransactionsPage: React.FC = () => {
             disabled={filteredTransactions.length === 0}
             style={{
               ...transactionStyles.actionButton,
-              backgroundColor: filteredTransactions.length === 0 ? colors.buttonSecondary : '#10b981',
-              color: filteredTransactions.length === 0 ? colors.textSecondary : colors.white,
+              backgroundColor: filteredTransactions.length === 0 ? theme.buttonSecondary : '#10b981',
+              color: filteredTransactions.length === 0 ? theme.textSecondary : theme.white,
               cursor: filteredTransactions.length === 0 ? 'not-allowed' : 'pointer',
               opacity: filteredTransactions.length === 0 ? 0.6 : 1,
             }}
@@ -628,22 +630,22 @@ const TransactionsPage: React.FC = () => {
             Exportar CSV
           </button>
 
-          {/* Botón crear */}
-          <button
-            onClick={() => setIsCreating(true)}
-            style={transactionStyles.actionButton}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            <FaPlus />
-            Nueva Transacción
-          </button>
+        {/* Botón crear */}
+        <button
+          onClick={() => setIsCreating(true)}
+          style={transactionStyles.actionButton}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+        >
+          <FaPlus />
+          Nueva Transacción
+        </button>
         </div>
       </div>
 
@@ -651,11 +653,11 @@ const TransactionsPage: React.FC = () => {
       {error && (
         <div style={{
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          border: `1px solid ${colors.error}`,
+          border: `1px solid ${theme.error}`,
           borderRadius: '8px',
           padding: '12px 16px',
           marginBottom: '20px',
-          color: colors.error,
+          color: theme.error,
           fontSize: '0.9rem',
         }}>
           {error}
@@ -668,10 +670,10 @@ const TransactionsPage: React.FC = () => {
           <div style={{
             textAlign: 'center',
             padding: '60px',
-            backgroundColor: colors.cardBackground,
-            border: `1px solid ${colors.cardBorder}`,
+            backgroundColor: theme.cardBackground,
+            border: `1px solid ${theme.cardBorder}`,
             borderRadius: '12px',
-            color: colors.textSecondary,
+            color: theme.textSecondary,
           }}>
             <div style={{ fontSize: '2rem', marginBottom: '16px', opacity: 0.5 }}>
               📋
@@ -689,8 +691,8 @@ const TransactionsPage: React.FC = () => {
               <button
                 onClick={() => setIsCreating(true)}
                 style={{
-                  backgroundColor: colors.primaryColor,
-                  color: colors.white,
+                  backgroundColor: theme.primaryColor,
+                  color: theme.white,
                   border: 'none',
                   padding: '10px 20px',
                   borderRadius: '8px',
@@ -711,19 +713,19 @@ const TransactionsPage: React.FC = () => {
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
-                e.currentTarget.style.borderColor = colors.primaryColor;
+                e.currentTarget.style.borderColor = theme.primaryColor;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.borderColor = colors.cardBorder;
+                e.currentTarget.style.borderColor = theme.cardBorder;
               }}
             >
               {/* Header de la tarjeta */}
               <div style={transactionStyles.cardHeader}>
                 <div style={transactionStyles.transactionType}>
                   <span>{getTransactionIcon(transaction.transactionType)}</span>
-                  <span style={getTransactionTypeStyle(transaction.transactionType)}>
+                  <span style={getTransactionTypeStyle(transaction.transactionType, theme)}>
                     {getTransactionTypeLabel(transaction.transactionType)}
                   </span>
                 </div>
@@ -740,14 +742,14 @@ const TransactionsPage: React.FC = () => {
                     <div style={{ marginBottom: '12px' }}>
                       <div style={{ 
                         fontSize: '0.85rem', 
-                        color: colors.textSecondary, 
+                        color: theme.textSecondary, 
                         marginBottom: '8px',
                         fontWeight: '600'
                       }}>
                         Items ({transaction.itemsCount || transaction.enrichedItems.length}):
                       </div>
                       <div style={{
-                        border: `1px solid ${colors.borderColor}`,
+                        border: `1px solid ${theme.borderColor}`,
                         borderRadius: '6px',
                         overflow: 'hidden',
                       }}>
@@ -756,20 +758,20 @@ const TransactionsPage: React.FC = () => {
                             key={item.inventoryId}
                             style={{
                               padding: '10px 12px',
-                              borderBottom: index < transaction.enrichedItems!.length - 1 ? `1px solid ${colors.borderColor}` : 'none',
-                              backgroundColor: index % 2 === 0 ? colors.cardBackground : colors.backgroundTertiary,
+                              borderBottom: index < transaction.enrichedItems!.length - 1 ? `1px solid ${theme.borderColor}` : 'none',
+                              backgroundColor: index % 2 === 0 ? theme.cardBackground : theme.backgroundTertiary,
                             }}
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: '600', color: colors.textPrimary, marginBottom: '2px' }}>
+                                <div style={{ fontWeight: '600', color: theme.textPrimary, marginBottom: '2px' }}>
                                   {item.productName}
                                 </div>
-                                <div style={{ fontSize: '0.8rem', color: colors.textSecondary }}>
+                                <div style={{ fontSize: '0.8rem', color: theme.textSecondary }}>
                                   SKU: {item.productSku}
                                   {item.barcode && ` • Código: ${item.barcode}`}
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: colors.textSecondary, marginTop: '2px' }}>
+                                <div style={{ fontSize: '0.75rem', color: theme.textSecondary, marginTop: '2px' }}>
                                   <FaStore style={{ marginRight: '4px', fontSize: '0.7rem' }} />
                                   {item.pointOfSaleName}
                                 </div>
@@ -783,7 +785,7 @@ const TransactionsPage: React.FC = () => {
                               }}>
                                 <div style={{ 
                                   fontWeight: '600',
-                                  color: colors.primaryColor,
+                                  color: theme.primaryColor,
                                   fontSize: '0.9rem'
                                 }}>
                                   {item.quantity}
@@ -791,7 +793,7 @@ const TransactionsPage: React.FC = () => {
                                 {transaction.transactionType === 'sale' && item.price && item.price > 0 && (
                                   <div style={{ 
                                     fontSize: '0.75rem',
-                                    color: colors.textSecondary
+                                    color: theme.textSecondary
                                   }}>
                                     ${(item.subtotal || 0).toLocaleString('es-CO')}
                                   </div>
@@ -804,10 +806,10 @@ const TransactionsPage: React.FC = () => {
                     </div>
                     {/* Total de cantidad */}
                     <div style={transactionStyles.quantityInfo}>
-                      <span style={{ color: colors.textSecondary, fontSize: '0.9rem' }}>
+                      <span style={{ color: theme.textSecondary, fontSize: '0.9rem' }}>
                         Total:
                       </span>
-                      <span style={getQuantityStyle(transaction.totalQuantity || 0, transaction.transactionType)}>
+                      <span style={getQuantityStyle(transaction.totalQuantity || 0, transaction.transactionType, theme)}>
                         {transaction.totalQuantity || 0}
                       </span>
                     </div>
@@ -818,21 +820,21 @@ const TransactionsPage: React.FC = () => {
                         marginTop: '12px',
                         padding: '12px',
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        border: `1px solid ${colors.success}30`,
+                        border: `1px solid ${theme.success}30`,
                         borderRadius: '6px',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
                       }}>
                         <span style={{ 
-                          color: colors.textSecondary, 
+                          color: theme.textSecondary, 
                           fontSize: '0.9rem',
                           fontWeight: '600'
                         }}>
                           Valor Total:
                         </span>
                         <span style={{ 
-                          color: colors.success, 
+                          color: theme.success, 
                           fontSize: '1.1rem',
                           fontWeight: '700'
                         }}>
@@ -845,7 +847,7 @@ const TransactionsPage: React.FC = () => {
                   <>
                     {/* Información del producto (transacción individual) */}
                 <div style={transactionStyles.productInfo}>
-                  <FaBox style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
+                  <FaBox style={{ color: theme.textSecondary, fontSize: '0.9rem' }} />
                   <div>
                     <div style={transactionStyles.productName}>
                       {transaction.productName || 'Producto no encontrado'}
@@ -860,10 +862,10 @@ const TransactionsPage: React.FC = () => {
 
                 {/* Cantidad */}
                 <div style={transactionStyles.quantityInfo}>
-                  <span style={{ color: colors.textSecondary, fontSize: '0.9rem' }}>
+                  <span style={{ color: theme.textSecondary, fontSize: '0.9rem' }}>
                     Cantidad:
                   </span>
-                      <span style={getQuantityStyle(transaction.quantity || 0, transaction.transactionType)}>
+                      <span style={getQuantityStyle(transaction.quantity || 0, transaction.transactionType, theme)}>
                         {transaction.quantity || 0}
                   </span>
                 </div>
@@ -885,12 +887,12 @@ const TransactionsPage: React.FC = () => {
                     backgroundColor: 'rgba(6, 182, 212, 0.1)',
                     borderRadius: '6px',
                     fontSize: '0.9rem',
-                    color: colors.textSecondary,
+                    color: theme.textSecondary,
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
                   }}>
-                    <FaStore style={{ color: colors.info }} />
+                    <FaStore style={{ color: theme.info }} />
                     <span>
                       {transaction.sourcePointOfSaleName || 'Origen'} 
                       <FaArrowRight style={{ margin: '0 8px', fontSize: '0.8rem' }} />
@@ -903,10 +905,10 @@ const TransactionsPage: React.FC = () => {
               {/* Footer de la tarjeta */}
               <div style={transactionStyles.cardFooter}>
                 <div style={transactionStyles.pointOfSaleInfo}>
-                  <FaUser style={{ marginRight: '6px', fontSize: '0.8rem', color: colors.textSecondary }} />
+                  <FaUser style={{ marginRight: '6px', fontSize: '0.8rem', color: theme.textSecondary }} />
                   {transaction.userName || 'Usuario no encontrado'}
                   {transaction.userUsername && (
-                    <span style={{ color: colors.textMuted, marginLeft: '8px' }}>
+                    <span style={{ color: theme.textMuted, marginLeft: '8px' }}>
                       (@{transaction.userUsername})
                     </span>
                   )}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaSave, FaTimes, FaUser, FaPhone, FaIdCard, FaLock, FaUserShield } from 'react-icons/fa';
-import { formStyles, getInputStyles, getSelectStyles } from '../../shared/formStyles';
-import colors from '../../shared/colors';
+import { getFormStyles, getInputStyles, getSelectStyles } from '../../shared/formStyles';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 type UserFormProps = {
   initialData?: { 
@@ -32,6 +32,8 @@ const UserForm: React.FC<UserFormProps> = ({
   title = "Gestión de Usuario",
   isEdit = false
 }) => {
+  const { theme } = useTheme();
+  const formStyles = getFormStyles(theme);
   const [formData, setFormData] = useState(initialData || {
     username: '',
     password: '',
@@ -133,7 +135,7 @@ const UserForm: React.FC<UserFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('username')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.username, focusedField === 'username')}
+              style={getInputStyles(!!errors.username, focusedField === 'username', theme)}
               placeholder="usuario_test"
             />
             {errors.username && (
@@ -157,7 +159,7 @@ const UserForm: React.FC<UserFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('password')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.password, focusedField === 'password')}
+              style={getInputStyles(!!errors.password, focusedField === 'password', theme)}
               placeholder={isEdit ? "Dejar vacío para mantener la actual" : "password123"}
             />
             {errors.password && (
@@ -169,7 +171,7 @@ const UserForm: React.FC<UserFormProps> = ({
               <div style={{
                 marginTop: '8px',
                 fontSize: '0.8rem',
-                color: colors.textSecondary,
+                color: theme.textSecondary,
               }}>
                 Dejar vacío para mantener la contraseña actual
               </div>
@@ -192,7 +194,7 @@ const UserForm: React.FC<UserFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('name')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.name, focusedField === 'name')}
+              style={getInputStyles(!!errors.name, focusedField === 'name', theme)}
               placeholder="Usuario de Prueba"
             />
             {errors.name && (
@@ -216,7 +218,7 @@ const UserForm: React.FC<UserFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('celular')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.celular, focusedField === 'celular')}
+              style={getInputStyles(!!errors.celular, focusedField === 'celular', theme)}
               placeholder="+57 300 555 6666"
             />
             {errors.celular && (
@@ -241,7 +243,7 @@ const UserForm: React.FC<UserFormProps> = ({
             onChange={handleChange}
             onFocus={() => handleFocus('documentoIdentidad')}
             onBlur={handleBlur}
-            style={getInputStyles(!!errors.documentoIdentidad, focusedField === 'documentoIdentidad')}
+            style={getInputStyles(!!errors.documentoIdentidad, focusedField === 'documentoIdentidad', theme)}
             placeholder="5555555555"
           />
           {errors.documentoIdentidad && (
@@ -264,7 +266,7 @@ const UserForm: React.FC<UserFormProps> = ({
             onChange={handleChange}
             onFocus={() => handleFocus('role')}
             onBlur={handleBlur}
-            style={getSelectStyles(!!errors.role, focusedField === 'role')}
+            style={getSelectStyles(!!errors.role, focusedField === 'role', theme)}
           >
             <option value="user">Usuario</option>
             <option value="admin">Administrador</option>
@@ -277,7 +279,7 @@ const UserForm: React.FC<UserFormProps> = ({
           <div style={{
             marginTop: '8px',
             fontSize: '0.8rem',
-            color: colors.textSecondary,
+            color: theme.textSecondary,
           }}>
             • <strong>Usuario:</strong> Solo puede ver el módulo de transacciones<br/>
             • <strong>Administrador:</strong> Acceso completo a todos los módulos

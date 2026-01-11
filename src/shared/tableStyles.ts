@@ -1,11 +1,12 @@
-import colors from './colors';
+import { Theme, darkTheme } from './themeColors';
 
-export const tableStyles = {
+// Función que genera los estilos de tabla basados en el tema
+export const getTableStyles = (theme: Theme) => ({
   // Contenedor principal de la página
   pageContainer: {
     padding: '30px',
-    backgroundColor: colors.backgroundPrimary,
-    color: colors.textPrimary,
+    backgroundColor: theme.backgroundPrimary,
+    color: theme.textPrimary,
     minHeight: '100vh',
   },
 
@@ -22,13 +23,13 @@ export const tableStyles = {
   pageTitle: {
     fontSize: '2rem',
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     margin: 0,
   },
 
   createButton: {
-    backgroundColor: colors.primaryColor,
-    color: colors.white,
+    backgroundColor: theme.primaryColor,
+    color: theme.white,
     border: 'none',
     borderRadius: '8px',
     padding: '12px 24px',
@@ -43,8 +44,8 @@ export const tableStyles = {
 
   // Contenedor de la tabla
   tableContainer: {
-    backgroundColor: colors.cardBackground,
-    border: `1px solid ${colors.cardBorder}`,
+    backgroundColor: theme.cardBackground,
+    border: `1px solid ${theme.cardBorder}`,
     borderRadius: '12px',
     overflow: 'hidden',
     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
@@ -57,45 +58,45 @@ export const tableStyles = {
     width: '100%',
     borderCollapse: 'collapse' as const,
     fontSize: '0.9rem',
-    minWidth: '600px', // Para permitir scroll horizontal en móviles
+    minWidth: '600px',
   },
 
   // Cabeceras de la tabla
   tableHeader: {
-    backgroundColor: colors.backgroundSecondary,
-    borderBottom: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.backgroundSecondary,
+    borderBottom: `1px solid ${theme.borderColor}`,
   },
 
   tableHeaderCell: {
     padding: '16px 20px',
     textAlign: 'left' as const,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     fontSize: '0.85rem',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
-    borderBottom: `1px solid ${colors.borderColor}`,
+    borderBottom: `1px solid ${theme.borderColor}`,
     whiteSpace: 'nowrap' as const,
   },
 
   // Filas de la tabla
   tableRow: {
-    borderBottom: `1px solid ${colors.borderColor}`,
+    borderBottom: `1px solid ${theme.borderColor}`,
     transition: 'background-color 0.2s ease',
   },
 
   tableRowHover: {
-    backgroundColor: colors.hoverBackground,
+    backgroundColor: theme.hoverBackground,
   },
 
   tableRowAlternate: {
-    backgroundColor: colors.backgroundTertiary,
+    backgroundColor: theme.backgroundTertiary,
   },
 
   tableCell: {
     padding: '16px 20px',
-    color: colors.textPrimary,
-    borderBottom: `1px solid ${colors.borderColor}`,
+    color: theme.textPrimary,
+    borderBottom: `1px solid ${theme.borderColor}`,
     verticalAlign: 'middle' as const,
     fontSize: '0.9rem',
   },
@@ -114,26 +115,26 @@ export const tableStyles = {
 
   statusActive: {
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    color: colors.success,
-    border: `1px solid ${colors.success}`,
+    color: theme.success,
+    border: `1px solid ${theme.success}`,
   },
 
   statusInactive: {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    color: colors.error,
-    border: `1px solid ${colors.error}`,
+    color: theme.error,
+    border: `1px solid ${theme.error}`,
   },
 
   statusPrivate: {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    color: colors.error,
-    border: `1px solid ${colors.error}`,
+    color: theme.error,
+    border: `1px solid ${theme.error}`,
   },
 
   statusPublic: {
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    color: colors.success,
-    border: `1px solid ${colors.success}`,
+    color: theme.success,
+    border: `1px solid ${theme.success}`,
   },
 
   // Iconos de tecnología
@@ -156,12 +157,12 @@ export const tableStyles = {
 
   techGo: {
     backgroundColor: '#00ADD8',
-    color: colors.white,
+    color: theme.white,
   },
 
   techNode: {
     backgroundColor: '#339933',
-    color: colors.white,
+    color: theme.white,
   },
 
   techReact: {
@@ -182,18 +183,18 @@ export const tableStyles = {
   },
 
   editButton: {
-    backgroundColor: colors.secondaryColor,
-    color: colors.white,
+    backgroundColor: theme.secondaryColor,
+    color: theme.white,
   },
 
   deleteButton: {
-    backgroundColor: colors.error,
-    color: colors.white,
+    backgroundColor: theme.error,
+    color: theme.white,
   },
 
   viewButton: {
-    backgroundColor: colors.primaryColor,
-    color: colors.white,
+    backgroundColor: theme.primaryColor,
+    color: theme.white,
   },
 
   // Footer de la tabla con búsqueda y paginación
@@ -202,8 +203,8 @@ export const tableStyles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '20px',
-    backgroundColor: colors.backgroundSecondary,
-    borderTop: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.backgroundSecondary,
+    borderTop: `1px solid ${theme.borderColor}`,
     flexWrap: 'wrap' as const,
     gap: '16px',
   },
@@ -216,10 +217,10 @@ export const tableStyles = {
 
   searchInput: {
     padding: '8px 12px',
-    backgroundColor: colors.backgroundPrimary,
-    border: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.backgroundPrimary,
+    border: `1px solid ${theme.borderColor}`,
     borderRadius: '6px',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     fontSize: '0.9rem',
     outline: 'none',
     transition: 'border-color 0.2s ease',
@@ -227,7 +228,7 @@ export const tableStyles = {
   },
 
   searchInputFocus: {
-    borderColor: colors.primaryColor,
+    borderColor: theme.primaryColor,
   },
 
   paginationContainer: {
@@ -239,25 +240,25 @@ export const tableStyles = {
 
   paginationInfo: {
     fontSize: '0.9rem',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
   },
 
   rowsPerPageSelect: {
     padding: '6px 8px',
-    backgroundColor: colors.backgroundPrimary,
-    border: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.backgroundPrimary,
+    border: `1px solid ${theme.borderColor}`,
     borderRadius: '4px',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     fontSize: '0.9rem',
     outline: 'none',
   },
 
   paginationButton: {
     padding: '6px 12px',
-    backgroundColor: colors.backgroundPrimary,
-    border: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.backgroundPrimary,
+    border: `1px solid ${theme.borderColor}`,
     borderRadius: '4px',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     fontSize: '0.9rem',
@@ -269,16 +270,16 @@ export const tableStyles = {
   },
 
   paginationButtonActive: {
-    backgroundColor: colors.primaryColor,
-    color: colors.white,
-    borderColor: colors.primaryColor,
+    backgroundColor: theme.primaryColor,
+    color: theme.white,
+    borderColor: theme.primaryColor,
   },
 
   // Estados vacíos
   emptyState: {
     textAlign: 'center' as const,
     padding: '60px 20px',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
   },
 
   emptyStateIcon: {
@@ -291,91 +292,99 @@ export const tableStyles = {
     fontSize: '1.2rem',
     fontWeight: '600',
     marginBottom: '8px',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
   },
 
   emptyStateDescription: {
     fontSize: '0.9rem',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
   },
 
   // Loading state
   loadingState: {
     textAlign: 'center' as const,
     padding: '60px 20px',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
   },
 
   loadingSpinner: {
     width: '40px',
     height: '40px',
-    border: `3px solid ${colors.borderColor}`,
-    borderTop: `3px solid ${colors.primaryColor}`,
+    border: `3px solid ${theme.borderColor}`,
+    borderTop: `3px solid ${theme.primaryColor}`,
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
     margin: '0 auto 16px',
   },
-};
+});
 
 // Función helper para obtener estilos de fila alternada
-export const getRowStyle = (index: number, isHovered: boolean = false) => {
-  let style = { ...tableStyles.tableRow };
+export const getRowStyle = (index: number, isHovered: boolean = false, theme: Theme) => {
+  const styles = getTableStyles(theme);
+  let style = { ...styles.tableRow };
   
   if (isHovered) {
-    style = { ...style, ...tableStyles.tableRowHover };
+    style = { ...style, ...styles.tableRowHover };
   } else if (index % 2 === 1) {
-    style = { ...style, ...tableStyles.tableRowAlternate };
+    style = { ...style, ...styles.tableRowAlternate };
   }
   
   return style;
 };
 
 // Función helper para obtener estilos de botón de acción
-export const getActionButtonStyle = (type: 'edit' | 'delete' | 'view') => {
+export const getActionButtonStyle = (type: 'edit' | 'delete' | 'view', theme: Theme) => {
+  const styles = getTableStyles(theme);
   switch (type) {
     case 'edit':
-      return { ...tableStyles.actionButton, ...tableStyles.editButton };
+      return { ...styles.actionButton, ...styles.editButton };
     case 'delete':
-      return { ...tableStyles.actionButton, ...tableStyles.deleteButton };
+      return { ...styles.actionButton, ...styles.deleteButton };
     case 'view':
-      return { ...tableStyles.actionButton, ...tableStyles.viewButton };
+      return { ...styles.actionButton, ...styles.viewButton };
     default:
-      return tableStyles.actionButton;
+      return styles.actionButton;
   }
 };
 
 // Función helper para obtener estilos de etiqueta de estado
-export const getStatusBadgeStyle = (status: 'active' | 'inactive' | 'private' | 'public') => {
-  const baseStyle = tableStyles.statusBadge;
+export const getStatusBadgeStyle = (status: 'active' | 'inactive' | 'private' | 'public', theme: Theme) => {
+  const styles = getTableStyles(theme);
+  const baseStyle = styles.statusBadge;
   
   switch (status) {
     case 'active':
-      return { ...baseStyle, ...tableStyles.statusActive };
+      return { ...baseStyle, ...styles.statusActive };
     case 'inactive':
-      return { ...baseStyle, ...tableStyles.statusInactive };
+      return { ...baseStyle, ...styles.statusInactive };
     case 'private':
-      return { ...baseStyle, ...tableStyles.statusPrivate };
+      return { ...baseStyle, ...styles.statusPrivate };
     case 'public':
-      return { ...baseStyle, ...tableStyles.statusPublic };
+      return { ...baseStyle, ...styles.statusPublic };
     default:
       return baseStyle;
   }
 };
 
 // Función helper para obtener estilos de icono de tecnología
-export const getTechIconStyle = (tech: 'gradle' | 'go' | 'node' | 'react') => {
-  const baseStyle = tableStyles.techIcon;
+export const getTechIconStyle = (tech: 'gradle' | 'go' | 'node' | 'react', theme: Theme) => {
+  const styles = getTableStyles(theme);
+  const baseStyle = styles.techIcon;
   
   switch (tech) {
     case 'gradle':
-      return { ...baseStyle, ...tableStyles.techGradle };
+      return { ...baseStyle, ...styles.techGradle };
     case 'go':
-      return { ...baseStyle, ...tableStyles.techGo };
+      return { ...baseStyle, ...styles.techGo };
     case 'node':
-      return { ...baseStyle, ...tableStyles.techNode };
+      return { ...baseStyle, ...styles.techNode };
     case 'react':
-      return { ...baseStyle, ...tableStyles.techReact };
+      return { ...baseStyle, ...styles.techReact };
     default:
       return baseStyle;
   }
 };
+
+// Exportar función para compatibilidad con código existente
+// Los componentes deben migrar a usar getTableStyles(theme) directamente
+export const tableStyles = getTableStyles(darkTheme);

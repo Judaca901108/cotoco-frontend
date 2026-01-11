@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaSave, FaTimes, FaBox, FaWarehouse, FaSearch, FaInfoCircle } from 'react-icons/fa';
-import { formStyles, getInputStyles, getSelectStyles } from '../../shared/formStyles';
+import { getFormStyles, getInputStyles, getSelectStyles } from '../../shared/formStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 import { API_BASE_URL } from '../../config/apiConfig';
 
 type SearchProductResult = {
@@ -31,6 +31,8 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
   onCancel,
   title = "Gestión de Inventario"
 }) => {
+  const { theme } = useTheme();
+  const formStyles = getFormStyles(theme);
   const [formData, setFormData] = useState(
     initialData || {
       productId: 0,
@@ -239,7 +241,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
                   left: '12px',
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  color: colors.textSecondary,
+                  color: theme.textSecondary,
                   fontSize: '0.9rem',
                   pointerEvents: 'none',
                 }} />
@@ -266,7 +268,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
                     }, 200);
                   }}
                   style={{
-                    ...getInputStyles(!!errors.productId, focusedField === 'productId'),
+                    ...getInputStyles(!!errors.productId, focusedField === 'productId', theme),
                     paddingLeft: '40px',
                   }}
                   placeholder="Buscar producto por nombre o SKU..."
@@ -279,8 +281,8 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
                     transform: 'translateY(-50%)',
                     width: '20px',
                     height: '20px',
-                    border: `2px solid ${colors.primaryColor}30`,
-                    borderTopColor: colors.primaryColor,
+                    border: `2px solid ${theme.primaryColor}30`,
+                    borderTopColor: theme.primaryColor,
                     borderRadius: '50%',
                     animation: 'spin 0.8s linear infinite',
                   }} />
@@ -297,8 +299,8 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
                     left: 0,
                     right: 0,
                     marginTop: '4px',
-                    backgroundColor: colors.cardBackground,
-                    border: `1px solid ${colors.borderColor}`,
+                    backgroundColor: theme.cardBackground,
+                    border: `1px solid ${theme.borderColor}`,
                     borderRadius: '8px',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                     maxHeight: '300px',
@@ -313,31 +315,31 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
                       style={{
                         padding: '12px 16px',
                         cursor: 'pointer',
-                        borderBottom: `1px solid ${colors.borderColor}`,
+                        borderBottom: `1px solid ${theme.borderColor}`,
                         transition: 'background-color 0.2s ease',
                         backgroundColor: selectedProduct?.id === product.id 
-                          ? `${colors.primaryColor}15` 
+                          ? `${theme.primaryColor}15` 
                           : 'transparent',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = `${colors.primaryColor}10`;
+                        e.currentTarget.style.backgroundColor = `${theme.primaryColor}10`;
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = selectedProduct?.id === product.id 
-                          ? `${colors.primaryColor}15` 
+                          ? `${theme.primaryColor}15` 
                           : 'transparent';
                       }}
                     >
                       <div style={{
                         fontWeight: '600',
-                        color: colors.textPrimary,
+                        color: theme.textPrimary,
                         marginBottom: '4px',
                       }}>
                         {product.productName}
                       </div>
                       <div style={{
                         fontSize: '0.85rem',
-                        color: colors.textSecondary,
+                        color: theme.textSecondary,
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '2px',
@@ -363,13 +365,13 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
                     right: 0,
                     marginTop: '4px',
                     padding: '16px',
-                    backgroundColor: colors.cardBackground,
-                    border: `1px solid ${colors.borderColor}`,
+                    backgroundColor: theme.cardBackground,
+                    border: `1px solid ${theme.borderColor}`,
                     borderRadius: '8px',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                     zIndex: 1000,
                     textAlign: 'center',
-                    color: colors.textSecondary,
+                    color: theme.textSecondary,
                     fontSize: '0.9rem',
                   }}
                 >
@@ -384,19 +386,19 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
                 marginTop: '12px',
                 padding: '12px',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                border: `1px solid ${colors.success}30`,
+                border: `1px solid ${theme.success}30`,
                 borderRadius: '8px',
                 fontSize: '0.85rem',
-                color: colors.textPrimary,
+                color: theme.textPrimary,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-                  <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem', color: colors.success }} />
-                  <strong style={{ color: colors.success }}>Producto seleccionado:</strong>
+                  <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem', color: theme.success }} />
+                  <strong style={{ color: theme.success }}>Producto seleccionado:</strong>
                 </div>
                 <div style={{ marginLeft: '20px' }}>
                   <div><strong>{selectedProduct.productName}</strong> (SKU: {selectedProduct.productSku})</div>
                   {selectedProduct.barcode && (
-                    <div style={{ fontSize: '0.8rem', color: colors.textSecondary, marginTop: '2px' }}>
+                    <div style={{ fontSize: '0.8rem', color: theme.textSecondary, marginTop: '2px' }}>
                       Código de Barras: {selectedProduct.barcode}
                     </div>
                   )}
@@ -410,10 +412,10 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
                 marginTop: '8px',
                 padding: '8px 12px',
                 backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                border: `1px solid ${colors.primaryColor}30`,
+                border: `1px solid ${theme.primaryColor}30`,
                 borderRadius: '6px',
                 fontSize: '0.85rem',
-                color: colors.textSecondary,
+                color: theme.textSecondary,
               }}>
                 <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem' }} />
                 Escribe al menos 2 caracteres para buscar productos
@@ -442,7 +444,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('stockQuantity')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.stockQuantity, focusedField === 'stockQuantity')}
+              style={getInputStyles(!!errors.stockQuantity, focusedField === 'stockQuantity', theme)}
               placeholder="0"
               min="0"
             />
@@ -465,7 +467,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('minimumStock')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.minimumStock, focusedField === 'minimumStock')}
+              style={getInputStyles(!!errors.minimumStock, focusedField === 'minimumStock', theme)}
               placeholder="0"
               min="0"
             />

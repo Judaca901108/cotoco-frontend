@@ -16,11 +16,12 @@ import UserDetailPage from './UserDetailPage'; // Vista de detalle de usuario
 import SettingsPage from './SettingsPage'; // Página de configuración
 import AnalyticsPage from './AnalyticsPage'; // Página de analytics
 import { useAuth } from '../../application/contexts/AuthContext';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 const DashboardPage: React.FC = () => {
   const location = useLocation();
   const { isAdmin } = useAuth();
+  const { theme } = useTheme();
   
   // Determinar la página activa basada en la ruta actual
   const getActivePage = () => {
@@ -42,8 +43,8 @@ const DashboardPage: React.FC = () => {
       display: 'flex', 
       flexDirection: 'column',
       height: '100vh', 
-      backgroundColor: colors.backgroundPrimary, 
-      color: colors.textPrimary 
+      backgroundColor: theme.backgroundPrimary, 
+      color: theme.textPrimary 
     }}>
       {/* Header horizontal */}
       <Header activePage={activePage} />
@@ -52,7 +53,7 @@ const DashboardPage: React.FC = () => {
       <main style={{
         flex: 1,
         padding: '30px',
-        backgroundColor: colors.backgroundPrimary,
+        backgroundColor: theme.backgroundPrimary,
         overflow: 'auto',
       }} className="dashboard-main-responsive">
             <Routes>

@@ -12,11 +12,12 @@ import {
   FaBell,
   FaShieldAlt 
 } from 'react-icons/fa';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
+  const { theme } = useTheme();
 
   // Enlaces frecuentes filtrados por rol
   const getAllLinks = () => [
@@ -119,9 +120,9 @@ const HomePage: React.FC = () => {
         <h1 style={{
           fontSize: '2.5rem',
           fontWeight: '700',
-          color: colors.textPrimary,
+          color: theme.textPrimary,
           marginBottom: '10px',
-          background: `linear-gradient(135deg, ${colors.primaryColor}, ${colors.secondaryColor})`,
+          background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor})`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
@@ -130,7 +131,7 @@ const HomePage: React.FC = () => {
         </h1>
         <p style={{
           fontSize: '1.1rem',
-          color: colors.textSecondary,
+          color: theme.textSecondary,
           margin: 0,
         }}>
           {isAdmin 
@@ -145,7 +146,7 @@ const HomePage: React.FC = () => {
         <h2 style={{
           fontSize: '1.5rem',
           fontWeight: '600',
-          color: colors.textPrimary,
+          color: theme.textPrimary,
           marginBottom: '30px',
         }}>
           Enlaces frecuentes
@@ -162,8 +163,8 @@ const HomePage: React.FC = () => {
               key={link.id}
               onClick={() => handleLinkClick(link.path)}
               style={{
-                backgroundColor: colors.cardBackground,
-                border: `1px solid ${colors.cardBorder}`,
+                backgroundColor: theme.cardBackground,
+                border: `1px solid ${theme.cardBorder}`,
                 borderRadius: '12px',
                 padding: '24px',
                 cursor: 'pointer',
@@ -181,7 +182,7 @@ const HomePage: React.FC = () => {
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                e.currentTarget.style.borderColor = colors.cardBorder;
+                e.currentTarget.style.borderColor = theme.cardBorder;
               }}
             >
               {/* Icono */}
@@ -193,7 +194,7 @@ const HomePage: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: colors.white,
+                color: theme.white,
                 fontSize: '1.2rem',
                 flexShrink: 0,
               }}>
@@ -205,14 +206,14 @@ const HomePage: React.FC = () => {
                 <h3 style={{
                   fontSize: '1.1rem',
                   fontWeight: '600',
-                  color: colors.textPrimary,
+                  color: theme.textPrimary,
                   margin: '0 0 4px 0',
                 }}>
                   {link.title}
                 </h3>
                 <p style={{
                   fontSize: '0.9rem',
-                  color: colors.textSecondary,
+                  color: theme.textSecondary,
                   margin: 0,
                 }}>
                   {link.description}

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaUser, FaPhone, FaIdCard, FaUserCheck, FaUserTimes } from 'react-icons/fa';
-import { detailStyles, getActionButtonStyle } from '../../shared/detailStyles';
+import { getDetailStyles, getActionButtonStyle } from '../../shared/detailStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 import { API_BASE_URL } from '../../config/apiConfig';
 const BASE_PATH = API_BASE_URL;
@@ -19,6 +19,8 @@ type User = {
 
 const UserDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { theme } = useTheme();
+  const detailStyles = getDetailStyles(theme);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -85,7 +87,7 @@ const UserDetailPage: React.FC = () => {
   if (loading) {
     return (
       <div style={detailStyles.pageContainer} className="page-container-responsive">
-        <div style={{ textAlign: 'center', padding: '40px', color: colors.textPrimary }}>Cargando usuario...</div>
+        <div style={{ textAlign: 'center', padding: '40px', color: theme.textPrimary }}>Cargando usuario...</div>
       </div>
     );
   }
@@ -97,10 +99,10 @@ const UserDetailPage: React.FC = () => {
           style={detailStyles.backButton}
           onClick={() => navigate('/dashboard/users')}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = colors.hoverBackground;
+            e.currentTarget.style.backgroundColor = theme.hoverBackground;
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = colors.buttonSecondary;
+            e.currentTarget.style.backgroundColor = theme.buttonSecondary;
           }}
         >
           <FaArrowLeft />
@@ -125,10 +127,10 @@ const UserDetailPage: React.FC = () => {
         style={detailStyles.backButton}
         onClick={() => navigate('/dashboard/users')}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = colors.hoverBackground;
+          e.currentTarget.style.backgroundColor = theme.hoverBackground;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = colors.buttonSecondary;
+          e.currentTarget.style.backgroundColor = theme.buttonSecondary;
         }}
       >
         <FaArrowLeft />
@@ -139,8 +141,8 @@ const UserDetailPage: React.FC = () => {
       <div style={detailStyles.detailHeader} className="detail-header-responsive">
         <h1 style={detailStyles.detailTitle}>{user.name}</h1>
         <span style={{
-          backgroundColor: colors.primaryColor,
-          color: colors.white,
+          backgroundColor: theme.primaryColor,
+          color: theme.white,
           padding: '6px 12px',
           borderRadius: '20px',
           fontSize: '0.8rem',
@@ -173,10 +175,10 @@ const UserDetailPage: React.FC = () => {
             top: '20px',
           }}>
             <div style={{
-              border: `3px solid ${colors.borderColor}`,
+              border: `3px solid ${theme.borderColor}`,
               borderRadius: '50%',
               padding: '30px',
-              backgroundColor: colors.backgroundTertiary,
+              backgroundColor: theme.backgroundTertiary,
               boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
               width: '200px',
               height: '200px',
@@ -193,14 +195,14 @@ const UserDetailPage: React.FC = () => {
                 left: 0,
                 right: 0,
                 height: '2px',
-                background: `linear-gradient(90deg, transparent, ${colors.primaryColor}, transparent)`,
+                background: `linear-gradient(90deg, transparent, ${theme.primaryColor}, transparent)`,
                 opacity: 0.6,
               }} />
               
               <div style={{
                 fontSize: '4rem',
                 fontWeight: '700',
-                color: colors.primaryColor,
+                color: theme.primaryColor,
                 textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
               }}>
                 {user.name.charAt(0).toUpperCase()}
@@ -211,19 +213,19 @@ const UserDetailPage: React.FC = () => {
             <div style={{
               marginTop: '20px',
               textAlign: 'center',
-              color: colors.textSecondary,
+              color: theme.textSecondary,
               fontSize: '1rem',
               padding: '16px 24px',
-              backgroundColor: colors.backgroundSecondary,
+              backgroundColor: theme.backgroundSecondary,
               borderRadius: '12px',
-              border: `1px solid ${colors.borderColor}`,
+              border: `1px solid ${theme.borderColor}`,
               width: '100%',
               maxWidth: '200px',
             }}>
               <div style={{ 
                 fontWeight: '600', 
                 marginBottom: '6px',
-                color: colors.textPrimary,
+                color: theme.textPrimary,
                 fontSize: '1.1rem',
               }}>
                 👤 Perfil de Usuario
@@ -247,7 +249,7 @@ const UserDetailPage: React.FC = () => {
             <div style={detailStyles.infoItem}>
               <span style={detailStyles.infoLabel}>Nombre de Usuario</span>
               <span style={detailStyles.infoValue}>
-                <FaUser style={{ marginRight: '8px', color: colors.primaryColor }} />
+                <FaUser style={{ marginRight: '8px', color: theme.primaryColor }} />
                 @{user.username}
               </span>
             </div>
@@ -260,7 +262,7 @@ const UserDetailPage: React.FC = () => {
             <div style={detailStyles.infoItem}>
               <span style={detailStyles.infoLabel}>Celular</span>
               <span style={detailStyles.infoValue}>
-                <FaPhone style={{ marginRight: '8px', color: colors.success }} />
+                <FaPhone style={{ marginRight: '8px', color: theme.success }} />
                 {user.celular}
               </span>
             </div>
@@ -268,7 +270,7 @@ const UserDetailPage: React.FC = () => {
             <div style={detailStyles.infoItem}>
               <span style={detailStyles.infoLabel}>Documento de Identidad</span>
               <span style={detailStyles.infoValue}>
-                <FaIdCard style={{ marginRight: '8px', color: colors.secondaryColor }} />
+                <FaIdCard style={{ marginRight: '8px', color: theme.secondaryColor }} />
                 {user.documentoIdentidad}
               </span>
             </div>
@@ -278,13 +280,13 @@ const UserDetailPage: React.FC = () => {
               <span style={detailStyles.infoValue}>
                 {user.isActive ? (
                   <>
-                    <FaUserCheck style={{ marginRight: '8px', color: colors.success }} />
-                    <span style={{ color: colors.success, fontWeight: '600' }}>Activo</span>
+                    <FaUserCheck style={{ marginRight: '8px', color: theme.success }} />
+                    <span style={{ color: theme.success, fontWeight: '600' }}>Activo</span>
                   </>
                 ) : (
                   <>
-                    <FaUserTimes style={{ marginRight: '8px', color: colors.error }} />
-                    <span style={{ color: colors.error, fontWeight: '600' }}>Inactivo</span>
+                    <FaUserTimes style={{ marginRight: '8px', color: theme.error }} />
+                    <span style={{ color: theme.error, fontWeight: '600' }}>Inactivo</span>
                   </>
                 )}
               </span>
@@ -316,7 +318,7 @@ const UserDetailPage: React.FC = () => {
       }}>
         <button 
           style={{
-            ...getActionButtonStyle(user.isActive ? 'secondary' : 'primary'),
+            ...getActionButtonStyle(user.isActive ? 'secondary' : 'primary', theme),
             minWidth: '200px',
             display: 'flex',
             alignItems: 'center',

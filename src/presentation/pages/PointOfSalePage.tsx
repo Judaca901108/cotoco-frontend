@@ -4,8 +4,8 @@ import { FaPlus, FaSearch, FaStore, FaMapMarkerAlt, FaChevronLeft, FaChevronRigh
 import ModalComponent from '../components/ModalComponent';
 import PointOfSaleForm from '../components/PointOfSaleForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
-import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
-import colors from '../../shared/colors';
+import { getTableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
+import { useTheme } from '../../application/contexts/ThemeContext';
 import { API_BASE_URL } from '../../config/apiConfig';
 
 type PointOfSale = {
@@ -20,6 +20,8 @@ const BASE_PATH = API_BASE_URL;
 const type = ['Bodega', 'Puntos Fijos', 'Ferias'];
 
 const PointOfSalePage: React.FC = () => {
+  const { theme } = useTheme();
+  const tableStyles = getTableStyles(theme);
   const [pointsOfSale, setPointsOfSale] = useState<PointOfSale[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -68,8 +70,8 @@ const PointOfSalePage: React.FC = () => {
       return <FaSort style={{ marginLeft: '4px', opacity: 0.3 }} />;
     }
     return order === 'asc' 
-      ? <FaSortUp style={{ marginLeft: '4px', color: colors.primaryColor }} />
-      : <FaSortDown style={{ marginLeft: '4px', color: colors.primaryColor }} />;
+      ? <FaSortUp style={{ marginLeft: '4px', color: theme.primaryColor }} />
+      : <FaSortDown style={{ marginLeft: '4px', color: theme.primaryColor }} />;
   };
 
   const handleCreatePointOfSale = async (data: { name: string; address: string; location: string; type: string }) => {
@@ -143,7 +145,7 @@ const PointOfSalePage: React.FC = () => {
                 className="table-header-cell-responsive"
                 onClick={() => handleSort('name')}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                  e.currentTarget.style.backgroundColor = theme.hoverBackground;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
@@ -161,7 +163,7 @@ const PointOfSalePage: React.FC = () => {
                 className="table-header-cell-responsive"
                 onClick={() => handleSort('type')}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                  e.currentTarget.style.backgroundColor = theme.hoverBackground;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
@@ -190,7 +192,7 @@ const PointOfSalePage: React.FC = () => {
               paginatedPointsOfSales.map((pointOfSale, index) => (
                 <tr
                   key={pointOfSale.id}
-                  style={getRowStyle(index, hoveredRow === pointOfSale.id)}
+                  style={getRowStyle(index, hoveredRow === pointOfSale.id, theme)}
                   onMouseEnter={() => setHoveredRow(pointOfSale.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                 >
@@ -210,14 +212,14 @@ const PointOfSalePage: React.FC = () => {
                         e.currentTarget.style.opacity = '1';
                       }}
                     >
-                      <div style={getTechIconStyle('go')}>
+                      <div style={getTechIconStyle('go', theme)}>
                         <FaStore />
                       </div>
                       <div>
-                        <div style={{ fontWeight: '600', color: colors.textPrimary }}>
+                        <div style={{ fontWeight: '600', color: theme.textPrimary }}>
                           {pointOfSale.name}
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: colors.textSecondary, marginTop: '2px' }}>
+                        <div style={{ fontSize: '0.8rem', color: theme.textSecondary, marginTop: '2px' }}>
                           ID: {pointOfSale.id}
                         </div>
                       </div>
@@ -225,24 +227,24 @@ const PointOfSalePage: React.FC = () => {
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <FaMapMarkerAlt style={{ color: colors.textSecondary, fontSize: '0.8rem' }} />
+                      <FaMapMarkerAlt style={{ color: theme.textSecondary, fontSize: '0.8rem' }} />
                       <span style={{ fontSize: '0.9rem' }}>
                         {pointOfSale.address.length > 30 ? `${pointOfSale.address.substring(0, 30)}...` : pointOfSale.address}
                       </span>
                     </div>
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
-                    <span style={{ color: colors.textSecondary }}>
+                    <span style={{ color: theme.textSecondary }}>
                       {pointOfSale.location}
                     </span>
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
-                    <span style={getStatusBadgeStyle('active')}>
+                    <span style={getStatusBadgeStyle('active', theme)}>
                       {pointOfSale.type}
                     </span>
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
-                    <span style={getStatusBadgeStyle('active')}>
+                    <span style={getStatusBadgeStyle('active', theme)}>
                       Activo
                     </span>
                   </td>
@@ -255,7 +257,7 @@ const PointOfSalePage: React.FC = () => {
         {/* Footer con búsqueda y paginación */}
         <div style={tableStyles.tableFooter}>
           <div style={tableStyles.searchContainer} className="search-container-responsive">
-            <FaSearch style={{ color: colors.textSecondary }} />
+            <FaSearch style={{ color: theme.textSecondary }} />
             <input
               type="text"
               placeholder="Search..."

@@ -4,8 +4,8 @@ import { FaPlus, FaSearch, FaBox, FaChevronLeft, FaChevronRight, FaSort, FaSortU
 import ModalComponent from '../components/ModalComponent';
 import ProductForm from '../components/ProductForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
-import { tableStyles, getRowStyle, getStatusBadgeStyle } from '../../shared/tableStyles';
-import colors from '../../shared/colors';
+import { getTableStyles, getRowStyle, getStatusBadgeStyle } from '../../shared/tableStyles';
+import { useTheme } from '../../application/contexts/ThemeContext';
 import { API_BASE_URL } from '../../config/apiConfig';
 
 type Product = {
@@ -23,6 +23,8 @@ type Product = {
 const BASE_PATH = API_BASE_URL;
 
 const ProductsPage: React.FC = () => {
+  const { theme } = useTheme();
+  const tableStyles = getTableStyles(theme);
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -75,8 +77,8 @@ const ProductsPage: React.FC = () => {
       return <FaSort style={{ marginLeft: '4px', opacity: 0.3 }} />;
     }
     return order === 'asc' 
-      ? <FaSortUp style={{ marginLeft: '4px', color: colors.primaryColor }} />
-      : <FaSortDown style={{ marginLeft: '4px', color: colors.primaryColor }} />;
+      ? <FaSortUp style={{ marginLeft: '4px', color: theme.primaryColor }} />
+      : <FaSortDown style={{ marginLeft: '4px', color: theme.primaryColor }} />;
   };
 
   const handleCreateProduct = async (data: { name: string; description: string; price: number; sku: string; category: string; barcode?: string; subcategory?: string; number_of_piece?: string; image?: File }) => {
@@ -223,7 +225,7 @@ const ProductsPage: React.FC = () => {
                 className="table-header-cell-responsive"
                 onClick={() => handleSort('name')}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                  e.currentTarget.style.backgroundColor = theme.hoverBackground;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
@@ -239,7 +241,7 @@ const ProductsPage: React.FC = () => {
                 className="table-header-cell-responsive"
                 onClick={() => handleSort('category')}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                  e.currentTarget.style.backgroundColor = theme.hoverBackground;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
@@ -256,7 +258,7 @@ const ProductsPage: React.FC = () => {
                 className="table-header-cell-responsive"
                 onClick={() => handleSort('price')}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                  e.currentTarget.style.backgroundColor = theme.hoverBackground;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
@@ -286,7 +288,7 @@ const ProductsPage: React.FC = () => {
               paginatedProducts.map((product, index) => (
                 <tr
                   key={product.id}
-                  style={getRowStyle(index, hoveredRow === product.id)}
+                  style={getRowStyle(index, hoveredRow === product.id, theme)}
                   onMouseEnter={() => setHoveredRow(product.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                 >
@@ -298,9 +300,9 @@ const ProductsPage: React.FC = () => {
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center',
-                      backgroundColor: colors.backgroundTertiary,
+                      backgroundColor: theme.backgroundTertiary,
                       borderRadius: '6px',
-                      border: `1px solid ${colors.borderColor}`,
+                      border: `1px solid ${theme.borderColor}`,
                     }}>
                       {product.imagePath ? (
                         <img
@@ -311,22 +313,21 @@ const ProductsPage: React.FC = () => {
                             height: '100%',
                             objectFit: 'cover',
                             borderRadius: '4px',
-                            opacity: 1, // Asegurar opacidad normal
+                            opacity: 1,
                           }}
                           onLoad={(e) => {
                             e.currentTarget.style.opacity = '1';
                           }}
                           onError={(e) => {
-                            // Si la imagen falla al cargar, ocultar y mostrar icono
                             e.currentTarget.style.display = 'none';
                             const parent = e.currentTarget.parentElement;
                             if (parent) {
-                              parent.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: ${colors.textSecondary}; font-size: 1.2rem;">📦</div>`;
+                              parent.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: ${theme.textSecondary}; font-size: 1.2rem;">📦</div>`;
                             }
                           }}
                         />
                       ) : (
-                        <FaBox style={{ color: colors.textSecondary, fontSize: '1.2rem' }} />
+                        <FaBox style={{ color: theme.textSecondary, fontSize: '1.2rem' }} />
                       )}
                     </div>
                   </td>
@@ -349,54 +350,54 @@ const ProductsPage: React.FC = () => {
                       }}
                     >
                       <div>
-                        <div style={{ fontWeight: '600', color: colors.textPrimary }}>
+                        <div style={{ fontWeight: '600', color: theme.textPrimary }}>
                           {product.name}
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: colors.textSecondary, marginTop: '2px' }}>
+                        <div style={{ fontSize: '0.8rem', color: theme.textSecondary, marginTop: '2px' }}>
                           {product.description.length > 50 ? `${product.description.substring(0, 50)}...` : product.description}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
-                    <span style={getStatusBadgeStyle('active')}>
+                    <span style={getStatusBadgeStyle('active', theme)}>
                       {product.category}
                     </span>
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
                     {product.subcategory ? (
                       <span style={{
-                        ...getStatusBadgeStyle('active'),
+                        ...getStatusBadgeStyle('active', theme),
                         backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                        color: colors.primaryColor,
-                        border: `1px solid ${colors.primaryColor}30`,
+                        color: theme.primaryColor,
+                        border: `1px solid ${theme.primaryColor}30`,
                       }}>
                         {product.subcategory}
                       </span>
                     ) : (
-                      <span style={{ color: colors.textSecondary, fontSize: '0.85rem' }}>
+                      <span style={{ color: theme.textSecondary, fontSize: '0.85rem' }}>
                         -
                       </span>
                     )}
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
-                    <span style={{ fontWeight: '600', color: colors.success }}>
+                    <span style={{ fontWeight: '600', color: theme.success }}>
                       ${product.price.toFixed(2)}
                     </span>
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <code style={{
-                      backgroundColor: colors.backgroundSecondary,
+                      backgroundColor: theme.backgroundSecondary,
                       padding: '4px 8px',
                       borderRadius: '4px',
                       fontSize: '0.8rem',
-                      color: colors.textSecondary,
+                      color: theme.textSecondary,
                     }}>
                       {product.sku}
                     </code>
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
-                    <span style={getStatusBadgeStyle('active')}>
+                    <span style={getStatusBadgeStyle('active', theme)}>
                       Activo
                     </span>
                   </td>
@@ -409,7 +410,7 @@ const ProductsPage: React.FC = () => {
         {/* Footer con búsqueda y paginación */}
         <div style={tableStyles.tableFooter} className="table-footer-responsive">
           <div style={tableStyles.searchContainer} className="search-container-responsive">
-            <FaSearch style={{ color: colors.textSecondary }} />
+            <FaSearch style={{ color: theme.textSecondary }} />
             <input
               type="text"
               placeholder="Search..."

@@ -1,24 +1,24 @@
-import colors from './colors';
+import { Theme, darkTheme } from './themeColors';
 
-export const formStyles = {
+// Función que genera los estilos de formulario basados en el tema
+export const getFormStyles = (theme: Theme) => ({
   // Contenedor principal del formulario
   formContainer: {
-    backgroundColor: colors.cardBackground,
-    border: `1px solid ${colors.cardBorder}`,
+    backgroundColor: theme.cardBackground,
+    border: `1px solid ${theme.cardBorder}`,
     borderRadius: '12px',
     padding: '32px',
     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
     maxWidth: '600px',
     margin: '0 auto',
     width: '100%',
-    // Responsive handled via CSS
   },
 
   // Título del formulario
   formTitle: {
     fontSize: '1.5rem',
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     marginBottom: '24px',
     textAlign: 'center' as const,
   },
@@ -33,7 +33,7 @@ export const formStyles = {
     display: 'block',
     fontSize: '0.9rem',
     fontWeight: '500',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     marginBottom: '8px',
   },
 
@@ -42,24 +42,24 @@ export const formStyles = {
     width: '100%',
     padding: '12px 16px',
     fontSize: '1rem',
-    backgroundColor: colors.backgroundSecondary,
-    border: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.backgroundSecondary,
+    border: `1px solid ${theme.borderColor}`,
     borderRadius: '8px',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     transition: 'all 0.2s ease',
     outline: 'none',
   },
 
   // Input con foco
   inputFocus: {
-    borderColor: colors.primaryColor,
-    boxShadow: `0 0 0 3px ${colors.primaryColor}20`,
+    borderColor: theme.primaryColor,
+    boxShadow: `0 0 0 3px ${theme.primaryColor}20`,
   },
 
   // Input con error
   inputError: {
-    borderColor: colors.error,
-    boxShadow: `0 0 0 3px ${colors.error}20`,
+    borderColor: theme.error,
+    boxShadow: `0 0 0 3px ${theme.error}20`,
   },
 
   // Textarea
@@ -67,10 +67,10 @@ export const formStyles = {
     width: '100%',
     padding: '12px 16px',
     fontSize: '1rem',
-    backgroundColor: colors.backgroundSecondary,
-    border: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.backgroundSecondary,
+    border: `1px solid ${theme.borderColor}`,
     borderRadius: '8px',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     transition: 'all 0.2s ease',
     outline: 'none',
     minHeight: '100px',
@@ -83,10 +83,10 @@ export const formStyles = {
     width: '100%',
     padding: '12px 16px',
     fontSize: '1rem',
-    backgroundColor: colors.backgroundSecondary,
-    border: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.backgroundSecondary,
+    border: `1px solid ${theme.borderColor}`,
     borderRadius: '8px',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     transition: 'all 0.2s ease',
     outline: 'none',
     cursor: 'pointer',
@@ -95,7 +95,7 @@ export const formStyles = {
   // Mensaje de error
   errorMessage: {
     fontSize: '0.8rem',
-    color: colors.error,
+    color: theme.error,
     marginTop: '4px',
     display: 'flex',
     alignItems: 'center',
@@ -109,13 +109,13 @@ export const formStyles = {
     justifyContent: 'flex-end',
     marginTop: '32px',
     paddingTop: '24px',
-    borderTop: `1px solid ${colors.borderColor}`,
+    borderTop: `1px solid ${theme.borderColor}`,
   },
 
   // Botón primario
   primaryButton: {
-    backgroundColor: colors.buttonPrimary,
-    color: colors.white,
+    backgroundColor: theme.buttonPrimary,
+    color: theme.white,
     border: 'none',
     borderRadius: '8px',
     padding: '12px 24px',
@@ -130,9 +130,9 @@ export const formStyles = {
 
   // Botón secundario
   secondaryButton: {
-    backgroundColor: colors.buttonSecondary,
-    color: colors.textPrimary,
-    border: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.buttonSecondary,
+    color: theme.textPrimary,
+    border: `1px solid ${theme.borderColor}`,
     borderRadius: '8px',
     padding: '12px 24px',
     fontSize: '1rem',
@@ -146,8 +146,8 @@ export const formStyles = {
 
   // Botón de peligro
   dangerButton: {
-    backgroundColor: colors.buttonDanger,
-    color: colors.white,
+    backgroundColor: theme.buttonDanger,
+    color: theme.white,
     border: 'none',
     borderRadius: '8px',
     padding: '12px 24px',
@@ -171,58 +171,63 @@ export const formStyles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
     gap: '16px',
-    // Responsive handled via CSS
   },
 
   // Placeholder styles
   placeholder: {
-    color: colors.textMuted,
+    color: theme.textMuted,
   },
-};
+});
 
 // Función helper para aplicar estilos de hover
-export const getButtonHoverStyles = (baseStyle: any) => ({
+export const getButtonHoverStyles = (baseStyle: any, theme: Theme) => ({
   ...baseStyle,
   ':hover': {
-    ...formStyles.buttonHover,
+    ...getFormStyles(theme).buttonHover,
   },
 });
 
 // Función helper para aplicar estilos de input con estado
-export const getInputStyles = (hasError: boolean, isFocused: boolean = false) => {
-  let style = { ...formStyles.input };
+export const getInputStyles = (hasError: boolean, isFocused: boolean = false, theme: Theme) => {
+  const styles = getFormStyles(theme);
+  let style = { ...styles.input };
   
   if (hasError) {
-    style = { ...style, ...formStyles.inputError };
+    style = { ...style, ...styles.inputError };
   } else if (isFocused) {
-    style = { ...style, ...formStyles.inputFocus };
+    style = { ...style, ...styles.inputFocus };
   }
   
   return style;
 };
 
 // Función helper para aplicar estilos de textarea con estado
-export const getTextareaStyles = (hasError: boolean, isFocused: boolean = false) => {
-  let style = { ...formStyles.textarea };
+export const getTextareaStyles = (hasError: boolean, isFocused: boolean = false, theme: Theme) => {
+  const styles = getFormStyles(theme);
+  let style = { ...styles.textarea };
   
   if (hasError) {
-    style = { ...style, ...formStyles.inputError };
+    style = { ...style, ...styles.inputError };
   } else if (isFocused) {
-    style = { ...style, ...formStyles.inputFocus };
+    style = { ...style, ...styles.inputFocus };
   }
   
   return style;
 };
 
 // Función helper para aplicar estilos de select con estado
-export const getSelectStyles = (hasError: boolean, isFocused: boolean = false) => {
-  let style = { ...formStyles.select };
+export const getSelectStyles = (hasError: boolean, isFocused: boolean = false, theme: Theme) => {
+  const styles = getFormStyles(theme);
+  let style = { ...styles.select };
   
   if (hasError) {
-    style = { ...style, ...formStyles.inputError };
+    style = { ...style, ...styles.inputError };
   } else if (isFocused) {
-    style = { ...style, ...formStyles.inputFocus };
+    style = { ...style, ...styles.inputFocus };
   }
   
   return style;
 };
+
+// Exportar función para compatibilidad con código existente
+export const formStyles = getFormStyles(darkTheme);

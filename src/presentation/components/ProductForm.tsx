@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaSave, FaTimes, FaImage, FaUpload } from 'react-icons/fa';
-import { formStyles, getInputStyles, getTextareaStyles, getSelectStyles } from '../../shared/formStyles';
-import colors from '../../shared/colors';
+import { getFormStyles, getInputStyles, getTextareaStyles, getSelectStyles } from '../../shared/formStyles';
+import { useTheme } from '../../application/contexts/ThemeContext';
 import { getImageUrl } from '../../config/apiConfig';
 
 type ProductFormProps = {
@@ -19,6 +19,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
   onCancel,
   title = "Gestión de Producto"
 }) => {
+  const { theme } = useTheme();
+  const formStyles = getFormStyles(theme);
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     description: initialData?.description || '',
@@ -186,7 +188,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('name')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.name, focusedField === 'name')}
+              style={getInputStyles(!!errors.name, focusedField === 'name', theme)}
               placeholder="Ingrese el nombre del producto"
             />
             {errors.name && (
@@ -208,7 +210,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('sku')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.sku, focusedField === 'sku')}
+              style={getInputStyles(!!errors.sku, focusedField === 'sku', theme)}
               placeholder="Código único del producto"
             />
             {errors.sku && (
@@ -232,7 +234,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             onChange={handleChange}
             onFocus={() => handleFocus('barcode')}
             onBlur={handleBlur}
-            style={getInputStyles(!!errors.barcode, focusedField === 'barcode')}
+            style={getInputStyles(!!errors.barcode, focusedField === 'barcode', theme)}
             placeholder="Ej: 1234567890123"
           />
           {errors.barcode && (
@@ -254,7 +256,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             onChange={handleChange}
             onFocus={() => handleFocus('category')}
             onBlur={handleBlur}
-            style={getSelectStyles(!!errors.category, focusedField === 'category')}
+            style={getSelectStyles(!!errors.category, focusedField === 'category', theme)}
           >
             <option value="">Seleccione una categoría</option>
             <option value="sets">Sets</option>
@@ -280,7 +282,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('subcategory')}
               onBlur={handleBlur}
-              style={getSelectStyles(!!errors.subcategory, focusedField === 'subcategory')}
+              style={getSelectStyles(!!errors.subcategory, focusedField === 'subcategory', theme)}
             >
               <option value="">Seleccione una subcategoría</option>
               {getSubcategories(formData.category).map((subcat) => (
@@ -311,7 +313,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('number_of_piece')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.number_of_piece, focusedField === 'number_of_piece')}
+              style={getInputStyles(!!errors.number_of_piece, focusedField === 'number_of_piece', theme)}
               placeholder="Ej: 1000"
               min="1"
               step="1"
@@ -358,9 +360,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  backgroundColor: colors.buttonSecondary,
-                  color: colors.textPrimary,
-                  border: `1px solid ${colors.borderColor}`,
+                  backgroundColor: theme.buttonSecondary,
+                  color: theme.textPrimary,
+                  border: `1px solid ${theme.borderColor}`,
                   padding: '10px 16px',
                   borderRadius: '6px',
                   fontSize: '0.9rem',
@@ -369,10 +371,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                  e.currentTarget.style.backgroundColor = theme.hoverBackground;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.buttonSecondary;
+                  e.currentTarget.style.backgroundColor = theme.buttonSecondary;
                 }}
               >
                 <FaUpload />
@@ -387,8 +389,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    backgroundColor: colors.error,
-                    color: colors.white,
+                    backgroundColor: theme.error,
+                    color: theme.white,
                     border: 'none',
                     padding: '8px 12px',
                     borderRadius: '6px',
@@ -400,7 +402,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     e.currentTarget.style.backgroundColor = '#dc2626';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = colors.error;
+                    e.currentTarget.style.backgroundColor = theme.error;
                   }}
                 >
                   <FaTimes />
@@ -412,10 +414,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
             {/* Preview de la imagen */}
             {imagePreview && (
               <div style={{
-                border: `1px solid ${colors.borderColor}`,
+                border: `1px solid ${theme.borderColor}`,
                 borderRadius: '8px',
                 padding: '12px',
-                backgroundColor: colors.backgroundTertiary,
+                backgroundColor: theme.backgroundTertiary,
                 textAlign: 'center',
               }}>
                 <img
@@ -426,13 +428,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     maxHeight: '200px',
                     objectFit: 'contain',
                     borderRadius: '6px',
-                    border: `1px solid ${colors.borderColor}`,
+                    border: `1px solid ${theme.borderColor}`,
                   }}
                 />
                 <div style={{
                   marginTop: '8px',
                   fontSize: '0.8rem',
-                  color: colors.textSecondary,
+                  color: theme.textSecondary,
                 }}>
                   Vista previa de la imagen
                 </div>
@@ -452,7 +454,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('price')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.price, focusedField === 'price')}
+              style={getInputStyles(!!errors.price, focusedField === 'price', theme)}
               placeholder="0.00"
               step="0.01"
               min="0"
@@ -477,7 +479,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             onChange={handleChange}
             onFocus={() => handleFocus('description')}
             onBlur={handleBlur}
-            style={getTextareaStyles(!!errors.description, focusedField === 'description')}
+            style={getTextareaStyles(!!errors.description, focusedField === 'description', theme)}
             placeholder="Descripción detallada del producto..."
           />
           {errors.description && (

@@ -1,13 +1,13 @@
-import colors from './colors';
+import { Theme, darkTheme } from './themeColors';
 
-export const detailStyles = {
+// Función que genera los estilos de detalle basados en el tema
+export const getDetailStyles = (theme: Theme) => ({
   // Contenedor principal de la página de detalle
   pageContainer: {
     padding: '30px',
-    backgroundColor: colors.backgroundPrimary,
-    color: colors.textPrimary,
+    backgroundColor: theme.backgroundPrimary,
+    color: theme.textPrimary,
     minHeight: '100vh',
-    // Responsive handled via CSS
   },
 
   // Botón de regreso
@@ -15,9 +15,9 @@ export const detailStyles = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    backgroundColor: colors.buttonSecondary,
-    color: colors.textPrimary,
-    border: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.buttonSecondary,
+    color: theme.textPrimary,
+    border: `1px solid ${theme.borderColor}`,
     borderRadius: '8px',
     padding: '10px 16px',
     fontSize: '0.9rem',
@@ -39,13 +39,13 @@ export const detailStyles = {
   detailTitle: {
     fontSize: '2.5rem',
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     margin: 0,
   },
 
   techBadge: {
-    backgroundColor: colors.primaryColor,
-    color: colors.white,
+    backgroundColor: theme.primaryColor,
+    color: theme.white,
     padding: '6px 12px',
     borderRadius: '6px',
     fontSize: '0.8rem',
@@ -56,8 +56,8 @@ export const detailStyles = {
 
   // Sección INFO principal
   infoSection: {
-    backgroundColor: colors.cardBackground,
-    border: `1px solid ${colors.cardBorder}`,
+    backgroundColor: theme.cardBackground,
+    border: `1px solid ${theme.cardBorder}`,
     borderRadius: '12px',
     padding: '24px',
     marginBottom: '24px',
@@ -67,7 +67,7 @@ export const detailStyles = {
   infoTitle: {
     fontSize: '1.2rem',
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     marginBottom: '20px',
     display: 'flex',
     alignItems: 'center',
@@ -79,7 +79,6 @@ export const detailStyles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
     gap: '16px',
-    // Responsive handled via CSS
   },
 
   infoItem: {
@@ -91,22 +90,22 @@ export const detailStyles = {
   infoLabel: {
     fontSize: '0.8rem',
     fontWeight: '600',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
   },
 
   infoValue: {
     fontSize: '1rem',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     fontWeight: '500',
     wordBreak: 'break-word' as const,
   },
 
   infoValueCode: {
     fontSize: '0.9rem',
-    color: colors.textSecondary,
-    backgroundColor: colors.backgroundSecondary,
+    color: theme.textSecondary,
+    backgroundColor: theme.backgroundSecondary,
     padding: '4px 8px',
     borderRadius: '4px',
     fontFamily: 'monospace',
@@ -115,8 +114,8 @@ export const detailStyles = {
 
   // Sección de acciones
   actionsSection: {
-    backgroundColor: colors.cardBackground,
-    border: `1px solid ${colors.cardBorder}`,
+    backgroundColor: theme.cardBackground,
+    border: `1px solid ${theme.cardBorder}`,
     borderRadius: '12px',
     padding: '24px',
     marginBottom: '24px',
@@ -126,7 +125,7 @@ export const detailStyles = {
   actionsTitle: {
     fontSize: '1.2rem',
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     marginBottom: '20px',
   },
 
@@ -134,7 +133,6 @@ export const detailStyles = {
     display: 'flex',
     gap: '16px',
     flexWrap: 'wrap' as const,
-    // Responsive handled via CSS
   },
 
   actionButton: {
@@ -151,24 +149,24 @@ export const detailStyles = {
   },
 
   primaryAction: {
-    backgroundColor: colors.primaryColor,
-    color: colors.white,
+    backgroundColor: theme.primaryColor,
+    color: theme.white,
   },
 
   secondaryAction: {
-    backgroundColor: colors.secondaryColor,
-    color: colors.white,
+    backgroundColor: theme.secondaryColor,
+    color: theme.white,
   },
 
   dangerAction: {
-    backgroundColor: colors.error,
-    color: colors.white,
+    backgroundColor: theme.error,
+    color: theme.white,
   },
 
   // Sección de datos relacionados (tabla)
   relatedDataSection: {
-    backgroundColor: colors.cardBackground,
-    border: `1px solid ${colors.cardBorder}`,
+    backgroundColor: theme.cardBackground,
+    border: `1px solid ${theme.cardBorder}`,
     borderRadius: '12px',
     padding: '24px',
     marginBottom: '24px',
@@ -178,7 +176,7 @@ export const detailStyles = {
   relatedDataTitle: {
     fontSize: '1.2rem',
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     marginBottom: '20px',
     display: 'flex',
     justifyContent: 'space-between',
@@ -193,32 +191,32 @@ export const detailStyles = {
   },
 
   relatedTableHeader: {
-    backgroundColor: colors.backgroundSecondary,
-    borderBottom: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.backgroundSecondary,
+    borderBottom: `1px solid ${theme.borderColor}`,
   },
 
   relatedTableHeaderCell: {
     padding: '12px 16px',
     textAlign: 'left' as const,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     fontSize: '0.85rem',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
   },
 
   relatedTableRow: {
-    borderBottom: `1px solid ${colors.borderColor}`,
+    borderBottom: `1px solid ${theme.borderColor}`,
     transition: 'background-color 0.2s ease',
   },
 
   relatedTableRowHover: {
-    backgroundColor: colors.hoverBackground,
+    backgroundColor: theme.hoverBackground,
   },
 
   relatedTableCell: {
     padding: '12px 16px',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     verticalAlign: 'middle' as const,
   },
 
@@ -236,27 +234,27 @@ export const detailStyles = {
 
   statusActive: {
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    color: colors.success,
-    border: `1px solid ${colors.success}`,
+    color: theme.success,
+    border: `1px solid ${theme.success}`,
   },
 
   statusInactive: {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    color: colors.error,
-    border: `1px solid ${colors.error}`,
+    color: theme.error,
+    border: `1px solid ${theme.error}`,
   },
 
   statusWarning: {
     backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    color: colors.warning,
-    border: `1px solid ${colors.warning}`,
+    color: theme.warning,
+    border: `1px solid ${theme.warning}`,
   },
 
   // Estados vacíos
   emptyState: {
     textAlign: 'center' as const,
     padding: '40px 20px',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
   },
 
   emptyStateIcon: {
@@ -269,12 +267,12 @@ export const detailStyles = {
     fontSize: '1.1rem',
     fontWeight: '600',
     marginBottom: '6px',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
   },
 
   emptyStateDescription: {
     fontSize: '0.9rem',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
   },
 
   // Checkboxes
@@ -288,44 +286,49 @@ export const detailStyles = {
   checkbox: {
     width: '16px',
     height: '16px',
-    accentColor: colors.primaryColor,
+    accentColor: theme.primaryColor,
   },
 
   checkboxLabel: {
     fontSize: '0.9rem',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     fontWeight: '500',
   },
-};
+});
 
 // Función helper para obtener estilos de botón de acción
-export const getActionButtonStyle = (type: 'primary' | 'secondary' | 'danger') => {
-  const baseStyle = detailStyles.actionButton;
+export const getActionButtonStyle = (type: 'primary' | 'secondary' | 'danger', theme: Theme) => {
+  const styles = getDetailStyles(theme);
+  const baseStyle = styles.actionButton;
   
   switch (type) {
     case 'primary':
-      return { ...baseStyle, ...detailStyles.primaryAction };
+      return { ...baseStyle, ...styles.primaryAction };
     case 'secondary':
-      return { ...baseStyle, ...detailStyles.secondaryAction };
+      return { ...baseStyle, ...styles.secondaryAction };
     case 'danger':
-      return { ...baseStyle, ...detailStyles.dangerAction };
+      return { ...baseStyle, ...styles.dangerAction };
     default:
-      return { ...baseStyle, ...detailStyles.primaryAction };
+      return { ...baseStyle, ...styles.primaryAction };
   }
 };
 
 // Función helper para obtener estilos de badge de estado
-export const getStatusBadgeStyle = (status: 'active' | 'inactive' | 'warning') => {
-  const baseStyle = detailStyles.statusBadge;
+export const getStatusBadgeStyle = (status: 'active' | 'inactive' | 'warning', theme: Theme) => {
+  const styles = getDetailStyles(theme);
+  const baseStyle = styles.statusBadge;
   
   switch (status) {
     case 'active':
-      return { ...baseStyle, ...detailStyles.statusActive };
+      return { ...baseStyle, ...styles.statusActive };
     case 'inactive':
-      return { ...baseStyle, ...detailStyles.statusInactive };
+      return { ...baseStyle, ...styles.statusInactive };
     case 'warning':
-      return { ...baseStyle, ...detailStyles.statusWarning };
+      return { ...baseStyle, ...styles.statusWarning };
     default:
       return baseStyle;
   }
 };
+
+// Exportar función para compatibilidad con código existente
+export const detailStyles = getDetailStyles(darkTheme);

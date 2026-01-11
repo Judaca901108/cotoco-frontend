@@ -5,8 +5,8 @@ import ModalComponent from '../components/ModalComponent';
 import UserForm from '../components/UserForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import { useAuth } from '../../application/contexts/AuthContext';
-import { tableStyles, getRowStyle, getStatusBadgeStyle } from '../../shared/tableStyles';
-import colors from '../../shared/colors';
+import { getTableStyles, getRowStyle, getStatusBadgeStyle } from '../../shared/tableStyles';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 import { API_BASE_URL } from '../../config/apiConfig';
 const BASE_PATH = API_BASE_URL;
@@ -21,6 +21,8 @@ type User = {
 };
 
 const UsersPage: React.FC = () => {
+  const { theme } = useTheme();
+  const tableStyles = getTableStyles(theme);
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -134,7 +136,7 @@ const UsersPage: React.FC = () => {
 
       {/* Barra de búsqueda */}
       <div style={tableStyles.searchContainer} className="search-container-responsive">
-        <FaSearch style={{ color: colors.textSecondary, fontSize: '1rem' }} />
+        <FaSearch style={{ color: theme.textSecondary, fontSize: '1rem' }} />
         <input
           type="text"
           placeholder="Buscar usuarios por nombre, username, celular o documento..."
@@ -149,11 +151,11 @@ const UsersPage: React.FC = () => {
       {error && (
         <div style={{
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          border: `1px solid ${colors.error}`,
+          border: `1px solid ${theme.error}`,
           borderRadius: '8px',
           padding: '12px',
           marginBottom: '20px',
-          color: colors.error,
+          color: theme.error,
           fontSize: '0.9rem',
         }}>
           {error}
@@ -191,7 +193,7 @@ const UsersPage: React.FC = () => {
               paginatedUsers.map((user, index) => (
                 <tr
                   key={user.id}
-                  style={getRowStyle(index, hoveredRow === user.id)}
+                  style={getRowStyle(index, hoveredRow === user.id, theme)}
                   onMouseEnter={() => setHoveredRow(user.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                 >
@@ -215,22 +217,22 @@ const UsersPage: React.FC = () => {
                       <div style={{
                         width: '40px',
                         height: '40px',
-                        backgroundColor: colors.primaryColor,
+                        backgroundColor: theme.primaryColor,
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: colors.white,
+                        color: theme.white,
                         fontSize: '1.1rem',
                         fontWeight: '600',
                       }}>
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div style={{ fontWeight: '600', color: colors.textPrimary }}>
+                        <div style={{ fontWeight: '600', color: theme.textPrimary }}>
                           @{user.username}
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: colors.textSecondary, marginTop: '2px' }}>
+                        <div style={{ fontSize: '0.8rem', color: theme.textSecondary, marginTop: '2px' }}>
                           ID: {user.id}
                         </div>
                       </div>
@@ -240,8 +242,8 @@ const UsersPage: React.FC = () => {
                   {/* Columna de nombre */}
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <FaUser style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
-                      <span style={{ fontWeight: '500', color: colors.textPrimary }}>
+                      <FaUser style={{ color: theme.textSecondary, fontSize: '0.9rem' }} />
+                      <span style={{ fontWeight: '500', color: theme.textPrimary }}>
                         {user.name}
                       </span>
                     </div>
@@ -250,8 +252,8 @@ const UsersPage: React.FC = () => {
                   {/* Columna de celular */}
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <FaPhone style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
-                      <span style={{ color: colors.textPrimary }}>
+                      <FaPhone style={{ color: theme.textSecondary, fontSize: '0.9rem' }} />
+                      <span style={{ color: theme.textPrimary }}>
                         {user.celular}
                       </span>
                     </div>
@@ -260,8 +262,8 @@ const UsersPage: React.FC = () => {
                   {/* Columna de documento */}
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <FaIdCard style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
-                      <span style={{ color: colors.textPrimary }}>
+                      <FaIdCard style={{ color: theme.textSecondary, fontSize: '0.9rem' }} />
+                      <span style={{ color: theme.textPrimary }}>
                         {user.documentoIdentidad}
                       </span>
                     </div>
@@ -269,7 +271,7 @@ const UsersPage: React.FC = () => {
                   
                   {/* Columna de estado */}
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
-                    <span style={getStatusBadgeStyle(user.isActive ? 'active' : 'inactive')}>
+                    <span style={getStatusBadgeStyle(user.isActive ? 'active' : 'inactive', theme)}>
                       {user.isActive ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>

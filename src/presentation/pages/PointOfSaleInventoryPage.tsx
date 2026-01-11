@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse, FaEye, FaEdit, FaSort, FaSortUp, FaSortDown, FaDownload } from 'react-icons/fa';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 import InventoryForm from '../components/InventoryForm';
 import ModalComponent from '../components/ModalComponent';
 import { authenticatedFetch } from '../../infrastructure/authService';
-import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
+import { getTableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
 
 import { API_BASE_URL } from '../../config/apiConfig';
 const BASE_PATH = API_BASE_URL;
@@ -40,6 +40,8 @@ type PointOfSale = {
 
 const PointOfSaleInventoryPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { theme } = useTheme();
+  const tableStyles = getTableStyles(theme);
   const [inventories, setInventories] = useState<Inventory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [pointsOfSale, setPointsOfSale] = useState<PointOfSale[]>([]);
@@ -266,8 +268,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
       return <FaSort style={{ marginLeft: '4px', opacity: 0.3 }} />;
     }
     return order === 'asc' 
-      ? <FaSortUp style={{ marginLeft: '4px', color: colors.primaryColor }} />
-      : <FaSortDown style={{ marginLeft: '4px', color: colors.primaryColor }} />;
+      ? <FaSortUp style={{ marginLeft: '4px', color: theme.primaryColor }} />
+      : <FaSortDown style={{ marginLeft: '4px', color: theme.primaryColor }} />;
   };
 
   // Función para exportar inventario a CSV
@@ -329,9 +331,9 @@ const PointOfSaleInventoryPage: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          backgroundColor: colors.buttonSecondary,
-          color: colors.textSecondary,
-          border: `1px solid ${colors.borderColor}`,
+          backgroundColor: theme.buttonSecondary,
+          color: theme.textSecondary,
+          border: `1px solid ${theme.borderColor}`,
           padding: '12px 20px',
           borderRadius: '8px',
           fontSize: '0.95rem',
@@ -341,12 +343,12 @@ const PointOfSaleInventoryPage: React.FC = () => {
           marginBottom: '30px',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = colors.hoverBackground;
-          e.currentTarget.style.color = colors.textPrimary;
+          e.currentTarget.style.backgroundColor = theme.hoverBackground;
+          e.currentTarget.style.color = theme.textPrimary;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = colors.buttonSecondary;
-          e.currentTarget.style.color = colors.textSecondary;
+          e.currentTarget.style.backgroundColor = theme.buttonSecondary;
+          e.currentTarget.style.color = theme.textSecondary;
         }}
       >
         <FaArrowLeft />
@@ -358,18 +360,18 @@ const PointOfSaleInventoryPage: React.FC = () => {
         <h1 style={{
           fontSize: '2rem',
           fontWeight: '700',
-          color: colors.textPrimary,
+          color: theme.textPrimary,
           marginBottom: '8px',
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
         }}>
-          <FaWarehouse style={{ color: colors.primaryColor }} />
+          <FaWarehouse style={{ color: theme.primaryColor }} />
           Inventario - {currentPointOfSale?.name || 'Cargando...'}
         </h1>
         <p style={{
           fontSize: '1rem',
-          color: colors.textSecondary,
+          color: theme.textSecondary,
           margin: 0,
         }}>
           Gestiona el inventario de productos en este punto de venta
@@ -392,7 +394,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
             left: '12px',
             top: '50%',
             transform: 'translateY(-50%)',
-            color: colors.textSecondary,
+            color: theme.textSecondary,
             fontSize: '0.9rem',
           }} />
         <input
@@ -404,18 +406,18 @@ const PointOfSaleInventoryPage: React.FC = () => {
               width: '100%',
               padding: '12px 12px 12px 40px',
               fontSize: '1rem',
-              backgroundColor: colors.backgroundTertiary,
-              border: `1px solid ${colors.borderColor}`,
+              backgroundColor: theme.backgroundTertiary,
+              border: `1px solid ${theme.borderColor}`,
               borderRadius: '8px',
-              color: colors.textPrimary,
+              color: theme.textPrimary,
               outline: 'none',
               transition: 'border-color 0.2s ease',
             }}
             onFocus={(e) => {
-              e.target.style.borderColor = colors.primaryColor;
+              e.target.style.borderColor = theme.primaryColor;
             }}
             onBlur={(e) => {
-              e.target.style.borderColor = colors.borderColor;
+              e.target.style.borderColor = theme.borderColor;
             }}
           />
         </div>
@@ -430,8 +432,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              backgroundColor: filteredInventories.length === 0 ? colors.buttonSecondary : '#10b981',
-              color: filteredInventories.length === 0 ? colors.textSecondary : colors.white,
+              backgroundColor: filteredInventories.length === 0 ? theme.buttonSecondary : '#10b981',
+              color: filteredInventories.length === 0 ? theme.textSecondary : theme.white,
               border: 'none',
               padding: '12px 20px',
               borderRadius: '8px',
@@ -468,8 +470,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              backgroundColor: colors.primaryColor,
-              color: colors.white,
+              backgroundColor: theme.primaryColor,
+              color: theme.white,
               border: 'none',
               padding: '12px 20px',
               borderRadius: '8px',
@@ -499,11 +501,11 @@ const PointOfSaleInventoryPage: React.FC = () => {
       {error && (
         <div style={{
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          border: `1px solid ${colors.error}`,
+          border: `1px solid ${theme.error}`,
           borderRadius: '8px',
           padding: '12px 16px',
           marginBottom: '20px',
-          color: colors.error,
+          color: theme.error,
           fontSize: '0.9rem',
         }}>
           {error}
@@ -520,7 +522,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                 className="table-header-cell-responsive"
                 onClick={() => handleSort('product')}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                  e.currentTarget.style.backgroundColor = theme.hoverBackground;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
@@ -536,7 +538,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                 className="table-header-cell-responsive"
                 onClick={() => handleSort('stockQuantity')}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                  e.currentTarget.style.backgroundColor = theme.hoverBackground;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
@@ -554,7 +556,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                 className="table-header-cell-responsive"
                 onClick={() => handleSort('status')}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.hoverBackground;
+                  e.currentTarget.style.backgroundColor = theme.hoverBackground;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
@@ -574,7 +576,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                   ...tableStyles.tableCell,
                   textAlign: 'center',
                   padding: '40px',
-                  color: colors.textSecondary,
+                  color: theme.textSecondary,
                 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                     <FaBox style={{ fontSize: '2rem', opacity: 0.5 }} />
@@ -585,8 +587,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
                       <button
                         onClick={() => setIsCreating(true)}
                 style={{
-                          backgroundColor: colors.primaryColor,
-                          color: colors.white,
+                          backgroundColor: theme.primaryColor,
+                          color: theme.white,
                           border: 'none',
                           padding: '8px 16px',
                           borderRadius: '6px',
@@ -602,17 +604,17 @@ const PointOfSaleInventoryPage: React.FC = () => {
               </tr>
             ) : (
               filteredInventories.map((inventory, index) => (
-                <tr key={inventory.id} style={getRowStyle(index, false)}>
+                <tr key={inventory.id} style={getRowStyle(index, false, theme)}>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={getTechIconStyle('gradle')}>
+                      <div style={getTechIconStyle('gradle', theme)}>
                         <FaBox />
                       </div>
                       <div>
-                        <div style={{ fontWeight: '600', color: colors.textPrimary }}>
+                        <div style={{ fontWeight: '600', color: theme.textPrimary }}>
                           {inventory.productName}
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: colors.textSecondary }}>
+                        <div style={{ fontSize: '0.8rem', color: theme.textSecondary }}>
                           SKU: {inventory.productSku} • ID: {inventory.productId}
                         </div>
                       </div>
@@ -620,8 +622,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <FaWarehouse style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
-                      <span style={{ fontWeight: '600', color: colors.textPrimary }}>
+                      <FaWarehouse style={{ color: theme.textSecondary, fontSize: '0.9rem' }} />
+                      <span style={{ fontWeight: '600', color: theme.textPrimary }}>
                         {inventory.stockQuantity}
                       </span>
                     </div>
@@ -641,12 +643,12 @@ const PointOfSaleInventoryPage: React.FC = () => {
                           style={{
                             width: '80px',
                             padding: '6px 8px',
-                            border: `2px solid ${colors.primaryColor}`,
+                            border: `2px solid ${theme.primaryColor}`,
                             borderRadius: '6px',
                             fontSize: '0.9rem',
                             fontWeight: '600',
                             textAlign: 'center',
-                            backgroundColor: colors.backgroundTertiary,
+                            backgroundColor: theme.backgroundTertiary,
                           }}
                           min="0"
                           placeholder="0"
@@ -656,7 +658,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                           onClick={() => handleUpdateMinimumStock(inventory.id, parseInt(minimumStockValue))}
                           style={{
                             backgroundColor: '#10b981',
-                            color: colors.white,
+                            color: theme.white,
                             border: 'none',
                             padding: '6px 12px',
                             borderRadius: '6px',
@@ -683,7 +685,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                           onClick={cancelEditingMinimumStock}
                           style={{
                             backgroundColor: '#ef4444',
-                            color: colors.white,
+                            color: theme.white,
                             border: 'none',
                             padding: '6px 12px',
                             borderRadius: '6px',
@@ -709,14 +711,14 @@ const PointOfSaleInventoryPage: React.FC = () => {
                       </div>
                     ) : (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ color: colors.textPrimary, fontWeight: '600', fontSize: '1rem' }}>
+                        <span style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '1rem' }}>
                 {inventory.minimumStock}
                     </span>
                         <button
                           onClick={() => startEditingMinimumStock(inventory)}
                           style={{
-                            backgroundColor: colors.primaryColor,
-                            color: colors.white,
+                            backgroundColor: theme.primaryColor,
+                            color: theme.white,
                             border: 'none',
                             padding: '6px 12px',
                             borderRadius: '6px',
@@ -735,7 +737,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                             e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = colors.primaryColor;
+                            e.currentTarget.style.backgroundColor = theme.primaryColor;
                             e.currentTarget.style.transform = 'translateY(0)';
                             e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
                           }}
@@ -761,12 +763,12 @@ const PointOfSaleInventoryPage: React.FC = () => {
                           style={{
                             width: '80px',
                             padding: '6px 8px',
-                            border: `2px solid ${colors.primaryColor}`,
+                            border: `2px solid ${theme.primaryColor}`,
                             borderRadius: '6px',
                             fontSize: '0.9rem',
                             fontWeight: '600',
                             textAlign: 'center',
-                            backgroundColor: colors.backgroundTertiary,
+                            backgroundColor: theme.backgroundTertiary,
                           }}
                           min="0"
                           max={inventory.stockQuantity}
@@ -777,7 +779,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                           onClick={() => handleUpdateDisplay(inventory.id, parseInt(displayValue))}
                           style={{
                             backgroundColor: '#10b981',
-                            color: colors.white,
+                            color: theme.white,
                             border: 'none',
                             padding: '6px 12px',
                             borderRadius: '6px',
@@ -804,7 +806,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                           onClick={cancelEditingDisplay}
                           style={{
                             backgroundColor: '#ef4444',
-                            color: colors.white,
+                            color: theme.white,
                             border: 'none',
                             padding: '6px 12px',
                             borderRadius: '6px',
@@ -830,14 +832,14 @@ const PointOfSaleInventoryPage: React.FC = () => {
                       </div>
                     ) : (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ color: colors.textPrimary, fontWeight: '600', fontSize: '1.2rem' }}>
+                        <span style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '1.2rem' }}>
                           {inventory.onDisplay}
                         </span>
                         <button
                           onClick={() => startEditingDisplay(inventory)}
                           style={{
-                            backgroundColor: colors.primaryColor,
-                            color: colors.white,
+                            backgroundColor: theme.primaryColor,
+                            color: theme.white,
                             border: 'none',
                             padding: '6px 12px',
                             borderRadius: '6px',
@@ -856,7 +858,7 @@ const PointOfSaleInventoryPage: React.FC = () => {
                             e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = colors.primaryColor;
+                            e.currentTarget.style.backgroundColor = theme.primaryColor;
                             e.currentTarget.style.transform = 'translateY(0)';
                             e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
                           }}
@@ -869,7 +871,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <span style={getStatusBadgeStyle(
-                      inventory.stockQuantity <= inventory.minimumStock ? 'inactive' : 'active'
+                      inventory.stockQuantity <= inventory.minimumStock ? 'inactive' : 'active',
+                      theme
                     )}>
                       {inventory.stockQuantity <= inventory.minimumStock ? 'Stock Bajo' : 'Stock OK'}
                     </span>

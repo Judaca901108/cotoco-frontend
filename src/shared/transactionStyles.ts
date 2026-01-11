@@ -1,6 +1,7 @@
-import colors from './colors';
+import { Theme, darkTheme } from './themeColors';
 
-export const transactionStyles = {
+// Función que genera los estilos de transacciones basados en el tema
+export const getTransactionStyles = (theme: Theme) => ({
   // Estilos para la página de transacciones
   pageContainer: {
     maxWidth: '1200px',
@@ -15,7 +16,7 @@ export const transactionStyles = {
   pageTitle: {
     fontSize: '2rem',
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     marginBottom: '8px',
     display: 'flex',
     alignItems: 'center',
@@ -24,7 +25,7 @@ export const transactionStyles = {
   
   pageSubtitle: {
     fontSize: '1rem',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
     margin: 0,
   },
   
@@ -49,10 +50,10 @@ export const transactionStyles = {
   filterSelect: {
     padding: '8px 12px',
     fontSize: '0.9rem',
-    backgroundColor: colors.backgroundTertiary,
-    border: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.backgroundTertiary,
+    border: `1px solid ${theme.borderColor}`,
     borderRadius: '6px',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     outline: 'none',
     minWidth: '120px',
   },
@@ -62,8 +63,8 @@ export const transactionStyles = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    backgroundColor: colors.primaryColor,
-    color: colors.white,
+    backgroundColor: theme.primaryColor,
+    color: theme.white,
     border: 'none',
     padding: '12px 20px',
     borderRadius: '8px',
@@ -76,8 +77,8 @@ export const transactionStyles = {
   
   // Estilos para las tarjetas de transacción
   transactionCard: {
-    backgroundColor: colors.cardBackground,
-    border: `1px solid ${colors.cardBorder}`,
+    backgroundColor: theme.cardBackground,
+    border: `1px solid ${theme.cardBorder}`,
     borderRadius: '12px',
     padding: '20px',
     marginBottom: '16px',
@@ -88,7 +89,7 @@ export const transactionStyles = {
   transactionCardHover: {
     transform: 'translateY(-2px)',
     boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
-    borderColor: colors.primaryColor,
+    borderColor: theme.primaryColor,
   },
   
   // Header de la tarjeta
@@ -109,7 +110,7 @@ export const transactionStyles = {
   
   transactionDate: {
     fontSize: '0.8rem',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
   },
   
   // Contenido de la tarjeta
@@ -126,13 +127,13 @@ export const transactionStyles = {
   
   productName: {
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     fontSize: '1rem',
   },
   
   productDetails: {
     fontSize: '0.8rem',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
   },
   
   quantityInfo: {
@@ -149,7 +150,7 @@ export const transactionStyles = {
   
   remarks: {
     fontSize: '0.9rem',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
     fontStyle: 'italic',
     marginTop: '8px',
   },
@@ -160,23 +161,23 @@ export const transactionStyles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: '12px',
-    borderTop: `1px solid ${colors.borderColor}`,
+    borderTop: `1px solid ${theme.borderColor}`,
   },
   
   pointOfSaleInfo: {
     fontSize: '0.8rem',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
   },
   
   transactionId: {
     fontSize: '0.7rem',
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontFamily: 'monospace',
   },
-};
+});
 
 // Función para obtener el estilo del badge según el tipo de transacción
-export const getTransactionTypeStyle = (type: string) => {
+export const getTransactionTypeStyle = (type: string, theme: Theme) => {
   const baseStyle = {
     padding: '4px 8px',
     borderRadius: '6px',
@@ -190,73 +191,72 @@ export const getTransactionTypeStyle = (type: string) => {
       return {
         ...baseStyle,
         backgroundColor: 'rgba(239, 68, 68, 0.2)',
-        color: colors.error,
-        border: `1px solid ${colors.error}`,
+        color: theme.error,
+        border: `1px solid ${theme.error}`,
       };
     case 'restock':
       return {
         ...baseStyle,
         backgroundColor: 'rgba(16, 185, 129, 0.2)',
-        color: colors.success,
-        border: `1px solid ${colors.success}`,
+        color: theme.success,
+        border: `1px solid ${theme.success}`,
       };
     case 'adjustment':
       return {
         ...baseStyle,
         backgroundColor: 'rgba(245, 158, 11, 0.2)',
-        color: colors.warning,
-        border: `1px solid ${colors.warning}`,
+        color: theme.warning,
+        border: `1px solid ${theme.warning}`,
       };
     case 'transfer':
       return {
         ...baseStyle,
         backgroundColor: 'rgba(6, 182, 212, 0.2)',
-        color: colors.info,
-        border: `1px solid ${colors.info}`,
+        color: theme.info,
+        border: `1px solid ${theme.info}`,
       };
     default:
       return {
         ...baseStyle,
         backgroundColor: 'rgba(107, 114, 128, 0.2)',
-        color: colors.textSecondary,
-        border: `1px solid ${colors.textSecondary}`,
+        color: theme.textSecondary,
+        border: `1px solid ${theme.textSecondary}`,
       };
   }
 };
 
 // Función para obtener el estilo de la cantidad según el tipo de transacción
-export const getQuantityStyle = (quantity: number, transactionType: string) => {
+export const getQuantityStyle = (quantity: number, transactionType: string, theme: Theme) => {
   const baseStyle = {
     fontWeight: '700',
     fontSize: '1.1rem',
   };
 
-  // Usar el mismo color que el tipo de transacción
   switch (transactionType) {
     case 'sale':
       return {
         ...baseStyle,
-        color: colors.error, // Rojo para ventas
+        color: theme.error,
       };
     case 'restock':
       return {
         ...baseStyle,
-        color: colors.success, // Verde para reabastecimiento
+        color: theme.success,
       };
     case 'adjustment':
       return {
         ...baseStyle,
-        color: colors.warning, // Amarillo para ajustes
+        color: theme.warning,
       };
     case 'transfer':
       return {
         ...baseStyle,
-        color: colors.info, // Cian para transferencias
+        color: theme.info,
       };
     default:
       return {
         ...baseStyle,
-        color: colors.textSecondary,
+        color: theme.textSecondary,
       };
   }
 };
@@ -292,3 +292,6 @@ export const getTransactionTypeLabel = (type: string) => {
       return 'Transacción';
   }
 };
+
+// Exportar función para compatibilidad con código existente
+export const transactionStyles = getTransactionStyles(darkTheme);

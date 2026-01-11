@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaExclamationCircle } from 'react-icons/fa';
 import { useAuth } from '../../application/contexts/AuthContext';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 const LoginPage: React.FC = () => {
+  const { theme } = useTheme();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -70,8 +71,8 @@ const LoginPage: React.FC = () => {
     <div style={{
       display: 'flex',
       height: '100vh',
-      backgroundColor: colors.backgroundPrimary,
-      color: colors.textPrimary,
+      backgroundColor: theme.backgroundPrimary,
+      color: theme.textPrimary,
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
     }} className="login-page-responsive">
       {/* Sección Principal del Login */}
@@ -87,8 +88,8 @@ const LoginPage: React.FC = () => {
         <div>
           {/* Logo */}
           <div style={{
-            backgroundColor: colors.primaryColor,
-            color: colors.white,
+            backgroundColor: theme.primaryColor,
+            color: theme.white,
             padding: '12px 20px',
             borderRadius: '8px',
             fontWeight: 'bold',
@@ -115,7 +116,7 @@ const LoginPage: React.FC = () => {
             <h1 style={{
               fontSize: '2.5rem',
               fontWeight: '700',
-              color: colors.textPrimary,
+              color: theme.textPrimary,
               margin: '0 0 12px 0',
               letterSpacing: '-0.5px',
             }} className="login-h1-responsive">
@@ -123,7 +124,7 @@ const LoginPage: React.FC = () => {
             </h1>
             <p style={{
               fontSize: '1.1rem',
-              color: colors.textSecondary,
+              color: theme.textSecondary,
               margin: 0,
               fontWeight: '400',
             }} className="login-p-responsive">
@@ -139,7 +140,7 @@ const LoginPage: React.FC = () => {
                 display: 'block',
                 fontSize: '0.9rem',
                 fontWeight: '500',
-                color: colors.textPrimary,
+                color: theme.textPrimary,
                 marginBottom: '8px',
               }}>
                 Username
@@ -170,7 +171,7 @@ const LoginPage: React.FC = () => {
                     right: '12px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    color: colors.error,
+                    color: theme.error,
                   }}>
                     <FaExclamationCircle />
                   </div>
@@ -179,7 +180,7 @@ const LoginPage: React.FC = () => {
               {errors.username && (
                 <div style={{
                   fontSize: '0.8rem',
-                  color: colors.error,
+                  color: theme.error,
                   marginTop: '4px',
                 }}>
                   {errors.username}
@@ -193,7 +194,7 @@ const LoginPage: React.FC = () => {
                 display: 'block',
                 fontSize: '0.9rem',
                 fontWeight: '500',
-                color: colors.textPrimary,
+                color: theme.textPrimary,
                 marginBottom: '8px',
               }}>
                 Password
@@ -241,7 +242,7 @@ const LoginPage: React.FC = () => {
                     right: '40px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    color: colors.error,
+                    color: theme.error,
                   }}>
                     <FaExclamationCircle />
                   </div>
@@ -250,7 +251,7 @@ const LoginPage: React.FC = () => {
               {errors.password && (
                 <div style={{
                   fontSize: '0.8rem',
-                  color: colors.error,
+                  color: theme.error,
                   marginTop: '4px',
                 }}>
                   {errors.password}
@@ -265,7 +266,7 @@ const LoginPage: React.FC = () => {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: colors.secondaryColor,
+                  color: theme.secondaryColor,
                   textDecoration: 'none',
                   fontSize: '0.9rem',
                   fontWeight: '500',
@@ -283,11 +284,11 @@ const LoginPage: React.FC = () => {
             {errors.general && (
               <div style={{
                 backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                border: `1px solid ${colors.error}`,
+                border: `1px solid ${theme.error}`,
                 borderRadius: '8px',
                 padding: '12px',
                 marginBottom: '24px',
-                color: colors.error,
+                color: theme.error,
                 fontSize: '0.9rem',
                 textAlign: 'center',
               }}>
@@ -304,8 +305,8 @@ const LoginPage: React.FC = () => {
                 padding: '16px',
                 fontSize: '1.1rem',
                 fontWeight: '600',
-                backgroundColor: isLoading ? colors.textMuted : colors.secondaryColor,
-                color: colors.white,
+                backgroundColor: isLoading ? theme.textMuted : theme.secondaryColor,
+                color: theme.white,
             border: 'none',
                 borderRadius: '8px',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
@@ -335,7 +336,7 @@ const LoginPage: React.FC = () => {
       {/* Footer */}
         <div style={{
         textAlign: 'center',
-          color: colors.textMuted,
+          color: theme.textMuted,
           fontSize: '0.9rem',
         }}>
           © 2025 Comic Toys Colombia - Todos los derechos reservados.
@@ -345,7 +346,7 @@ const LoginPage: React.FC = () => {
       {/* Sección Derecha - Placeholder para imagen o contenido adicional */}
       <div style={{
         width: '40%',
-        backgroundColor: colors.backgroundSecondary,
+        backgroundColor: theme.backgroundSecondary,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -354,14 +355,14 @@ const LoginPage: React.FC = () => {
       }} className="login-sidebar-responsive">
         <div style={{
           textAlign: 'center',
-          color: colors.textMuted,
+          color: theme.textMuted,
           fontSize: '1.2rem',
           fontWeight: '500',
         }}>
           <div style={{
             width: '200px',
             height: '200px',
-            backgroundColor: colors.primaryColor,
+            backgroundColor: theme.primaryColor,
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',

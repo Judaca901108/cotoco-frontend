@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { FaTimes, FaCamera } from 'react-icons/fa';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 type BarcodeScannerProps = {
   isOpen: boolean;
@@ -10,6 +10,7 @@ type BarcodeScannerProps = {
 };
 
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan }) => {
+  const { theme } = useTheme();
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string>('');
@@ -108,7 +109,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '20px',
-        color: colors.white,
+        color: theme.white,
       }}>
         <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>
           <FaCamera style={{ marginRight: '8px' }} />
@@ -126,7 +127,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            color: colors.white,
+            color: theme.white,
             fontSize: '1.2rem',
             transition: 'background-color 0.2s',
           }}
@@ -145,7 +146,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
       <div style={{
         width: '100%',
         maxWidth: '500px',
-        backgroundColor: colors.backgroundPrimary,
+        backgroundColor: theme.backgroundPrimary,
         borderRadius: '12px',
         padding: '20px',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
@@ -154,13 +155,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
           <div style={{
             textAlign: 'center',
             padding: '40px 20px',
-            color: colors.error,
+            color: theme.error,
           }}>
             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚠️</div>
             <div style={{ fontSize: '1.1rem', marginBottom: '8px', fontWeight: '600' }}>
               Error al acceder a la cámara
             </div>
-            <div style={{ fontSize: '0.9rem', color: colors.textSecondary }}>
+            <div style={{ fontSize: '0.9rem', color: theme.textSecondary }}>
               {error}
             </div>
             <button
@@ -168,8 +169,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
               style={{
                 marginTop: '20px',
                 padding: '12px 24px',
-                backgroundColor: colors.primaryColor,
-                color: colors.white,
+                backgroundColor: theme.primaryColor,
+                color: theme.white,
                 border: 'none',
                 borderRadius: '8px',
                 fontSize: '0.95rem',
@@ -194,7 +195,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
               <div style={{
                 marginTop: '16px',
                 textAlign: 'center',
-                color: colors.textSecondary,
+                color: theme.textSecondary,
                 fontSize: '0.9rem',
               }}>
                 <div style={{ marginBottom: '8px' }}>
@@ -222,7 +223,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
         marginTop: '20px',
         maxWidth: '500px',
         textAlign: 'center',
-        color: colors.textSecondary,
+        color: theme.textSecondary,
         fontSize: '0.9rem',
         padding: '0 20px',
       }}>

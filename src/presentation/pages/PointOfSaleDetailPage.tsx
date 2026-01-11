@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaEdit, FaTrash, FaStore, FaMapMarkerAlt, FaBuilding, FaBox, FaTruck } from 'react-icons/fa';
-import { detailStyles, getActionButtonStyle, getStatusBadgeStyle } from '../../shared/detailStyles';
+import { getDetailStyles, getActionButtonStyle, getStatusBadgeStyle } from '../../shared/detailStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 import { API_BASE_URL } from '../../config/apiConfig';
 const BASE_PATH = API_BASE_URL;
@@ -26,6 +26,8 @@ type InventorySummary = {
 
 const PointOfSaleDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { theme } = useTheme();
+  const detailStyles = getDetailStyles(theme);
   const [pointOfSale, setPointOfSale] = useState<PointOfSale | null>(null);
   const [inventories, setInventories] = useState<InventorySummary[]>([]);
   const [allPointsOfSale, setAllPointsOfSale] = useState<PointOfSale[]>([]);
@@ -225,7 +227,7 @@ const PointOfSaleDetailPage: React.FC = () => {
       <div style={detailStyles.pageContainer}>
         <div style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '2rem', marginBottom: '16px' }}>⏳</div>
-          <div style={{ color: colors.textSecondary }}>Cargando punto de venta...</div>
+          <div style={{ color: theme.textSecondary }}>Cargando punto de venta...</div>
         </div>
       </div>
     );
@@ -238,10 +240,10 @@ const PointOfSaleDetailPage: React.FC = () => {
           style={detailStyles.backButton}
           onClick={() => navigate('/dashboard/point-of-sales')}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = colors.hoverBackground;
+            e.currentTarget.style.backgroundColor = theme.hoverBackground;
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = colors.buttonSecondary;
+            e.currentTarget.style.backgroundColor = theme.buttonSecondary;
           }}
         >
           <FaArrowLeft />
@@ -269,10 +271,10 @@ const PointOfSaleDetailPage: React.FC = () => {
         style={detailStyles.backButton}
         onClick={() => navigate('/dashboard/point-of-sales')}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = colors.hoverBackground;
+          e.currentTarget.style.backgroundColor = theme.hoverBackground;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = colors.buttonSecondary;
+          e.currentTarget.style.backgroundColor = theme.buttonSecondary;
         }}
       >
         <FaArrowLeft />
@@ -306,7 +308,7 @@ const PointOfSaleDetailPage: React.FC = () => {
           <div style={detailStyles.infoItem}>
             <span style={detailStyles.infoLabel}>Dirección</span>
             <span style={detailStyles.infoValue}>
-              <FaMapMarkerAlt style={{ marginRight: '4px', color: colors.textSecondary }} />
+              <FaMapMarkerAlt style={{ marginRight: '4px', color: theme.textSecondary }} />
               {pointOfSale.address}
             </span>
           </div>
@@ -319,7 +321,7 @@ const PointOfSaleDetailPage: React.FC = () => {
           <div style={detailStyles.infoItem}>
             <span style={detailStyles.infoLabel}>Tipo</span>
             <span style={detailStyles.infoValue}>
-              <FaBuilding style={{ marginRight: '4px', color: colors.primaryColor }} />
+              <FaBuilding style={{ marginRight: '4px', color: theme.primaryColor }} />
               {pointOfSale.type}
             </span>
           </div>
@@ -327,7 +329,7 @@ const PointOfSaleDetailPage: React.FC = () => {
           <div style={detailStyles.infoItem}>
             <span style={detailStyles.infoLabel}>Productos en Inventario</span>
             <span style={detailStyles.infoValue}>
-              <FaBox style={{ marginRight: '4px', color: colors.secondaryColor }} />
+              <FaBox style={{ marginRight: '4px', color: theme.secondaryColor }} />
               {totalProducts} productos
             </span>
           </div>
@@ -353,7 +355,7 @@ const PointOfSaleDetailPage: React.FC = () => {
         
         <div style={detailStyles.actionsGrid} className="actions-grid-responsive">
           <button
-            style={getActionButtonStyle('primary')}
+            style={getActionButtonStyle('primary', theme)}
             onClick={handleEdit}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-1px)';
@@ -369,7 +371,7 @@ const PointOfSaleDetailPage: React.FC = () => {
           </button>
           
           <button
-            style={getActionButtonStyle('secondary')}
+            style={getActionButtonStyle('secondary', theme)}
             onClick={handleViewInventory}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-1px)';
@@ -387,9 +389,9 @@ const PointOfSaleDetailPage: React.FC = () => {
           {inventories.length > 0 && pointOfSale?.type === 'Ferias' && (
             <button
               style={{
-                ...getActionButtonStyle('secondary'),
+                ...getActionButtonStyle('secondary', theme),
                 backgroundColor: '#fbbf24', // Amarillo
-                color: colors.textPrimary,
+                color: theme.textPrimary,
               }}
               onClick={() => {
                 console.log('Botón MOVER INVENTARIO clickeado');
@@ -414,7 +416,7 @@ const PointOfSaleDetailPage: React.FC = () => {
           )}
           
           <button
-            style={getActionButtonStyle('danger')}
+            style={getActionButtonStyle('danger', theme)}
             onClick={handleDelete}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-1px)';
@@ -436,10 +438,10 @@ const PointOfSaleDetailPage: React.FC = () => {
         <div style={{
           ...detailStyles.relatedDataSection,
           backgroundColor: 'rgba(139, 92, 246, 0.05)',
-          border: `2px solid ${colors.primaryColor}`,
+          border: `2px solid ${theme.primaryColor}`,
         }}>
           <h2 style={detailStyles.relatedDataTitle}>
-            <FaTruck style={{ marginRight: '8px', color: colors.primaryColor }} />
+            <FaTruck style={{ marginRight: '8px', color: theme.primaryColor }} />
             MOVER TODO EL INVENTARIO
           </h2>
           
@@ -448,14 +450,14 @@ const PointOfSaleDetailPage: React.FC = () => {
             flexDirection: 'column',
             gap: '16px',
             padding: '20px',
-            backgroundColor: colors.backgroundTertiary,
+            backgroundColor: theme.backgroundTertiary,
             borderRadius: '8px',
-            border: `1px solid ${colors.borderColor}`,
+            border: `1px solid ${theme.borderColor}`,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <label style={{
                 fontWeight: '600',
-                color: colors.textPrimary,
+                color: theme.textPrimary,
                 minWidth: '120px'
               }}>
                 Mover a:
@@ -466,10 +468,10 @@ const PointOfSaleDetailPage: React.FC = () => {
                 style={{
                   flex: 1,
                   padding: '8px 12px',
-                  border: `1px solid ${colors.borderColor}`,
+                  border: `1px solid ${theme.borderColor}`,
                   borderRadius: '6px',
-                  backgroundColor: colors.backgroundPrimary,
-                  color: colors.textPrimary,
+                  backgroundColor: theme.backgroundPrimary,
+                  color: theme.textPrimary,
                   fontSize: '0.95rem',
                 }}
               >
@@ -484,7 +486,7 @@ const PointOfSaleDetailPage: React.FC = () => {
             
             <div style={{
               fontSize: '0.9rem',
-              color: colors.textSecondary,
+              color: theme.textSecondary,
               backgroundColor: 'rgba(255, 193, 7, 0.1)',
               padding: '12px',
               borderRadius: '6px',
@@ -502,9 +504,9 @@ const PointOfSaleDetailPage: React.FC = () => {
                 }}
                 style={{
                   padding: '8px 16px',
-                  backgroundColor: colors.buttonSecondary,
-                  color: colors.textSecondary,
-                  border: `1px solid ${colors.borderColor}`,
+                  backgroundColor: theme.buttonSecondary,
+                  color: theme.textSecondary,
+                  border: `1px solid ${theme.borderColor}`,
                   borderRadius: '6px',
                   fontSize: '0.9rem',
                   cursor: 'pointer',
@@ -517,8 +519,8 @@ const PointOfSaleDetailPage: React.FC = () => {
                 disabled={!selectedTargetPoint || movingInventory}
                 style={{
                   padding: '8px 16px',
-                  backgroundColor: selectedTargetPoint && !movingInventory ? colors.primaryColor : colors.textSecondary,
-                  color: colors.white,
+                  backgroundColor: selectedTargetPoint && !movingInventory ? theme.primaryColor : theme.textSecondary,
+                  color: theme.white,
                   border: 'none',
                   borderRadius: '6px',
                   fontSize: '0.9rem',
@@ -539,7 +541,7 @@ const PointOfSaleDetailPage: React.FC = () => {
       <div style={detailStyles.relatedDataSection}>
         <h2 style={detailStyles.relatedDataTitle}>
           INVENTARIO
-          <span style={getStatusBadgeStyle(lowStockProducts > 0 ? 'warning' : 'active')}>
+          <span style={getStatusBadgeStyle(lowStockProducts > 0 ? 'warning' : 'active', theme)}>
             {lowStockProducts > 0 ? `${lowStockProducts} con stock bajo` : 'Stock OK'}
           </span>
         </h2>
@@ -570,24 +572,24 @@ const PointOfSaleDetailPage: React.FC = () => {
                     <div style={{ fontWeight: '600' }}>
                       {inventory.productName}
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: colors.textSecondary }}>
+                    <div style={{ fontSize: '0.8rem', color: theme.textSecondary }}>
                       ID: {inventory.productId}
                     </div>
                   </td>
                   <td style={detailStyles.relatedTableCell}>
-                    <span style={{ fontWeight: '600', color: colors.textPrimary }}>
+                    <span style={{ fontWeight: '600', color: theme.textPrimary }}>
                       {inventory.stockQuantity}
                     </span>
                   </td>
                   <td style={detailStyles.relatedTableCell}>
-                    <span style={{ color: colors.textSecondary }}>
+                    <span style={{ color: theme.textSecondary }}>
                       {inventory.minimumStock}
                     </span>
                   </td>
                   <td style={detailStyles.relatedTableCell}>
                     <span style={{ 
                       fontWeight: '600', 
-                      color: colors.primaryColor,
+                      color: theme.primaryColor,
                       fontSize: '1.1rem'
                     }}>
                       {inventory.onDisplay}
@@ -595,7 +597,8 @@ const PointOfSaleDetailPage: React.FC = () => {
                   </td>
                   <td style={detailStyles.relatedTableCell}>
                     <span style={getStatusBadgeStyle(
-                      inventory.stockQuantity < inventory.minimumStock ? 'warning' : 'active'
+                      inventory.stockQuantity < inventory.minimumStock ? 'warning' : 'active',
+                      theme
                     )}>
                       {inventory.stockQuantity < inventory.minimumStock ? 'Stock Bajo' : 'En Stock'}
                     </span>
@@ -622,13 +625,13 @@ const PointOfSaleDetailPage: React.FC = () => {
           zIndex: 1000,
         }}>
           <div style={{
-            backgroundColor: colors.backgroundPrimary,
+            backgroundColor: theme.backgroundPrimary,
             borderRadius: '12px',
             padding: '32px',
             maxWidth: '500px',
             width: '90%',
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            border: `1px solid ${colors.borderColor}`,
+            border: `1px solid ${theme.borderColor}`,
           }}>
             <div style={{
               display: 'flex',
@@ -652,7 +655,7 @@ const PointOfSaleDetailPage: React.FC = () => {
                 margin: 0,
                 fontSize: '1.25rem',
                 fontWeight: '600',
-                color: colors.textPrimary,
+                color: theme.textPrimary,
               }}>
                 Confirmar Movimiento de Inventario
               </h3>
@@ -661,22 +664,22 @@ const PointOfSaleDetailPage: React.FC = () => {
             <div style={{
               marginBottom: '24px',
               lineHeight: '1.6',
-              color: colors.textSecondary,
+              color: theme.textSecondary,
             }}>
               <p style={{ margin: '0 0 12px 0' }}>
                 ¿Estás seguro de que quieres mover <strong>TODO el inventario</strong> de:
               </p>
               <div style={{
-                backgroundColor: colors.backgroundSecondary,
+                backgroundColor: theme.backgroundSecondary,
                 padding: '16px',
                 borderRadius: '8px',
                 margin: '12px 0',
-                border: `1px solid ${colors.borderColor}`,
+                border: `1px solid ${theme.borderColor}`,
               }}>
-                <div style={{ fontWeight: '600', color: colors.textPrimary, marginBottom: '4px' }}>
+                <div style={{ fontWeight: '600', color: theme.textPrimary, marginBottom: '4px' }}>
                   📍 Origen: {pointOfSale?.name}
                 </div>
-                <div style={{ fontWeight: '600', color: colors.textPrimary }}>
+                <div style={{ fontWeight: '600', color: theme.textPrimary }}>
                   🎯 Destino: {allPointsOfSale.find(pos => pos.id === selectedTargetPoint)?.name}
                 </div>
               </div>
@@ -706,9 +709,9 @@ const PointOfSaleDetailPage: React.FC = () => {
                 disabled={movingInventory}
                 style={{
                   padding: '12px 24px',
-                  backgroundColor: colors.buttonSecondary,
-                  color: colors.textSecondary,
-                  border: `1px solid ${colors.borderColor}`,
+                  backgroundColor: theme.buttonSecondary,
+                  color: theme.textSecondary,
+                  border: `1px solid ${theme.borderColor}`,
                   borderRadius: '8px',
                   fontSize: '0.95rem',
                   fontWeight: '600',
@@ -718,14 +721,14 @@ const PointOfSaleDetailPage: React.FC = () => {
                 }}
                 onMouseEnter={(e) => {
                   if (!movingInventory) {
-                    e.currentTarget.style.backgroundColor = colors.hoverBackground;
-                    e.currentTarget.style.color = colors.textPrimary;
+                    e.currentTarget.style.backgroundColor = theme.hoverBackground;
+                    e.currentTarget.style.color = theme.textPrimary;
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!movingInventory) {
-                    e.currentTarget.style.backgroundColor = colors.buttonSecondary;
-                    e.currentTarget.style.color = colors.textSecondary;
+                    e.currentTarget.style.backgroundColor = theme.buttonSecondary;
+                    e.currentTarget.style.color = theme.textSecondary;
                   }
                 }}
               >
@@ -736,8 +739,8 @@ const PointOfSaleDetailPage: React.FC = () => {
                 disabled={movingInventory}
                 style={{
                   padding: '12px 24px',
-                  backgroundColor: movingInventory ? colors.textSecondary : colors.primaryColor,
-                  color: colors.white,
+                  backgroundColor: movingInventory ? theme.textSecondary : theme.primaryColor,
+                  color: theme.white,
                   border: 'none',
                   borderRadius: '8px',
                   fontSize: '0.95rem',
@@ -756,7 +759,7 @@ const PointOfSaleDetailPage: React.FC = () => {
                 }}
                 onMouseLeave={(e) => {
                   if (!movingInventory) {
-                    e.currentTarget.style.backgroundColor = colors.primaryColor;
+                    e.currentTarget.style.backgroundColor = theme.primaryColor;
                     e.currentTarget.style.transform = 'translateY(0)';
                   }
                 }}

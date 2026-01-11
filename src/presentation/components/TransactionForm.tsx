@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaSave, FaTimes, FaBox, FaStore, FaExchangeAlt, FaInfoCircle, FaSearch, FaPlus, FaTrash, FaEdit, FaCreditCard, FaMoneyBill, FaQrcode, FaDollarSign } from 'react-icons/fa';
-import { formStyles, getInputStyles, getSelectStyles, getTextareaStyles } from '../../shared/formStyles';
+import { getFormStyles, getInputStyles, getSelectStyles, getTextareaStyles } from '../../shared/formStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import { useAuth } from '../../application/contexts/AuthContext';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 import { API_BASE_URL } from '../../config/apiConfig';
 
 type Inventory = {
@@ -71,6 +71,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   title = "Nueva Transacción"
 }) => {
   const { isAdmin } = useAuth();
+  const { theme } = useTheme();
+  const formStyles = getFormStyles(theme);
   const [formData, setFormData] = useState({
     pointOfSaleId: 0,
     transactionType: 'sale' as 'sale' | 'restock' | 'adjustment' | 'transfer',
@@ -535,7 +537,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             onChange={handleChange}
             onFocus={() => handleFocus('transactionType')}
             onBlur={handleBlur}
-            style={getSelectStyles(!!errors.transactionType, focusedField === 'transactionType')}
+            style={getSelectStyles(!!errors.transactionType, focusedField === 'transactionType', theme)}
           >
             {transactionTypes.map((type) => (
               <option key={type.value} value={type.value}>
@@ -554,10 +556,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             marginTop: '8px',
             padding: '8px 12px',
             backgroundColor: 'rgba(139, 92, 246, 0.1)',
-            border: `1px solid ${colors.primaryColor}30`,
+            border: `1px solid ${theme.primaryColor}30`,
             borderRadius: '6px',
             fontSize: '0.85rem',
-            color: colors.textSecondary,
+            color: theme.textSecondary,
           }}>
             <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem' }} />
             {transactionTypes.find(t => t.value === formData.transactionType)?.description}
@@ -569,10 +571,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               marginTop: '8px',
               padding: '8px 12px',
               backgroundColor: 'rgba(245, 158, 11, 0.1)',
-              border: `1px solid ${colors.warning}30`,
+              border: `1px solid ${theme.warning}30`,
               borderRadius: '6px',
               fontSize: '0.85rem',
-              color: colors.warning,
+              color: theme.warning,
             }}>
               <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem' }} />
               <strong>Restricción de usuario:</strong> Solo puedes crear transacciones de venta y ajuste.
@@ -594,7 +596,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             onFocus={() => handleFocus('pointOfSaleId')}
             onBlur={handleBlur}
             style={{
-              ...getSelectStyles(!!errors.pointOfSaleId, focusedField === 'pointOfSaleId'),
+              ...getSelectStyles(!!errors.pointOfSaleId, focusedField === 'pointOfSaleId', theme),
               opacity: formData.transactionType ? 1 : 0.6,
             }}
             disabled={!formData.transactionType}
@@ -635,7 +637,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               onFocus={() => handleFocus('destinationPointOfSaleId')}
             onBlur={handleBlur}
             style={{
-                ...getSelectStyles(!!errors.destinationPointOfSaleId, focusedField === 'destinationPointOfSaleId'),
+                ...getSelectStyles(!!errors.destinationPointOfSaleId, focusedField === 'destinationPointOfSaleId', theme),
               opacity: formData.pointOfSaleId ? 1 : 0.6,
             }}
             disabled={!formData.pointOfSaleId}
@@ -675,7 +677,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                 left: '12px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: colors.textSecondary,
+                color: theme.textSecondary,
                 fontSize: '0.9rem',
                 pointerEvents: 'none',
               }} />
@@ -701,7 +703,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   }, 200);
                 }}
                 style={{
-                  ...getInputStyles(!!errors.inventoryId, focusedField === 'inventoryId'),
+                  ...getInputStyles(!!errors.inventoryId, focusedField === 'inventoryId', theme),
                   paddingLeft: '40px',
                   opacity: formData.pointOfSaleId && formData.transactionType && (formData.transactionType !== 'transfer' || formData.destinationPointOfSaleId) ? 1 : 0.6,
                   cursor: formData.pointOfSaleId && formData.transactionType && (formData.transactionType !== 'transfer' || formData.destinationPointOfSaleId) ? 'text' : 'not-allowed',
@@ -727,8 +729,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   transform: 'translateY(-50%)',
                   width: '20px',
                   height: '20px',
-                  border: `2px solid ${colors.primaryColor}30`,
-                  borderTopColor: colors.primaryColor,
+                  border: `2px solid ${theme.primaryColor}30`,
+                  borderTopColor: theme.primaryColor,
                   borderRadius: '50%',
                   animation: 'spin 0.8s linear infinite',
                 }} />
@@ -745,8 +747,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   left: 0,
                   right: 0,
                   marginTop: '4px',
-                  backgroundColor: colors.cardBackground,
-                  border: `1px solid ${colors.borderColor}`,
+                  backgroundColor: theme.cardBackground,
+                  border: `1px solid ${theme.borderColor}`,
                   borderRadius: '8px',
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                   maxHeight: '300px',
@@ -761,31 +763,31 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                     style={{
                       padding: '12px 16px',
                       cursor: 'pointer',
-                      borderBottom: `1px solid ${colors.borderColor}`,
+                      borderBottom: `1px solid ${theme.borderColor}`,
                       transition: 'background-color 0.2s ease',
                       backgroundColor: selectedProduct?.id === product.id 
-                        ? `${colors.primaryColor}15` 
+                        ? `${theme.primaryColor}15` 
                         : 'transparent',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = `${colors.primaryColor}10`;
+                        e.currentTarget.style.backgroundColor = `${theme.primaryColor}10`;
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = selectedProduct?.id === product.id 
-                        ? `${colors.primaryColor}15` 
+                        ? `${theme.primaryColor}15` 
                         : 'transparent';
                     }}
                   >
           <div style={{
                       fontWeight: '600',
-                      color: colors.textPrimary,
+                      color: theme.textPrimary,
                       marginBottom: '4px',
                     }}>
                       {product.productName}
                     </div>
                     <div style={{
             fontSize: '0.85rem',
-            color: colors.textSecondary,
+            color: theme.textSecondary,
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '2px',
@@ -811,13 +813,13 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   right: 0,
                   marginTop: '4px',
                   padding: '16px',
-                  backgroundColor: colors.cardBackground,
-                  border: `1px solid ${colors.borderColor}`,
+                  backgroundColor: theme.cardBackground,
+                  border: `1px solid ${theme.borderColor}`,
                   borderRadius: '8px',
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                   zIndex: 1000,
                   textAlign: 'center',
-                  color: colors.textSecondary,
+                  color: theme.textSecondary,
                   fontSize: '0.9rem',
                 }}
               >
@@ -838,25 +840,25 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               marginTop: '12px',
               padding: '16px',
               backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              border: `1px solid ${colors.success}30`,
+              border: `1px solid ${theme.success}30`,
               borderRadius: '8px',
             }}>
               <div style={{ marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-                  <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem', color: colors.success }} />
-                  <strong style={{ color: colors.success }}>Producto seleccionado:</strong>
+                  <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem', color: theme.success }} />
+                  <strong style={{ color: theme.success }}>Producto seleccionado:</strong>
                 </div>
-                <div style={{ marginLeft: '20px', color: colors.textPrimary }}>
+                <div style={{ marginLeft: '20px', color: theme.textPrimary }}>
                   <div><strong>{selectedProduct.productName}</strong> (SKU: {selectedProduct.productSku})</div>
                   {selectedProduct.barcode && (
-                    <div style={{ fontSize: '0.85rem', color: colors.textSecondary }}>
+                    <div style={{ fontSize: '0.85rem', color: theme.textSecondary }}>
                       Código de Barras: {selectedProduct.barcode}
             </div>
           )}
                   <div style={{ marginTop: '4px', fontSize: '0.85rem' }}>
                     Stock disponible: <strong>{selectedProduct.stockQuantity} unidades</strong>
                     {formData.transactionType === 'adjustment' && (
-                      <div style={{ marginTop: '4px', fontSize: '0.8rem', color: colors.warning }}>
+                      <div style={{ marginTop: '4px', fontSize: '0.8rem', color: theme.warning }}>
                         💡 Para ajustes, puedes usar valores negativos (ej: -5) para reducir el stock
                       </div>
                     )}
@@ -884,7 +886,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                       }
                     }}
                     style={{
-                      ...getInputStyles(false, false),
+                      ...getInputStyles(false, false, theme),
                       width: '100%',
                     }}
                     placeholder={formData.transactionType === 'adjustment' ? 'Ej: -5, 0, 10' : '1'}
@@ -894,8 +896,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   type="button"
                   onClick={handleAddItem}
                   style={{
-                    backgroundColor: colors.primaryColor,
-                    color: colors.white,
+                    backgroundColor: theme.primaryColor,
+                    color: theme.white,
                     border: 'none',
                     padding: '10px 20px',
                     borderRadius: '8px',
@@ -908,12 +910,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                     transition: 'all 0.2s ease',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = colors.primaryColor;
+                    e.currentTarget.style.backgroundColor = theme.primaryColor;
                     e.currentTarget.style.transform = 'translateY(-1px)';
                     e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = colors.primaryColor;
+                    e.currentTarget.style.backgroundColor = theme.primaryColor;
                     e.currentTarget.style.transform = 'translateY(0)';
                     e.currentTarget.style.boxShadow = 'none';
                   }}
@@ -931,10 +933,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   marginTop: '8px',
                   padding: '8px 12px',
               backgroundColor: 'rgba(139, 92, 246, 0.1)',
-              border: `1px solid ${colors.primaryColor}30`,
+              border: `1px solid ${theme.primaryColor}30`,
                   borderRadius: '6px',
                   fontSize: '0.85rem',
-              color: colors.textSecondary,
+              color: theme.textSecondary,
                 }}>
                   <FaInfoCircle style={{ marginRight: '6px', fontSize: '0.8rem' }} />
               Escribe al menos 2 caracteres para buscar productos
@@ -950,7 +952,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               Items de la Transacción ({transactionItems.length})
               </label>
               <div style={{
-              border: `1px solid ${colors.borderColor}`,
+              border: `1px solid ${theme.borderColor}`,
               borderRadius: '8px',
               overflow: 'hidden',
             }}>
@@ -959,8 +961,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   key={item.inventoryId}
                   style={{
                     padding: '16px',
-                    borderBottom: index < transactionItems.length - 1 ? `1px solid ${colors.borderColor}` : 'none',
-                    backgroundColor: colors.cardBackground,
+                    borderBottom: index < transactionItems.length - 1 ? `1px solid ${theme.borderColor}` : 'none',
+                    backgroundColor: theme.cardBackground,
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -968,25 +970,25 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   }}
                 >
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '600', color: colors.textPrimary, marginBottom: '4px' }}>
+                    <div style={{ fontWeight: '600', color: theme.textPrimary, marginBottom: '4px' }}>
                       {item.productName}
               </div>
-                    <div style={{ fontSize: '0.85rem', color: colors.textSecondary }}>
+                    <div style={{ fontSize: '0.85rem', color: theme.textSecondary }}>
                       SKU: {item.productSku}
                       {item.barcode && ` • Código de Barras: ${item.barcode}`}
               </div>
-                    <div style={{ fontSize: '0.8rem', color: colors.textSecondary, marginTop: '4px' }}>
+                    <div style={{ fontSize: '0.8rem', color: theme.textSecondary, marginTop: '4px' }}>
                       Stock disponible: {item.stockQuantity} unidades
             </div>
                     {errors[`item_${index}`] && (
-                      <div style={{ fontSize: '0.8rem', color: colors.error, marginTop: '4px' }}>
+                      <div style={{ fontSize: '0.8rem', color: theme.error, marginTop: '4px' }}>
                         {errors[`item_${index}`]}
                       </div>
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <label style={{ fontSize: '0.85rem', color: colors.textSecondary }}>Cantidad:</label>
+                      <label style={{ fontSize: '0.85rem', color: theme.textSecondary }}>Cantidad:</label>
                       <input
                         type="number"
                         min={formData.transactionType === 'adjustment' ? undefined : '1'}
@@ -1002,7 +1004,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                           }
                         }}
                         style={{
-                          ...getInputStyles(false, false),
+                          ...getInputStyles(false, false, theme),
                           width: '80px',
                           textAlign: 'center',
                         }}
@@ -1014,8 +1016,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                       onClick={() => handleRemoveItem(item.inventoryId)}
                       style={{
                         backgroundColor: 'transparent',
-                        border: `1px solid ${colors.error}`,
-                        color: colors.error,
+                        border: `1px solid ${theme.error}`,
+                        color: theme.error,
                         padding: '8px 12px',
                         borderRadius: '6px',
                         cursor: 'pointer',
@@ -1026,7 +1028,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                         transition: 'all 0.2s ease',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = `${colors.error}10`;
+                        e.currentTarget.style.backgroundColor = `${theme.error}10`;
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = 'transparent';
@@ -1056,7 +1058,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                 onChange={handleChange}
               onFocus={() => handleFocus('paymentMethod')}
                 onBlur={handleBlur}
-              style={getSelectStyles(!!errors.paymentMethod, focusedField === 'paymentMethod')}
+              style={getSelectStyles(!!errors.paymentMethod, focusedField === 'paymentMethod', theme)}
             >
               <option value="">Seleccione un método de pago</option>
               <option value="card">Tarjeta</option>
@@ -1083,7 +1085,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             onChange={handleChange}
             onFocus={() => handleFocus('remarks')}
             onBlur={handleBlur}
-            style={getTextareaStyles(!!errors.remarks, focusedField === 'remarks')}
+            style={getTextareaStyles(!!errors.remarks, focusedField === 'remarks', theme)}
             placeholder="Describa la transacción (ej: Venta a cliente, Reabastecimiento desde proveedor, etc.)"
             rows={3}
           />
@@ -1100,7 +1102,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             <div style={{
               padding: '20px',
               backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              border: `2px solid ${colors.success}40`,
+              border: `2px solid ${theme.success}40`,
               borderRadius: '12px',
               display: 'flex',
               justifyContent: 'space-between',
@@ -1109,12 +1111,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <FaDollarSign style={{ 
                   fontSize: '1.5rem', 
-                  color: colors.success,
+                  color: theme.success,
                 }} />
                 <div>
                   <div style={{ 
                     fontSize: '0.9rem', 
-                    color: colors.textSecondary,
+                    color: theme.textSecondary,
                     marginBottom: '4px',
                   }}>
                     Total a Pagar
@@ -1122,7 +1124,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   <div style={{ 
                     fontSize: '2rem', 
                     fontWeight: '700', 
-                    color: colors.success,
+                    color: theme.success,
                   }}>
                     {transactionItems.reduce((total, item) => {
                       const itemPrice = item.price || 0;
@@ -1139,7 +1141,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               </div>
               <div style={{
                 fontSize: '0.85rem',
-                color: colors.textSecondary,
+                color: theme.textSecondary,
                 textAlign: 'right',
               }}>
                 <div>{transactionItems.length} {transactionItems.length === 1 ? 'producto' : 'productos'}</div>

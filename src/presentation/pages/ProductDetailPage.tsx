@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaEdit, FaTrash, FaBox, FaTag, FaDollarSign } from 'react-icons/fa';
-import { detailStyles, getActionButtonStyle } from '../../shared/detailStyles';
+import { getDetailStyles, getActionButtonStyle } from '../../shared/detailStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 import { API_BASE_URL, getImageUrl } from '../../config/apiConfig';
 const BASE_PATH = API_BASE_URL;
@@ -21,6 +21,8 @@ type Product = {
 
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { theme } = useTheme();
+  const detailStyles = getDetailStyles(theme);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -81,7 +83,7 @@ const ProductDetailPage: React.FC = () => {
       <div style={detailStyles.pageContainer}>
         <div style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '2rem', marginBottom: '16px' }}>⏳</div>
-          <div style={{ color: colors.textSecondary }}>Cargando producto...</div>
+          <div style={{ color: theme.textSecondary }}>Cargando producto...</div>
         </div>
       </div>
     );
@@ -94,10 +96,10 @@ const ProductDetailPage: React.FC = () => {
           style={detailStyles.backButton}
           onClick={() => navigate('/dashboard/products')}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = colors.hoverBackground;
+            e.currentTarget.style.backgroundColor = theme.hoverBackground;
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = colors.buttonSecondary;
+            e.currentTarget.style.backgroundColor = theme.buttonSecondary;
           }}
         >
           <FaArrowLeft />
@@ -127,10 +129,10 @@ const ProductDetailPage: React.FC = () => {
         style={detailStyles.backButton}
         onClick={() => navigate('/dashboard/products')}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = colors.hoverBackground;
+          e.currentTarget.style.backgroundColor = theme.hoverBackground;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = colors.buttonSecondary;
+          e.currentTarget.style.backgroundColor = theme.buttonSecondary;
         }}
       >
         <FaArrowLeft />
@@ -167,10 +169,10 @@ const ProductDetailPage: React.FC = () => {
               top: '20px',
             }}>
               <div style={{
-                border: `3px solid ${colors.borderColor}`,
+                border: `3px solid ${theme.borderColor}`,
                 borderRadius: '20px',
                 padding: '30px',
-                backgroundColor: colors.backgroundTertiary,
+                backgroundColor: theme.backgroundTertiary,
                 boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
                 width: '100%',
                 maxWidth: '500px',
@@ -184,7 +186,7 @@ const ProductDetailPage: React.FC = () => {
                   left: 0,
                   right: 0,
                   height: '2px',
-                  background: `linear-gradient(90deg, transparent, ${colors.primaryColor}, transparent)`,
+                  background: `linear-gradient(90deg, transparent, ${theme.primaryColor}, transparent)`,
                   opacity: 0.6,
                 }} />
                 
@@ -222,19 +224,19 @@ const ProductDetailPage: React.FC = () => {
               <div style={{
                 marginTop: '20px',
                 textAlign: 'center',
-                color: colors.textSecondary,
+                color: theme.textSecondary,
                 fontSize: '1rem',
                 padding: '16px 24px',
-                backgroundColor: colors.backgroundSecondary,
+                backgroundColor: theme.backgroundSecondary,
                 borderRadius: '12px',
-                border: `1px solid ${colors.borderColor}`,
+                border: `1px solid ${theme.borderColor}`,
                 width: '100%',
                 maxWidth: '500px',
               }}>
                 <div style={{ 
                   fontWeight: '600', 
                   marginBottom: '6px',
-                  color: colors.textPrimary,
+                  color: theme.textPrimary,
                   fontSize: '1.1rem',
                 }}>
                   📸 Imagen del Producto
@@ -254,10 +256,10 @@ const ProductDetailPage: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'center',
               padding: '60px 40px',
-              border: `3px dashed ${colors.borderColor}`,
+              border: `3px dashed ${theme.borderColor}`,
               borderRadius: '20px',
-              backgroundColor: colors.backgroundTertiary,
-              color: colors.textSecondary,
+              backgroundColor: theme.backgroundTertiary,
+              color: theme.textSecondary,
               width: '100%',
               maxWidth: '500px',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
@@ -273,7 +275,7 @@ const ProductDetailPage: React.FC = () => {
                 fontSize: '1.3rem', 
                 fontWeight: '600', 
                 marginBottom: '12px',
-                color: colors.textPrimary,
+                color: theme.textPrimary,
               }}>
                 Sin Imagen
               </div>
@@ -308,7 +310,7 @@ const ProductDetailPage: React.FC = () => {
           <div style={detailStyles.infoItem}>
             <span style={detailStyles.infoLabel}>Precio</span>
             <span style={detailStyles.infoValue}>
-              <FaDollarSign style={{ marginRight: '4px', color: colors.success }} />
+              <FaDollarSign style={{ marginRight: '4px', color: theme.success }} />
               {product.price.toFixed(2)}
             </span>
           </div>
@@ -321,7 +323,7 @@ const ProductDetailPage: React.FC = () => {
           <div style={detailStyles.infoItem}>
             <span style={detailStyles.infoLabel}>Categoría</span>
             <span style={detailStyles.infoValue}>
-              <FaTag style={{ marginRight: '4px', color: colors.primaryColor }} />
+              <FaTag style={{ marginRight: '4px', color: theme.primaryColor }} />
               {product.category}
             </span>
           </div>
@@ -355,7 +357,7 @@ const ProductDetailPage: React.FC = () => {
         
         <div style={detailStyles.actionsGrid} className="actions-grid-responsive">
           <button
-            style={getActionButtonStyle('primary')}
+            style={getActionButtonStyle('primary', theme)}
             onClick={handleEdit}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-1px)';
@@ -371,7 +373,7 @@ const ProductDetailPage: React.FC = () => {
           </button>
           
           <button
-            style={getActionButtonStyle('danger')}
+            style={getActionButtonStyle('danger', theme)}
             onClick={handleDelete}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-1px)';

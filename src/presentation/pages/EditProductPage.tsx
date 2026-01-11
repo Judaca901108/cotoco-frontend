@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaSave, FaTimes, FaBox, FaImage, FaDollarSign, FaTag, FaList } from 'react-icons/fa';
-import { formStyles, getInputStyles, getSelectStyles } from '../../shared/formStyles';
+import { getFormStyles, getInputStyles, getSelectStyles } from '../../shared/formStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 import { API_BASE_URL } from '../../config/apiConfig';
 const BASE_PATH = API_BASE_URL;
@@ -24,6 +24,8 @@ type Product = {
 const EditProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const formStyles = getFormStyles(theme);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -237,7 +239,7 @@ const EditProductPage: React.FC = () => {
       <div style={formStyles.formContainer} className="form-container-responsive">
         <div style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '2rem', marginBottom: '16px' }}>⏳</div>
-          <div style={{ color: colors.textSecondary }}>Cargando producto...</div>
+          <div style={{ color: theme.textSecondary }}>Cargando producto...</div>
         </div>
       </div>
     );
@@ -252,9 +254,9 @@ const EditProductPage: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            backgroundColor: colors.buttonSecondary,
-            color: colors.textSecondary,
-            border: `1px solid ${colors.borderColor}`,
+            backgroundColor: theme.buttonSecondary,
+            color: theme.textSecondary,
+            border: `1px solid ${theme.borderColor}`,
             padding: '12px 20px',
             borderRadius: '8px',
             fontSize: '0.95rem',
@@ -271,9 +273,9 @@ const EditProductPage: React.FC = () => {
           textAlign: 'center',
           padding: '40px',
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          border: `1px solid ${colors.error}`,
+          border: `1px solid ${theme.error}`,
           borderRadius: '8px',
-          color: colors.error,
+          color: theme.error,
         }}>
           <div style={{ fontSize: '1.5rem', marginBottom: '12px' }}>❌</div>
           <div style={{ fontWeight: '600', marginBottom: '8px' }}>Error</div>
@@ -292,9 +294,9 @@ const EditProductPage: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          backgroundColor: colors.buttonSecondary,
-          color: colors.textSecondary,
-          border: `1px solid ${colors.borderColor}`,
+          backgroundColor: theme.buttonSecondary,
+          color: theme.textSecondary,
+          border: `1px solid ${theme.borderColor}`,
           padding: '12px 20px',
           borderRadius: '8px',
           fontSize: '0.95rem',
@@ -303,12 +305,12 @@ const EditProductPage: React.FC = () => {
           marginBottom: '30px',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = colors.hoverBackground;
-          e.currentTarget.style.color = colors.textPrimary;
+          e.currentTarget.style.backgroundColor = theme.hoverBackground;
+          e.currentTarget.style.color = theme.textPrimary;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = colors.buttonSecondary;
-          e.currentTarget.style.color = colors.textSecondary;
+          e.currentTarget.style.backgroundColor = theme.buttonSecondary;
+          e.currentTarget.style.color = theme.textSecondary;
         }}
       >
         <FaArrowLeft />
@@ -320,11 +322,11 @@ const EditProductPage: React.FC = () => {
       {error && (
         <div style={{
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          border: `1px solid ${colors.error}`,
+          border: `1px solid ${theme.error}`,
           borderRadius: '8px',
           padding: '12px 16px',
           marginBottom: '20px',
-          color: colors.error,
+          color: theme.error,
           fontSize: '0.9rem',
         }}>
           {error}
@@ -346,7 +348,7 @@ const EditProductPage: React.FC = () => {
             onChange={handleChange}
             onFocus={() => handleFocus('name')}
             onBlur={handleBlur}
-            style={getInputStyles(!!errors.name, focusedField === 'name')}
+            style={getInputStyles(!!errors.name, focusedField === 'name', theme)}
             placeholder="Ej: Laptop Dell XPS 13"
           />
           {errors.name && (
@@ -370,7 +372,7 @@ const EditProductPage: React.FC = () => {
             onFocus={() => handleFocus('description')}
             onBlur={handleBlur}
             style={{
-              ...getInputStyles(!!errors.description, focusedField === 'description'),
+              ...getInputStyles(!!errors.description, focusedField === 'description', theme),
               minHeight: '100px',
               resize: 'vertical',
             }}
@@ -398,7 +400,7 @@ const EditProductPage: React.FC = () => {
               onChange={handleChange}
               onFocus={() => handleFocus('price')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.price, focusedField === 'price')}
+              style={getInputStyles(!!errors.price, focusedField === 'price', theme)}
               placeholder="0.00"
               step="0.01"
               min="0"
@@ -423,7 +425,7 @@ const EditProductPage: React.FC = () => {
               onChange={handleChange}
               onFocus={() => handleFocus('sku')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.sku, focusedField === 'sku')}
+              style={getInputStyles(!!errors.sku, focusedField === 'sku', theme)}
               placeholder="Ej: DELL-XPS13-001"
             />
             {errors.sku && (
@@ -447,7 +449,7 @@ const EditProductPage: React.FC = () => {
             onChange={handleChange}
             onFocus={() => handleFocus('barcode')}
             onBlur={handleBlur}
-            style={getInputStyles(!!errors.barcode, focusedField === 'barcode')}
+            style={getInputStyles(!!errors.barcode, focusedField === 'barcode', theme)}
             placeholder="Ej: 1234567890123"
           />
           {errors.barcode && (
@@ -469,7 +471,7 @@ const EditProductPage: React.FC = () => {
             onChange={handleChange}
             onFocus={() => handleFocus('category')}
             onBlur={handleBlur}
-            style={getSelectStyles(!!errors.category, focusedField === 'category')}
+            style={getSelectStyles(!!errors.category, focusedField === 'category', theme)}
           >
             <option value="">Seleccione una categoría</option>
             <option value="sets">Sets</option>
@@ -495,7 +497,7 @@ const EditProductPage: React.FC = () => {
               onChange={handleChange}
               onFocus={() => handleFocus('subcategory')}
               onBlur={handleBlur}
-              style={getSelectStyles(!!errors.subcategory, focusedField === 'subcategory')}
+              style={getSelectStyles(!!errors.subcategory, focusedField === 'subcategory', theme)}
             >
               <option value="">Seleccione una subcategoría</option>
               {getSubcategories(formData.category).map((subcat) => (
@@ -526,7 +528,7 @@ const EditProductPage: React.FC = () => {
               onChange={handleChange}
               onFocus={() => handleFocus('number_of_piece')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.number_of_piece, focusedField === 'number_of_piece')}
+              style={getInputStyles(!!errors.number_of_piece, focusedField === 'number_of_piece', theme)}
               placeholder="Ej: 1000"
               min="1"
               step="1"
@@ -552,13 +554,13 @@ const EditProductPage: React.FC = () => {
             onChange={handleImageChange}
             accept="image/*"
             style={{
-              ...getInputStyles(false, focusedField === 'image'),
+              ...getInputStyles(false, focusedField === 'image', theme),
               padding: '8px',
             }}
           />
           <div style={{
             fontSize: '0.8rem',
-            color: colors.textSecondary,
+            color: theme.textSecondary,
             marginTop: '4px',
           }}>
             {product?.imagePath ? (

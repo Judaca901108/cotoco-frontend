@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaSignOutAlt, FaUser, FaCog, FaBars, FaTimes } from 'react-icons/fa';
+import { FaSignOutAlt, FaUser, FaCog, FaBars, FaTimes, FaMoon, FaSun } from 'react-icons/fa';
 import { useAuth } from '../../application/contexts/AuthContext';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 type HeaderProps = {
   activePage: string;
@@ -11,6 +11,7 @@ type HeaderProps = {
 const Header: React.FC<HeaderProps> = ({ activePage }) => {
   const navigate = useNavigate();
   const { user, logout, isAdmin } = useAuth();
+  const { theme, themeMode, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Opciones del menú de navegación basadas en el rol
@@ -52,13 +53,13 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
   return (
     <>
       <header className="header-responsive" style={{
-        backgroundColor: colors.headerBackground,
+        backgroundColor: theme.headerBackground,
         padding: '0 20px',
         height: '70px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        borderBottom: `1px solid ${colors.borderColor}`,
+        borderBottom: `1px solid ${theme.borderColor}`,
         position: 'relative',
         zIndex: 1000,
       }}>
@@ -72,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
               display: 'none',
               background: 'none',
               border: 'none',
-              color: colors.textPrimary,
+              color: theme.textPrimary,
               fontSize: '1.5rem',
               cursor: 'pointer',
               padding: '8px',
@@ -84,8 +85,8 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
 
           {/* Logo */}
           <div style={{
-            backgroundColor: colors.primaryColor,
-            color: colors.white,
+            backgroundColor: theme.primaryColor,
+            color: theme.white,
             padding: '8px 16px',
             borderRadius: '6px',
             fontWeight: 'bold',
@@ -104,12 +105,12 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: activePage === item.id ? colors.primaryColor : colors.textSecondary,
+                  color: activePage === item.id ? theme.primaryColor : theme.textSecondary,
                   fontSize: '0.9rem',
                   fontWeight: '600',
                   cursor: 'pointer',
                   padding: '8px 0',
-                  borderBottom: activePage === item.id ? `2px solid ${colors.primaryColor}` : '2px solid transparent',
+                  borderBottom: activePage === item.id ? `2px solid ${theme.primaryColor}` : '2px solid transparent',
                   transition: 'all 0.2s ease',
                   whiteSpace: 'nowrap',
                 }}
@@ -123,20 +124,43 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
 
         {/* Elementos del usuario (derecha) */}
         <div className="header-user-section" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Selector de tema */}
+          <button
+            onClick={toggleTheme}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: theme.textSecondary,
+              fontSize: '1.2rem',
+              cursor: 'pointer',
+              padding: '8px',
+              borderRadius: '4px',
+              transition: 'background-color 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.hoverBackground}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            title={themeMode === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+          >
+            {themeMode === 'dark' ? <FaSun /> : <FaMoon />}
+          </button>
+
           {/* Icono de configuración */}
           <button
             onClick={handleSettings}
             style={{
               background: 'none',
               border: 'none',
-              color: colors.textSecondary,
+              color: theme.textSecondary,
               fontSize: '1.2rem',
               cursor: 'pointer',
               padding: '8px',
               borderRadius: '4px',
               transition: 'background-color 0.2s ease',
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBackground}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.hoverBackground}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             title="Configuración"
           >
@@ -149,14 +173,14 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
             alignItems: 'center',
             gap: '8px',
             padding: '8px 12px',
-            backgroundColor: colors.backgroundSecondary,
+            backgroundColor: theme.backgroundSecondary,
             borderRadius: '6px',
-            border: `1px solid ${colors.borderColor}`,
+            border: `1px solid ${theme.borderColor}`,
           }}>
-            <FaUser style={{ color: colors.primaryColor, fontSize: '0.9rem' }} />
+            <FaUser style={{ color: theme.primaryColor, fontSize: '0.9rem' }} />
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
               <span style={{
-                color: colors.textPrimary,
+                color: theme.textPrimary,
                 fontSize: '0.85rem',
                 fontWeight: '600',
                 lineHeight: '1.2',
@@ -164,7 +188,7 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
                 {user?.name || 'Usuario'}
               </span>
               <span style={{
-                color: colors.textSecondary,
+                color: theme.textSecondary,
                 fontSize: '0.75rem',
                 lineHeight: '1.2',
               }}>
@@ -179,11 +203,11 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
             alignItems: 'center',
             gap: '8px',
             padding: '8px',
-            backgroundColor: colors.backgroundSecondary,
+            backgroundColor: theme.backgroundSecondary,
             borderRadius: '6px',
-            border: `1px solid ${colors.borderColor}`,
+            border: `1px solid ${theme.borderColor}`,
           }}>
-            <FaUser style={{ color: colors.primaryColor, fontSize: '1rem' }} />
+            <FaUser style={{ color: theme.primaryColor, fontSize: '1rem' }} />
           </div>
 
           {/* Botón de logout */}
@@ -192,14 +216,14 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
             style={{
               background: 'none',
               border: 'none',
-              color: colors.textSecondary,
+              color: theme.textSecondary,
               fontSize: '1.2rem',
               cursor: 'pointer',
               padding: '8px',
               borderRadius: '4px',
               transition: 'background-color 0.2s ease',
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBackground}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.hoverBackground}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             title="Cerrar sesión"
           >
@@ -233,8 +257,8 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
           left: 0,
           width: '280px',
           height: 'calc(100vh - 70px)',
-          backgroundColor: colors.headerBackground,
-          borderRight: `1px solid ${colors.borderColor}`,
+          backgroundColor: theme.headerBackground,
+          borderRight: `1px solid ${theme.borderColor}`,
           transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
           transition: 'transform 0.3s ease',
           zIndex: 1000,
@@ -245,21 +269,21 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
         {/* Información del usuario en móvil */}
         <div style={{
           padding: '16px 20px',
-          borderBottom: `1px solid ${colors.borderColor}`,
+          borderBottom: `1px solid ${theme.borderColor}`,
           marginBottom: '16px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <FaUser style={{ color: colors.primaryColor, fontSize: '1.2rem' }} />
+            <FaUser style={{ color: theme.primaryColor, fontSize: '1.2rem' }} />
             <div>
               <div style={{
-                color: colors.textPrimary,
+                color: theme.textPrimary,
                 fontSize: '0.9rem',
                 fontWeight: '600',
               }}>
                 {user?.name || 'Usuario'}
               </div>
               <div style={{
-                color: colors.textSecondary,
+                color: theme.textSecondary,
                 fontSize: '0.8rem',
               }}>
                 @{user?.username || 'admin'}
@@ -275,15 +299,15 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
             onClick={() => handleMenuClick(item)}
             style={{
               width: '100%',
-              background: activePage === item.id ? colors.backgroundSecondary : 'transparent',
+              background: activePage === item.id ? theme.backgroundSecondary : 'transparent',
               border: 'none',
-              color: activePage === item.id ? colors.primaryColor : colors.textPrimary,
+              color: activePage === item.id ? theme.primaryColor : theme.textPrimary,
               fontSize: '1rem',
               fontWeight: activePage === item.id ? '600' : '400',
               cursor: 'pointer',
               padding: '16px 20px',
               textAlign: 'left',
-              borderLeft: activePage === item.id ? `4px solid ${colors.primaryColor}` : '4px solid transparent',
+              borderLeft: activePage === item.id ? `4px solid ${theme.primaryColor}` : '4px solid transparent',
               transition: 'all 0.2s ease',
             }}
           >
@@ -294,7 +318,7 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
         {/* Botón de configuración en móvil */}
         <div style={{
           padding: '16px 20px',
-          borderTop: `1px solid ${colors.borderColor}`,
+          borderTop: `1px solid ${theme.borderColor}`,
           marginTop: '16px',
         }}>
           <button
@@ -306,7 +330,7 @@ const Header: React.FC<HeaderProps> = ({ activePage }) => {
               width: '100%',
               background: 'transparent',
               border: 'none',
-              color: colors.textPrimary,
+              color: theme.textPrimary,
               fontSize: '1rem',
               fontWeight: '400',
               cursor: 'pointer',

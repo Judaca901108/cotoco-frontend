@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { FaUser, FaLock, FaCog, FaSave, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuth } from '../../application/contexts/AuthContext';
 import { authenticatedFetch } from '../../infrastructure/authService';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 import { API_BASE_URL } from '../../config/apiConfig';
 const BASE_PATH = API_BASE_URL;
 
 const SettingsPage: React.FC = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -158,8 +159,8 @@ const SettingsPage: React.FC = () => {
     maxWidth: '800px',
     margin: '0 auto',
     padding: '20px',
-    backgroundColor: colors.backgroundPrimary,
-    color: colors.textPrimary,
+    backgroundColor: theme.backgroundPrimary,
+    color: theme.textPrimary,
   };
 
   const headerStyle: React.CSSProperties = {
@@ -170,27 +171,27 @@ const SettingsPage: React.FC = () => {
   const titleStyle: React.CSSProperties = {
     fontSize: '2rem',
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     marginBottom: '10px',
   };
 
   const subtitleStyle: React.CSSProperties = {
     fontSize: '1rem',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
   };
 
   const tabsStyle: React.CSSProperties = {
     display: 'flex',
     gap: '10px',
     marginBottom: '30px',
-    borderBottom: `1px solid ${colors.borderColor}`,
+    borderBottom: `1px solid ${theme.borderColor}`,
   };
 
   const tabStyle: React.CSSProperties = {
     padding: '12px 24px',
     backgroundColor: 'transparent',
     border: 'none',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
     cursor: 'pointer',
     fontSize: '1rem',
     fontWeight: '500',
@@ -200,15 +201,15 @@ const SettingsPage: React.FC = () => {
 
   const activeTabStyle: React.CSSProperties = {
     ...tabStyle,
-    color: colors.primaryColor,
-    borderBottomColor: colors.primaryColor,
+    color: theme.primaryColor,
+    borderBottomColor: theme.primaryColor,
   };
 
   const cardStyle: React.CSSProperties = {
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.backgroundSecondary,
     borderRadius: '12px',
     padding: '30px',
-    border: `1px solid ${colors.borderColor}`,
+    border: `1px solid ${theme.borderColor}`,
   };
 
   const formGroupStyle: React.CSSProperties = {
@@ -219,7 +220,7 @@ const SettingsPage: React.FC = () => {
     display: 'block',
     fontSize: '0.9rem',
     fontWeight: '500',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     marginBottom: '8px',
   };
 
@@ -227,22 +228,22 @@ const SettingsPage: React.FC = () => {
     width: '100%',
     padding: '12px 16px',
     fontSize: '1rem',
-    backgroundColor: colors.backgroundTertiary,
-    border: `1px solid ${colors.borderColor}`,
+    backgroundColor: theme.backgroundTertiary,
+    border: `1px solid ${theme.borderColor}`,
     borderRadius: '8px',
-    color: colors.textPrimary,
+    color: theme.textPrimary,
     outline: 'none',
     transition: 'border-color 0.2s ease',
   };
 
   const inputFocusStyle: React.CSSProperties = {
     ...inputStyle,
-    borderColor: colors.primaryColor,
+    borderColor: theme.primaryColor,
   };
 
   const buttonStyle: React.CSSProperties = {
-    backgroundColor: colors.primaryColor,
-    color: colors.white,
+    backgroundColor: theme.primaryColor,
+    color: theme.white,
     border: 'none',
     padding: '12px 24px',
     borderRadius: '8px',
@@ -257,27 +258,27 @@ const SettingsPage: React.FC = () => {
 
   const buttonDisabledStyle: React.CSSProperties = {
     ...buttonStyle,
-    backgroundColor: colors.textMuted,
+    backgroundColor: theme.textMuted,
     cursor: 'not-allowed',
   };
 
   const errorStyle: React.CSSProperties = {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    border: `1px solid ${colors.error}`,
+    border: `1px solid ${theme.error}`,
     borderRadius: '8px',
     padding: '12px',
     marginBottom: '20px',
-    color: colors.error,
+    color: theme.error,
     fontSize: '0.9rem',
   };
 
   const successStyle: React.CSSProperties = {
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    border: `1px solid ${colors.success}`,
+    border: `1px solid ${theme.success}`,
     borderRadius: '8px',
     padding: '12px',
     marginBottom: '20px',
-    color: colors.success,
+    color: theme.success,
     fontSize: '0.9rem',
   };
 
@@ -292,7 +293,7 @@ const SettingsPage: React.FC = () => {
     transform: 'translateY(-50%)',
     background: 'none',
     border: 'none',
-    color: colors.textSecondary,
+    color: theme.textSecondary,
     cursor: 'pointer',
     padding: '4px',
   };
@@ -301,7 +302,7 @@ const SettingsPage: React.FC = () => {
     <div style={containerStyle}>
       <div style={headerStyle}>
         <h1 style={titleStyle}>
-          <FaCog style={{ marginRight: '12px', color: colors.primaryColor }} />
+          <FaCog style={{ marginRight: '12px', color: theme.primaryColor }} />
           Configuración
         </h1>
         <p style={subtitleStyle}>
@@ -341,7 +342,7 @@ const SettingsPage: React.FC = () => {
       <div style={cardStyle}>
         {activeTab === 'profile' ? (
           <form onSubmit={handleUpdateProfile}>
-            <h2 style={{ marginBottom: '20px', color: colors.textPrimary }}>
+            <h2 style={{ marginBottom: '20px', color: theme.textPrimary }}>
               Información del Perfil
             </h2>
             
@@ -355,7 +356,7 @@ const SettingsPage: React.FC = () => {
                 placeholder="Tu nombre completo"
               />
               {errors.name && (
-                <div style={{ color: colors.error, fontSize: '0.8rem', marginTop: '4px' }}>
+                <div style={{ color: theme.error, fontSize: '0.8rem', marginTop: '4px' }}>
                   {errors.name}
                 </div>
               )}
@@ -371,7 +372,7 @@ const SettingsPage: React.FC = () => {
                 placeholder="+57 300 123 4567"
               />
               {errors.celular && (
-                <div style={{ color: colors.error, fontSize: '0.8rem', marginTop: '4px' }}>
+                <div style={{ color: theme.error, fontSize: '0.8rem', marginTop: '4px' }}>
                   {errors.celular}
                 </div>
               )}
@@ -382,11 +383,11 @@ const SettingsPage: React.FC = () => {
               <input
                 type="text"
                 value={user?.username || ''}
-                style={{ ...inputStyle, backgroundColor: colors.backgroundTertiary, opacity: 0.6 }}
+                style={{ ...inputStyle, backgroundColor: theme.backgroundTertiary, opacity: 0.6 }}
                 disabled
                 placeholder="No se puede cambiar"
               />
-              <div style={{ color: colors.textSecondary, fontSize: '0.8rem', marginTop: '4px' }}>
+              <div style={{ color: theme.textSecondary, fontSize: '0.8rem', marginTop: '4px' }}>
                 El nombre de usuario no se puede modificar
               </div>
             </div>
@@ -402,7 +403,7 @@ const SettingsPage: React.FC = () => {
           </form>
         ) : (
           <form onSubmit={handleChangePassword}>
-            <h2 style={{ marginBottom: '20px', color: colors.textPrimary }}>
+            <h2 style={{ marginBottom: '20px', color: theme.textPrimary }}>
               Cambiar Contraseña
             </h2>
             
@@ -425,7 +426,7 @@ const SettingsPage: React.FC = () => {
                 </button>
               </div>
               {errors.currentPassword && (
-                <div style={{ color: colors.error, fontSize: '0.8rem', marginTop: '4px' }}>
+                <div style={{ color: theme.error, fontSize: '0.8rem', marginTop: '4px' }}>
                   {errors.currentPassword}
                 </div>
               )}
@@ -450,7 +451,7 @@ const SettingsPage: React.FC = () => {
                 </button>
               </div>
               {errors.newPassword && (
-                <div style={{ color: colors.error, fontSize: '0.8rem', marginTop: '4px' }}>
+                <div style={{ color: theme.error, fontSize: '0.8rem', marginTop: '4px' }}>
                   {errors.newPassword}
                 </div>
               )}
@@ -475,7 +476,7 @@ const SettingsPage: React.FC = () => {
                 </button>
               </div>
               {errors.confirmPassword && (
-                <div style={{ color: colors.error, fontSize: '0.8rem', marginTop: '4px' }}>
+                <div style={{ color: theme.error, fontSize: '0.8rem', marginTop: '4px' }}>
                   {errors.confirmPassword}
                 </div>
               )}

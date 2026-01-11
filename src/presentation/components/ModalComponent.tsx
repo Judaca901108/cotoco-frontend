@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaTimes } from 'react-icons/fa';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 type ModalComponentProps = {
   isOpen: boolean;
@@ -10,6 +10,7 @@ type ModalComponentProps = {
 };
 
 const ModalComponent: React.FC<ModalComponentProps> = ({ isOpen, onClose, title, children }) => {
+  const { theme } = useTheme();
   if (!isOpen) return null;
 
   return (
@@ -27,29 +28,29 @@ const ModalComponent: React.FC<ModalComponentProps> = ({ isOpen, onClose, title,
       padding: '20px',
     }}>
       <div style={{
-        backgroundColor: colors.backgroundSecondary,
+        backgroundColor: theme.backgroundSecondary,
         borderRadius: '12px',
         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
         maxWidth: '800px',
         maxHeight: '90vh',
         width: '100%',
-        border: `1px solid ${colors.borderColor}`,
+        border: `1px solid ${theme.borderColor}`,
         overflow: 'hidden',
       }}>
         {/* Header */}
         <div style={{
           padding: '20px 30px',
-          borderBottom: `1px solid ${colors.borderColor}`,
+          borderBottom: `1px solid ${theme.borderColor}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          backgroundColor: colors.backgroundTertiary,
+          backgroundColor: theme.backgroundTertiary,
         }}>
           <h2 style={{
             margin: 0,
             fontSize: '1.5rem',
             fontWeight: '600',
-            color: colors.textPrimary,
+            color: theme.textPrimary,
           }}>
             {title}
           </h2>
@@ -58,7 +59,7 @@ const ModalComponent: React.FC<ModalComponentProps> = ({ isOpen, onClose, title,
             style={{
               background: 'none',
               border: 'none',
-              color: colors.textSecondary,
+              color: theme.textSecondary,
               fontSize: '1.2rem',
               cursor: 'pointer',
               padding: '8px',
@@ -69,12 +70,12 @@ const ModalComponent: React.FC<ModalComponentProps> = ({ isOpen, onClose, title,
               justifyContent: 'center',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.hoverBackground;
-              e.currentTarget.style.color = colors.textPrimary;
+              e.currentTarget.style.backgroundColor = theme.hoverBackground;
+              e.currentTarget.style.color = theme.textPrimary;
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = colors.textSecondary;
+              e.currentTarget.style.color = theme.textSecondary;
             }}
           >
             <FaTimes />
@@ -84,7 +85,7 @@ const ModalComponent: React.FC<ModalComponentProps> = ({ isOpen, onClose, title,
         {/* Body */}
         <div style={{
           padding: '30px',
-          backgroundColor: colors.backgroundSecondary,
+          backgroundColor: theme.backgroundSecondary,
           maxHeight: 'calc(90vh - 100px)',
           overflow: 'auto',
         }}>

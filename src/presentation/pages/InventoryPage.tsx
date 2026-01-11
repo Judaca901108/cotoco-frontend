@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaWarehouse, FaBox, FaChevronRight } from 'react-icons/fa';
-import { tableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
-import colors from '../../shared/colors';
+import { getTableStyles, getRowStyle, getStatusBadgeStyle, getTechIconStyle } from '../../shared/tableStyles';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 import { API_BASE_URL } from '../../config/apiConfig';
 const BASE_PATH = API_BASE_URL;
@@ -14,6 +14,8 @@ type PointOfSaleSummary = {
 };
 
 const InventoryPage: React.FC = () => {
+  const { theme } = useTheme();
+  const tableStyles = getTableStyles(theme);
   const [pointsOfSale, setPointsOfSale] = useState<PointOfSaleSummary[]>([]);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,11 +59,11 @@ const InventoryPage: React.FC = () => {
       {error && (
         <div style={{
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          border: `1px solid ${colors.error}`,
+          border: `1px solid ${theme.error}`,
           borderRadius: '8px',
           padding: '16px',
           marginBottom: '20px',
-          color: colors.error,
+          color: theme.error,
         }}>
           {error}
         </div>
@@ -93,7 +95,7 @@ const InventoryPage: React.FC = () => {
               paginatedPointsOfSale.map((pos, index) => (
                 <tr
                   key={pos.id}
-                  style={getRowStyle(index, hoveredRow === pos.id)}
+                  style={getRowStyle(index, hoveredRow === pos.id, theme)}
                   onMouseEnter={() => setHoveredRow(pos.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                 >
@@ -113,14 +115,14 @@ const InventoryPage: React.FC = () => {
                         e.currentTarget.style.opacity = '1';
                       }}
                     >
-                      <div style={getTechIconStyle('node')}>
+                      <div style={getTechIconStyle('node', theme)}>
                         <FaWarehouse />
                       </div>
                       <div>
-                        <div style={{ fontWeight: '600', color: colors.textPrimary }}>
+                        <div style={{ fontWeight: '600', color: theme.textPrimary }}>
                           {pos.name}
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: colors.textSecondary, marginTop: '2px' }}>
+                        <div style={{ fontSize: '0.8rem', color: theme.textSecondary, marginTop: '2px' }}>
                           ID: {pos.id}
                         </div>
                       </div>
@@ -128,17 +130,17 @@ const InventoryPage: React.FC = () => {
                   </td>
                   <td style={tableStyles.tableCell}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <FaBox style={{ color: colors.textSecondary, fontSize: '0.9rem' }} />
-                      <span style={{ fontWeight: '600', color: colors.textPrimary }}>
+                      <FaBox style={{ color: theme.textSecondary, fontSize: '0.9rem' }} />
+                      <span style={{ fontWeight: '600', color: theme.textPrimary }}>
                         {pos.productCount}
                       </span>
-                      <span style={{ fontSize: '0.8rem', color: colors.textSecondary }}>
+                      <span style={{ fontSize: '0.8rem', color: theme.textSecondary }}>
                         {pos.productCount === 1 ? 'producto' : 'productos'}
                       </span>
                     </div>
                   </td>
                   <td style={tableStyles.tableCell}>
-                    <span style={getStatusBadgeStyle(pos.productCount > 0 ? 'active' : 'inactive')}>
+                    <span style={getStatusBadgeStyle(pos.productCount > 0 ? 'active' : 'inactive', theme)}>
                       {pos.productCount > 0 ? 'Con Stock' : 'Sin Stock'}
                     </span>
                   </td>

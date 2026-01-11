@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaHome, FaBox, FaStore } from 'react-icons/fa';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 type SidebarProps = {
   activePage: string;
@@ -10,6 +10,7 @@ type SidebarProps = {
 
 const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
 
   // Opciones del menú
   const menuItems = [
@@ -23,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
   return (
     <aside style={{
       width: '250px',
-      backgroundColor: colors.sidebarBackground,
+      backgroundColor: theme.sidebarBackground,
       display: 'flex',
       flexDirection: 'column',
       padding: '20px',
@@ -55,9 +56,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
               padding: '10px 20px',
               margin: '10px 0',
               borderRadius: '5px',
-              backgroundColor: activePage === item.id ? colors.sidebarActiveBackground : 'transparent',
+              backgroundColor: activePage === item.id ? theme.sidebarActiveBackground : 'transparent',
               cursor: 'pointer',
-              color: activePage === item.id ? colors.sidebarActiveText : colors.sidebarInactiveText,
+              color: activePage === item.id ? theme.sidebarActiveText : theme.sidebarInactiveText,
               fontWeight: activePage === item.id ? 'bold' : 'normal',
             }}
             onClick={() => {

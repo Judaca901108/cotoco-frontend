@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaSave, FaTimes, FaStore, FaMapMarkerAlt, FaBuilding } from 'react-icons/fa';
-import { formStyles, getInputStyles, getSelectStyles } from '../../shared/formStyles';
+import { getFormStyles, getInputStyles, getSelectStyles } from '../../shared/formStyles';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 type PointOfSaleFormProps = {
   initialData?: { name: string; address: string; location: string; type: string };
@@ -17,6 +18,8 @@ const PointOfSaleForm: React.FC<PointOfSaleFormProps> = ({
   onCancel,
   title = "Gestión de Punto de Venta"
 }) => {
+  const { theme } = useTheme();
+  const formStyles = getFormStyles(theme);
   const [formData, setFormData] = useState(initialData || {
     name: '',
     address: '',
@@ -80,7 +83,7 @@ const PointOfSaleForm: React.FC<PointOfSaleFormProps> = ({
             onChange={handleChange}
             onFocus={() => handleFocus('name')}
             onBlur={handleBlur}
-            style={getInputStyles(!!errors.name, focusedField === 'name')}
+            style={getInputStyles(!!errors.name, focusedField === 'name', theme)}
             placeholder="Ej: Tienda Centro, Sucursal Norte..."
           />
           {errors.name && (
@@ -105,7 +108,7 @@ const PointOfSaleForm: React.FC<PointOfSaleFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('address')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.address, focusedField === 'address')}
+              style={getInputStyles(!!errors.address, focusedField === 'address', theme)}
               placeholder="Calle 123 #45-67"
             />
             {errors.address && (
@@ -127,7 +130,7 @@ const PointOfSaleForm: React.FC<PointOfSaleFormProps> = ({
               onChange={handleChange}
               onFocus={() => handleFocus('location')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.location, focusedField === 'location')}
+              style={getInputStyles(!!errors.location, focusedField === 'location', theme)}
               placeholder="Ciudad, Departamento"
             />
             {errors.location && (
@@ -151,7 +154,7 @@ const PointOfSaleForm: React.FC<PointOfSaleFormProps> = ({
             onChange={handleChange}
             onFocus={() => handleFocus('type')}
             onBlur={handleBlur}
-            style={getSelectStyles(!!errors.type, focusedField === 'type')}
+            style={getSelectStyles(!!errors.type, focusedField === 'type', theme)}
           >
             <option value="">Seleccione el tipo de punto de venta</option>
             {types.map((t) => (

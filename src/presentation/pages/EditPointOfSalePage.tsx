@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaSave, FaTimes, FaStore, FaMapMarkerAlt, FaBuilding } from 'react-icons/fa';
-import { formStyles, getInputStyles, getSelectStyles } from '../../shared/formStyles';
+import { getFormStyles, getInputStyles, getSelectStyles } from '../../shared/formStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
-import colors from '../../shared/colors';
+import { useTheme } from '../../application/contexts/ThemeContext';
 
 import { API_BASE_URL } from '../../config/apiConfig';
 const BASE_PATH = API_BASE_URL;
@@ -19,6 +19,8 @@ type PointOfSale = {
 const EditPointOfSalePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const formStyles = getFormStyles(theme);
   const [pointOfSale, setPointOfSale] = useState<PointOfSale | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -131,7 +133,7 @@ const EditPointOfSalePage: React.FC = () => {
       <div style={formStyles.formContainer} className="form-container-responsive">
         <div style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '2rem', marginBottom: '16px' }}>⏳</div>
-          <div style={{ color: colors.textSecondary }}>Cargando punto de venta...</div>
+          <div style={{ color: theme.textSecondary }}>Cargando punto de venta...</div>
         </div>
       </div>
     );
@@ -146,9 +148,9 @@ const EditPointOfSalePage: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            backgroundColor: colors.buttonSecondary,
-            color: colors.textSecondary,
-            border: `1px solid ${colors.borderColor}`,
+            backgroundColor: theme.buttonSecondary,
+            color: theme.textSecondary,
+            border: `1px solid ${theme.borderColor}`,
             padding: '12px 20px',
             borderRadius: '8px',
             fontSize: '0.95rem',
@@ -165,9 +167,9 @@ const EditPointOfSalePage: React.FC = () => {
           textAlign: 'center',
           padding: '40px',
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          border: `1px solid ${colors.error}`,
+          border: `1px solid ${theme.error}`,
           borderRadius: '8px',
-          color: colors.error,
+          color: theme.error,
         }}>
           <div style={{ fontSize: '1.5rem', marginBottom: '12px' }}>❌</div>
           <div style={{ fontWeight: '600', marginBottom: '8px' }}>Error</div>
@@ -186,9 +188,9 @@ const EditPointOfSalePage: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          backgroundColor: colors.buttonSecondary,
-          color: colors.textSecondary,
-          border: `1px solid ${colors.borderColor}`,
+          backgroundColor: theme.buttonSecondary,
+          color: theme.textSecondary,
+          border: `1px solid ${theme.borderColor}`,
           padding: '12px 20px',
           borderRadius: '8px',
           fontSize: '0.95rem',
@@ -197,12 +199,12 @@ const EditPointOfSalePage: React.FC = () => {
           marginBottom: '30px',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = colors.hoverBackground;
-          e.currentTarget.style.color = colors.textPrimary;
+          e.currentTarget.style.backgroundColor = theme.hoverBackground;
+          e.currentTarget.style.color = theme.textPrimary;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = colors.buttonSecondary;
-          e.currentTarget.style.color = colors.textSecondary;
+          e.currentTarget.style.backgroundColor = theme.buttonSecondary;
+          e.currentTarget.style.color = theme.textSecondary;
         }}
       >
         <FaArrowLeft />
@@ -214,11 +216,11 @@ const EditPointOfSalePage: React.FC = () => {
       {error && (
         <div style={{
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          border: `1px solid ${colors.error}`,
+          border: `1px solid ${theme.error}`,
           borderRadius: '8px',
           padding: '12px 16px',
           marginBottom: '20px',
-          color: colors.error,
+          color: theme.error,
           fontSize: '0.9rem',
         }}>
           {error}
@@ -240,7 +242,7 @@ const EditPointOfSalePage: React.FC = () => {
             onChange={handleChange}
             onFocus={() => handleFocus('name')}
             onBlur={handleBlur}
-            style={getInputStyles(!!errors.name, focusedField === 'name')}
+            style={getInputStyles(!!errors.name, focusedField === 'name', theme)}
             placeholder="Ej: Hayuelos, Centro Comercial"
           />
           {errors.name && (
@@ -264,7 +266,7 @@ const EditPointOfSalePage: React.FC = () => {
             onChange={handleChange}
             onFocus={() => handleFocus('address')}
             onBlur={handleBlur}
-            style={getInputStyles(!!errors.address, focusedField === 'address')}
+            style={getInputStyles(!!errors.address, focusedField === 'address', theme)}
             placeholder="Ej: CC Hayuelos, Local 123"
           />
           {errors.address && (
@@ -288,7 +290,7 @@ const EditPointOfSalePage: React.FC = () => {
               onChange={handleChange}
               onFocus={() => handleFocus('location')}
               onBlur={handleBlur}
-              style={getInputStyles(!!errors.location, focusedField === 'location')}
+              style={getInputStyles(!!errors.location, focusedField === 'location', theme)}
               placeholder="Ej: Bogotá, Cundinamarca"
             />
             {errors.location && (
@@ -310,7 +312,7 @@ const EditPointOfSalePage: React.FC = () => {
               onChange={handleChange}
               onFocus={() => handleFocus('type')}
               onBlur={handleBlur}
-              style={getSelectStyles(!!errors.type, focusedField === 'type')}
+              style={getSelectStyles(!!errors.type, focusedField === 'type', theme)}
             >
               <option value="">Selecciona un tipo</option>
               {pointOfSaleTypes.map((type) => (
