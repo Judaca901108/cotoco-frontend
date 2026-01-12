@@ -6,7 +6,7 @@ import ProductForm from '../components/ProductForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import { getTableStyles, getRowStyle, getStatusBadgeStyle } from '../../shared/tableStyles';
 import { useTheme } from '../../application/contexts/ThemeContext';
-import { API_BASE_URL } from '../../config/apiConfig';
+import { API_BASE_URL, getImageUrl } from '../../config/apiConfig';
 
 type Product = {
   id: number;
@@ -304,31 +304,24 @@ const ProductsPage: React.FC = () => {
                       borderRadius: '6px',
                       border: `1px solid ${theme.borderColor}`,
                     }}>
-                      {product.imagePath ? (
-                        <img
-                          src={`${API_BASE_URL}/product/image/${product.imagePath}`}
-                          alt={product.name}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            borderRadius: '4px',
-                            opacity: 1,
-                          }}
-                          onLoad={(e) => {
-                            e.currentTarget.style.opacity = '1';
-                          }}
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            const parent = e.currentTarget.parentElement;
-                            if (parent) {
-                              parent.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: ${theme.textSecondary}; font-size: 1.2rem;">📦</div>`;
-                            }
-                          }}
-                        />
-                      ) : (
-                        <FaBox style={{ color: theme.textSecondary, fontSize: '1.2rem' }} />
-                      )}
+                      <img
+                        src={product.imagePath ? getImageUrl(product.imagePath) : '/images/image-default.png'}
+                        alt={product.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: '4px',
+                          opacity: 1,
+                        }}
+                        onLoad={(e) => {
+                          e.currentTarget.style.opacity = '1';
+                        }}
+                        onError={(e) => {
+                          // Si falla la imagen por defecto, usar un placeholder
+                          e.currentTarget.src = '/images/image-default.png';
+                        }}
+                      />
                     </div>
                   </td>
                   
