@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse, FaEye, FaEdit, FaSort, FaSortUp, FaSortDown, FaDownload } from 'react-icons/fa';
+import { FaArrowLeft, FaPlus, FaSearch, FaBox, FaWarehouse, FaEye, FaEdit, FaSort, FaSortUp, FaSortDown, FaDownload, FaSpinner } from 'react-icons/fa';
 import { useTheme } from '../../application/contexts/ThemeContext';
 import InventoryForm from '../components/InventoryForm';
 import ModalComponent from '../components/ModalComponent';
@@ -54,22 +54,25 @@ const PointOfSaleInventoryPage: React.FC = () => {
   const [minimumStockValue, setMinimumStockValue] = useState('');
   const [sortBy, setSortBy] = useState<string>('');
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  const [isSearching, setIsSearching] = useState(false);
   const navigate = useNavigate();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Función para cargar inventarios
-  const loadInventories = useCallback(async () => {
+  const loadInventories = useCallback(async (searchTerm?: string) => {
     if (!id) return;
 
     try {
-      // Construir URL con parámetros de ordenamiento
-      // El endpoint correcto es /inventory con pointOfSaleId como parámetro
-      const params = new URLSearchParams();
-      params.append('pointOfSaleId', id);
-      if (sortBy) {
-        params.append('sortBy', sortBy);
-        params.append('order', order);
+      let inventoriesUrl: string;
+      
+      // Si hay un término de búsqueda, usar el endpoint de búsqueda
+      if (searchTerm && searchTerm.trim().length >= 2) {
+        const encodedQuery = encodeURIComponent(searchTerm.trim());
+        inventoriesUrl = `${BASE_PATH}/point-of-sale/${id}/inventory/search?q=${encodedQuery}`;
+      } else {
+        // Si no hay búsqueda, cargar todos los inventarios del punto de venta usando el endpoint específico
+        inventoriesUrl = `${BASE_PATH}/point-of-sale/${id}/inventories`;
       }
-      const inventoriesUrl = `${BASE_PATH}/inventory?${params.toString()}`;
       
       // Cargar inventarios y productos en paralelo
       const [inventoriesResponse, productsResponse] = await Promise.all([
@@ -105,8 +108,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
             const product = productsData.find((p: Product) => p.id === inventory.productId);
             return {
               ...inventory,
-              productName: product?.name || `Producto ${inventory.productId}`,
-              productSku: product?.sku || 'N/A',
+              productName: product?.name || inventory.productName || `Producto ${inventory.productId}`,
+              productSku: product?.sku || inventory.productSku || 'N/A',
               // Usar onDisplay del endpoint individual (correcto)
               onDisplay: individualData.onDisplay || 0
             };
@@ -115,8 +118,8 @@ const PointOfSaleInventoryPage: React.FC = () => {
             const product = productsData.find((p: Product) => p.id === inventory.productId);
             return {
               ...inventory,
-              productName: product?.name || `Producto ${inventory.productId}`,
-              productSku: product?.sku || 'N/A',
+              productName: product?.name || inventory.productName || `Producto ${inventory.productId}`,
+              productSku: product?.sku || inventory.productSku || 'N/A',
               onDisplay: inventory.onDisplay || 0
             };
           }
@@ -127,22 +130,53 @@ const PointOfSaleInventoryPage: React.FC = () => {
     } catch (err: any) {
       console.error('Error fetching data:', err);
       setError(`Error: ${err.message}`);
+    } finally {
+      setIsSearching(false);
     }
   }, [id, sortBy, order]);
   
+  // Cargar inventarios iniciales y cuando cambie el ordenamiento (solo si no hay búsqueda activa)
   useEffect(() => {
-    loadInventories();
+    if (!searchQuery || searchQuery.trim().length < 2) {
+      loadInventories();
+    }
 
-      authenticatedFetch(`${BASE_PATH}/point-of-sale`)
-        .then((res) => res.json())
-        .then((data) => setPointsOfSale(data))
-        .catch((err) => console.error('Error fetching points of sale:', err));
-        
-  }, [id, loadInventories]);
+    authenticatedFetch(`${BASE_PATH}/point-of-sale`)
+      .then((res) => res.json())
+      .then((data) => setPointsOfSale(data))
+      .catch((err) => console.error('Error fetching points of sale:', err));
+  }, [id, sortBy, order, loadInventories]);
 
-  const filteredInventories = inventories.filter((inventory) =>
-    inventory.productName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Efecto para manejar el debounce de búsqueda (0.5 segundos)
+  useEffect(() => {
+    // Limpiar timeout anterior
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    const trimmedQuery = (searchQuery || '').trim();
+
+    if (trimmedQuery.length >= 2) {
+      setIsSearching(true);
+      // Esperar 0.5 segundos antes de buscar
+      searchTimeoutRef.current = setTimeout(() => {
+        loadInventories(trimmedQuery);
+      }, 500);
+    } else if (!trimmedQuery || trimmedQuery.length < 2) {
+      // Si no hay búsqueda o es muy corta, cargar todos los inventarios
+      loadInventories();
+    }
+
+    // Cleanup
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery, loadInventories]);
+
+  // Usar directamente inventories ya que el filtrado se hace en el backend
+  const filteredInventories = inventories;
 
   const handleCreateInventory = async (data: { productId: number; pointOfSaleId?: number; stockQuantity: number; minimumStock: number; onDisplay: number }) => {
     try {
@@ -420,17 +454,29 @@ const PointOfSaleInventoryPage: React.FC = () => {
       }}>
         {/* Búsqueda */}
         <div style={{ position: 'relative', flex: '1', minWidth: '300px' }}>
-          <FaSearch style={{
-            position: 'absolute',
-            left: '12px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: theme.textSecondary,
-            fontSize: '0.9rem',
-          }} />
+          {isSearching ? (
+            <FaSpinner style={{
+              position: 'absolute',
+              left: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: theme.primaryColor,
+              fontSize: '0.9rem',
+              animation: 'spin 1s linear infinite',
+            }} />
+          ) : (
+            <FaSearch style={{
+              position: 'absolute',
+              left: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: theme.textSecondary,
+              fontSize: '0.9rem',
+            }} />
+          )}
         <input
           type="text"
-          placeholder="Buscar por nombre del producto..."
+          placeholder="Buscar por nombre, SKU o código de barras..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           style={{

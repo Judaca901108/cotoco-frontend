@@ -48,3 +48,23 @@ button {
 ::-webkit-scrollbar-thumb:hover {
   background: #4B5563;
 }
+
+/* Animación de spin para spinners */
+@keyframes spin {
+  from {
+    transform: translateY(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+/* Animación de spin para botones */
+@keyframes spinButton {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
