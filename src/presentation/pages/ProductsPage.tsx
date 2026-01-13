@@ -395,83 +395,19 @@ const ProductsPage: React.FC = () => {
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
                     {product.barcode ? (
-                      <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '12px',
-                        backgroundColor: theme.white,
-                        borderRadius: '6px',
-                        border: `1px solid ${theme.borderColor}`,
+                      <code style={{
+                        backgroundColor: theme.backgroundSecondary,
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '0.8rem',
+                        color: theme.textPrimary,
+                        fontFamily: 'monospace',
+                        wordBreak: 'break-all',
+                        display: 'block',
                         maxWidth: '200px',
-                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                       }}>
-                        {/* Código de barras */}
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          width: '100%',
-                          overflow: 'hidden',
-                        }}>
-                          <div style={{
-                            display: 'inline-block',
-                          }}
-                          className="barcode-preview-wrapper"
-                          >
-                            <style>{`
-                              .barcode-preview-wrapper svg {
-                                width: auto !important;
-                                height: 50px !important;
-                                max-width: 100% !important;
-                                display: block !important;
-                              }
-                            `}</style>
-                            <Barcode
-                              value={product.barcode}
-                              format="CODE128"
-                              width={0.8}
-                              height={50}
-                              displayValue={false}
-                              fontSize={10}
-                              margin={3}
-                            />
-                          </div>
-                        </div>
-                        {/* Número del código de barras */}
-                        <div style={{
-                          fontSize: '0.75rem',
-                          color: theme.textPrimary,
-                          fontFamily: 'monospace',
-                          letterSpacing: '1px',
-                          fontWeight: '600',
-                          textAlign: 'center',
-                          wordBreak: 'break-all',
-                        }}>
-                          {product.barcode}
-                        </div>
-                        {/* Nombre del producto */}
-                        <div style={{
-                          fontSize: '0.85rem',
-                          color: theme.textPrimary,
-                          fontWeight: '700',
-                          textAlign: 'center',
-                          wordBreak: 'break-word',
-                          lineHeight: '1.2',
-                        }}>
-                          {product.name}
-                        </div>
-                        {/* Precio */}
-                        <div style={{
-                          fontSize: '0.9rem',
-                          color: theme.success,
-                          fontWeight: '600',
-                          textAlign: 'center',
-                        }}>
-                          ${product.price.toFixed(2)}
-                        </div>
-                      </div>
+                        {product.barcode}
+                      </code>
                     ) : (
                       <span style={{ color: theme.textSecondary, fontSize: '0.85rem' }}>
                         Sin código

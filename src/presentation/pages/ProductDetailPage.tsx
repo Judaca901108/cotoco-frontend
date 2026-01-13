@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaEdit, FaTrash, FaBox, FaTag, FaDollarSign, FaPrint } from 'react-icons/fa';
 import Barcode from 'react-barcode';
@@ -466,65 +467,124 @@ const ProductDetailPage: React.FC = () => {
                   
                   <button
                     onClick={() => {
-                      const printContent = document.getElementById('barcode-print-section');
-                      if (printContent) {
+                      if (!product.barcode) return;
+                      
+                      // Crear un contenedor temporal para renderizar el código de barras
+                      const tempContainer = document.createElement('div');
+                      tempContainer.style.position = 'absolute';
+                      tempContainer.style.left = '-9999px';
+                      tempContainer.style.top = '-9999px';
+                      document.body.appendChild(tempContainer);
+                      
+                      const barcodeDiv = document.createElement('div');
+                      barcodeDiv.id = `temp-barcode-print-${product.id}`;
+                      tempContainer.appendChild(barcodeDiv);
+                      
+                      // Renderizar el código de barras
+                      const root = createRoot(barcodeDiv);
+                      root.render(
+                        React.createElement(Barcode, {
+                          value: product.barcode,
+                          format: 'CODE128',
+                          width: 1,
+                          height: 60,
+                          displayValue: false,
+                          fontSize: 12,
+                          margin: 5,
+                        })
+                      );
+                      
+                      // Esperar a que se renderice
+                      setTimeout(() => {
+                        const barcodeSVG = barcodeDiv.querySelector('svg');
+                        const barcodeHTML = barcodeSVG ? barcodeSVG.outerHTML : '';
+                        
+                        // Limpiar
+                        root.unmount();
+                        document.body.removeChild(tempContainer);
+                        
+                        // Crear HTML para 10 códigos de barras
+                        const barcodeItem = `
+                          <div class="barcode-item">
+                            <div class="barcode-svg">${barcodeHTML}</div>
+                            <div class="barcode-number">${product.barcode}</div>
+                            <div class="product-name">${product.name}</div>
+                            <div class="product-price">$${Math.round(product.price).toLocaleString('es-CO')}</div>
+                          </div>
+                        `;
+                        
+                        const barcodesGrid = Array(10).fill(barcodeItem).join('');
+                        
                         const printWindow = window.open('', '_blank');
                         if (printWindow) {
                           printWindow.document.write(`
                             <html>
                               <head>
-                                <title>Código de Barras - ${product.name}</title>
+                                <title>Códigos de Barras - ${product.name}</title>
                                 <style>
                                   @media print {
-                                    body { margin: 0; padding: 20px; }
+                                    body { margin: 0; padding: 10px; }
                                     @page { margin: 0; size: auto; }
                                   }
                                   body {
                                     font-family: Arial, sans-serif;
+                                    margin: 0;
+                                    padding: 10px;
+                                  }
+                                  .barcodes-grid {
+                                    display: grid;
+                                    grid-template-columns: repeat(2, 1fr);
+                                    gap: 15px;
+                                    width: 100%;
+                                  }
+                                  .barcode-item {
+                                    background: white;
+                                    border: 1px solid #ddd;
+                                    padding: 15px;
                                     display: flex;
                                     flex-direction: column;
                                     align-items: center;
+                                    gap: 8px;
+                                    page-break-inside: avoid;
+                                  }
+                                  .barcode-svg {
+                                    width: 100%;
+                                    display: flex;
                                     justify-content: center;
-                                    min-height: 100vh;
-                                    margin: 0;
-                                    padding: 20px;
+                                  }
+                                  .barcode-svg svg {
+                                    width: auto;
+                                    height: 50px;
+                                    max-width: 100%;
+                                  }
+                                  .barcode-number {
+                                    font-size: 0.9rem;
+                                    color: #000;
+                                    font-family: monospace;
+                                    letter-spacing: 1px;
+                                    font-weight: 600;
+                                    text-align: center;
+                                    word-break: break-all;
                                   }
                                   .product-name {
-                                    font-size: 1.2rem;
+                                    font-size: 1rem;
+                                    color: #000;
+                                    font-weight: 700;
+                                    text-align: center;
+                                    word-break: break-word;
+                                    margin-top: 4px;
+                                  }
+                                  .product-price {
+                                    font-size: 0.95rem;
+                                    color: #000;
                                     font-weight: 600;
-                                    margin-bottom: 8px;
                                     text-align: center;
-                                  }
-                                  .product-sku {
-                                    font-size: 0.9rem;
-                                    color: #666;
-                                    margin-bottom: 16px;
-                                    text-align: center;
-                                  }
-                                  .barcode-container {
-                                    background: white;
-                                    padding: 24px;
-                                    border-radius: 8px;
-                                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                                    display: flex;
-                                    flex-direction: column;
-                                    align-items: center;
-                                    gap: 12px;
-                                  }
-                                  .barcode-text {
-                                    font-size: 0.85rem;
-                                    color: #666;
-                                    font-family: monospace;
-                                    letter-spacing: 2px;
-                                    margin-top: 8px;
                                   }
                                 </style>
                               </head>
                               <body>
-                                <div class="product-name">${product.name}</div>
-                                <div class="product-sku">SKU: ${product.sku}</div>
-                                <div class="barcode-container">
-                                  ${printContent.innerHTML}
+                                <div class="barcodes-grid">
+                                  ${barcodesGrid}
                                 </div>
                               </body>
                             </html>
@@ -534,7 +594,7 @@ const ProductDetailPage: React.FC = () => {
                             printWindow.print();
                           }, 250);
                         }
-                      }
+                      }, 200);
                     }}
                     style={{
                       display: 'flex',
