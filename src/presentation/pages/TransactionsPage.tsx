@@ -14,6 +14,7 @@ type TransactionItem = {
   id: number;
   inventoryId: number;
   quantity: number;
+  discount?: number;
   inventory?: {
     id: number;
     productId: number;
@@ -59,8 +60,11 @@ type Transaction = {
     pointOfSaleName: string;
     price?: number;
     subtotal?: number;
+    discount?: number;
   }>;
   totalValue?: number;
+  discount?: number;
+  paymentMethod?: 'cash' | 'card' | 'transfer' | 'mixed';
 };
 
 type Inventory = {
@@ -168,6 +172,7 @@ const TransactionsPage: React.FC = () => {
                 pointOfSaleName: pointOfSale?.name || `Punto de Venta ${inventory?.pointOfSaleId || 'N/A'}`,
                 price: price,
                 subtotal: subtotal,
+                discount: item.discount || 0,
               };
             });
           }
@@ -201,6 +206,9 @@ const TransactionsPage: React.FC = () => {
             enrichedItems: enrichedItems.length > 0 ? enrichedItems : undefined,
             // Valor total (solo para ventas)
             totalValue: transaction.transactionType === 'sale' ? totalValue : undefined,
+            // Descuento (solo para ventas)
+            discount: transaction.discount || 0,
+            paymentMethod: transaction.paymentMethod,
             // Asegurar que remarks siempre tenga un valor
             remarks: transaction.remarks || '',
             // Usar date si está disponible, sino createdAt
@@ -721,200 +729,189 @@ const TransactionsPage: React.FC = () => {
                 e.currentTarget.style.borderColor = theme.cardBorder;
               }}
             >
-              {/* Header de la tarjeta */}
-              <div style={transactionStyles.cardHeader}>
-                <div style={transactionStyles.transactionType}>
+              {/* Header compacto: Tipo y Fecha */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '12px',
+                paddingBottom: '8px',
+                borderBottom: `1px solid ${theme.borderColor}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span>{getTransactionIcon(transaction.transactionType)}</span>
                   <span style={getTransactionTypeStyle(transaction.transactionType, theme)}>
                     {getTransactionTypeLabel(transaction.transactionType)}
                   </span>
                 </div>
-                <div style={transactionStyles.transactionDate}>
+                <div style={{ fontSize: '0.85rem', color: theme.textSecondary }}>
                   {formatDate(transaction.date || transaction.createdAt)}
                 </div>
               </div>
 
-              {/* Contenido de la tarjeta */}
-              <div style={transactionStyles.cardContent}>
-                {/* Si es transacción agrupada, mostrar items */}
+              {/* Items */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ 
+                  fontSize: '0.85rem', 
+                  color: theme.textSecondary, 
+                  marginBottom: '6px',
+                  fontWeight: '600'
+                }}>
+                  Productos
+                </div>
                 {transaction.isGrouped && transaction.enrichedItems && transaction.enrichedItems.length > 0 ? (
-                  <>
-                    <div style={{ marginBottom: '12px' }}>
-                      <div style={{ 
-                        fontSize: '0.85rem', 
-                        color: theme.textSecondary, 
-                        marginBottom: '8px',
-                        fontWeight: '600'
-                      }}>
-                        Items ({transaction.itemsCount || transaction.enrichedItems.length}):
-                      </div>
-                      <div style={{
-                        border: `1px solid ${theme.borderColor}`,
-                        borderRadius: '6px',
-                        overflow: 'hidden',
-                      }}>
-                        {transaction.enrichedItems.map((item, index) => (
-                          <div
-                            key={item.inventoryId}
-                            style={{
-                              padding: '10px 12px',
-                              borderBottom: index < transaction.enrichedItems!.length - 1 ? `1px solid ${theme.borderColor}` : 'none',
-                              backgroundColor: index % 2 === 0 ? theme.cardBackground : theme.backgroundTertiary,
-                            }}
-                          >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: '600', color: theme.textPrimary, marginBottom: '2px' }}>
-                                  {item.productName}
-                                </div>
-                                <div style={{ fontSize: '0.8rem', color: theme.textSecondary }}>
-                                  SKU: {item.productSku}
-                                  {item.barcode && ` • Código: ${item.barcode}`}
-                                </div>
-                                <div style={{ fontSize: '0.75rem', color: theme.textSecondary, marginTop: '2px' }}>
-                                  <FaStore style={{ marginRight: '4px', fontSize: '0.7rem' }} />
-                                  {item.pointOfSaleName}
-                                </div>
-                              </div>
-                              <div style={{ 
-                                marginLeft: '12px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'flex-end',
-                                gap: '4px'
-                              }}>
-                                <div style={{ 
-                                  fontWeight: '600',
-                                  color: theme.primaryColor,
-                                  fontSize: '0.9rem'
-                                }}>
-                                  {item.quantity}
-                                </div>
-                                {transaction.transactionType === 'sale' && item.price && item.price > 0 && (
-                                  <div style={{ 
-                                    fontSize: '0.75rem',
-                                    color: theme.textSecondary
-                                  }}>
-                                    ${(item.subtotal || 0).toLocaleString('es-CO')}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    {/* Total de cantidad */}
-                    <div style={transactionStyles.quantityInfo}>
-                      <span style={{ color: theme.textSecondary, fontSize: '0.9rem' }}>
-                        Total:
-                      </span>
-                      <span style={getQuantityStyle(transaction.totalQuantity || 0, transaction.transactionType, theme)}>
-                        {transaction.totalQuantity || 0}
-                      </span>
-                    </div>
-                    
-                    {/* Valor total de la venta (solo para ventas) */}
-                    {transaction.transactionType === 'sale' && transaction.totalValue !== undefined && transaction.totalValue > 0 && (
-                      <div style={{
-                        marginTop: '12px',
-                        padding: '12px',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        border: `1px solid ${theme.success}30`,
-                        borderRadius: '6px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}>
-                        <span style={{ 
-                          color: theme.textSecondary, 
-                          fontSize: '0.9rem',
-                          fontWeight: '600'
-                        }}>
-                          Valor Total:
+                  transaction.enrichedItems.map((item, index) => (
+                    <div
+                      key={item.inventoryId}
+                      style={{
+                        padding: '8px',
+                        marginBottom: index < transaction.enrichedItems!.length - 1 ? '6px' : '0',
+                        backgroundColor: theme.backgroundTertiary,
+                        borderRadius: '4px',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: '600', color: theme.textPrimary }}>
+                          {item.productName}
                         </span>
-                        <span style={{ 
-                          color: theme.success, 
-                          fontSize: '1.1rem',
-                          fontWeight: '700'
-                        }}>
-                          ${transaction.totalValue.toLocaleString('es-CO')}
+                        <span style={{ color: theme.textSecondary, fontSize: '0.8rem' }}>
+                          ${(item.price || 0).toLocaleString('es-CO')} × {item.quantity}
                         </span>
                       </div>
-                    )}
-                  </>
+                      <div style={{ fontSize: '0.75rem', color: theme.textSecondary }}>
+                        <FaStore style={{ marginRight: '4px', fontSize: '0.7rem' }} />
+                        {item.pointOfSaleName}
+                      </div>
+                    </div>
+                  ))
                 ) : (
-                  <>
-                    {/* Información del producto (transacción individual) */}
-                <div style={transactionStyles.productInfo}>
-                  <FaBox style={{ color: theme.textSecondary, fontSize: '0.9rem' }} />
-                  <div>
-                    <div style={transactionStyles.productName}>
-                      {transaction.productName || 'Producto no encontrado'}
+                  <div style={{
+                    padding: '8px',
+                    backgroundColor: theme.backgroundTertiary,
+                    borderRadius: '4px',
+                    fontSize: '0.85rem',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <span style={{ fontWeight: '600', color: theme.textPrimary }}>
+                        {transaction.productName || 'Producto no encontrado'}
+                      </span>
+                      <span style={{ color: theme.textSecondary, fontSize: '0.8rem' }}>
+                        Cantidad: {transaction.quantity || 0}
+                      </span>
                     </div>
-                    <div style={transactionStyles.productDetails}>
-                      SKU: {transaction.productSku || 'N/A'} • 
-                      <FaStore style={{ margin: '0 4px 0 8px', fontSize: '0.8rem' }} />
+                    <div style={{ fontSize: '0.75rem', color: theme.textSecondary }}>
+                      <FaStore style={{ marginRight: '4px', fontSize: '0.7rem' }} />
                       {transaction.pointOfSaleName || 'Punto de venta no encontrado'}
                     </div>
-                  </div>
-                </div>
-
-                {/* Cantidad */}
-                <div style={transactionStyles.quantityInfo}>
-                  <span style={{ color: theme.textSecondary, fontSize: '0.9rem' }}>
-                    Cantidad:
-                  </span>
-                      <span style={getQuantityStyle(transaction.quantity || 0, transaction.transactionType, theme)}>
-                        {transaction.quantity || 0}
-                  </span>
-                </div>
-                  </>
-                )}
-
-                {/* Comentarios */}
-                {transaction.remarks && (
-                  <div style={transactionStyles.remarks}>
-                    "{transaction.remarks}"
-                  </div>
-                )}
-
-                {/* Información de transferencia */}
-                {transaction.transactionType === 'transfer' && (
-                  <div style={{
-                    marginTop: '12px',
-                    padding: '8px 12px',
-                    backgroundColor: 'rgba(6, 182, 212, 0.1)',
-                    borderRadius: '6px',
-                    fontSize: '0.9rem',
-                    color: theme.textSecondary,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                  }}>
-                    <FaStore style={{ color: theme.info }} />
-                    <span>
-                      {transaction.sourcePointOfSaleName || 'Origen'} 
-                      <FaArrowRight style={{ margin: '0 8px', fontSize: '0.8rem' }} />
-                      {transaction.destinationPointOfSaleName || 'Destino'}
-                    </span>
                   </div>
                 )}
               </div>
 
-              {/* Footer de la tarjeta */}
-              <div style={transactionStyles.cardFooter}>
-                <div style={transactionStyles.pointOfSaleInfo}>
-                  <FaUser style={{ marginRight: '6px', fontSize: '0.8rem', color: theme.textSecondary }} />
-                  {transaction.userName || 'Usuario no encontrado'}
-                  {transaction.userUsername && (
-                    <span style={{ color: theme.textMuted, marginLeft: '8px' }}>
-                      (@{transaction.userUsername})
+              {/* Totales y valores (solo para ventas) */}
+              {transaction.transactionType === 'sale' && transaction.totalValue !== undefined && (
+                <div style={{
+                  marginBottom: '12px',
+                  padding: '10px',
+                  backgroundColor: theme.backgroundTertiary,
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ color: theme.textSecondary }}>Subtotal:</span>
+                    <span style={{ color: theme.textPrimary, fontWeight: '600' }}>
+                      ${transaction.totalValue.toLocaleString('es-CO')}
                     </span>
+                  </div>
+                  {transaction.discount && transaction.discount > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ color: theme.textSecondary }}>Descuento:</span>
+                      <span style={{ color: '#60A5FA', fontWeight: '600' }}>
+                        -${transaction.discount.toLocaleString('es-CO')}
+                      </span>
+                    </div>
                   )}
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    paddingTop: '4px',
+                    borderTop: `1px solid ${theme.borderColor}`,
+                    marginTop: '4px',
+                  }}>
+                    <span style={{ color: theme.textPrimary, fontWeight: '600' }}>Total:</span>
+                    <span style={{ color: theme.success, fontWeight: '700', fontSize: '0.95rem' }}>
+                      ${(transaction.totalValue - (transaction.discount || 0)).toLocaleString('es-CO')}
+                    </span>
+                  </div>
                 </div>
-                <div style={transactionStyles.transactionId}>
-                  ID: {transaction.id} • #{transaction.inventoryId}
+              )}
+
+              {/* Total de cantidad (para otros tipos) */}
+              {transaction.transactionType !== 'sale' && (
+                <div style={{
+                  marginBottom: '12px',
+                  padding: '8px',
+                  backgroundColor: theme.backgroundTertiary,
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                }}>
+                  <span style={{ color: theme.textSecondary }}>Total:</span>
+                  <span style={getQuantityStyle(transaction.totalQuantity || transaction.quantity || 0, transaction.transactionType, theme)}>
+                    {transaction.totalQuantity || transaction.quantity || 0}
+                  </span>
+                </div>
+              )}
+
+              {/* Transferencia */}
+              {transaction.transactionType === 'transfer' && (
+                <div style={{
+                  marginBottom: '12px',
+                  padding: '8px',
+                  backgroundColor: theme.backgroundTertiary,
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  color: theme.textSecondary,
+                }}>
+                  <FaStore style={{ marginRight: '4px', fontSize: '0.75rem' }} />
+                  {transaction.sourcePointOfSaleName || 'Origen'} 
+                  <FaArrowRight style={{ margin: '0 6px', fontSize: '0.7rem' }} />
+                  {transaction.destinationPointOfSaleName || 'Destino'}
+                </div>
+              )}
+
+              {/* Observación */}
+              {transaction.remarks && (
+                <div style={{
+                  marginBottom: '12px',
+                  padding: '8px',
+                  backgroundColor: theme.backgroundTertiary,
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  color: theme.textSecondary,
+                  fontStyle: 'italic',
+                }}>
+                  {transaction.remarks}
+                </div>
+              )}
+
+              {/* Footer compacto: Usuario ID */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingTop: '8px',
+                borderTop: `1px solid ${theme.borderColor}`,
+                fontSize: '0.8rem',
+                color: theme.textSecondary,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <FaUser style={{ fontSize: '0.75rem' }} />
+                  <span>{transaction.userName || 'Usuario no encontrado'}</span>
+                </div>
+                <div>
+                  ID: {transaction.userId || 'N/A'}
                 </div>
               </div>
             </div>

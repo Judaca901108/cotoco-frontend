@@ -79,6 +79,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     paymentMethod: '' as 'card' | 'qr' | 'cash' | '',
     remarks: '',
     destinationPointOfSaleId: 0,
+    discount: '0',
   });
 
   // Estado para la lista de items de la transacción
@@ -294,6 +295,20 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       if (!formData.paymentMethod) {
         newErrors.paymentMethod = 'Debe seleccionar un método de pago.';
       }
+      // Validar descuento
+      const discountValue = parseFloat(formData.discount) || 0;
+      if (discountValue < 0) {
+        newErrors.discount = 'El descuento no puede ser negativo.';
+      } else if (transactionItems.length > 0) {
+        const totalAmount = transactionItems.reduce((total, item) => {
+          const itemPrice = item.price || 0;
+          const itemQuantity = item.quantity || 0;
+          return total + (itemPrice * itemQuantity);
+        }, 0);
+        if (discountValue > totalAmount) {
+          newErrors.discount = `El descuento no puede superar el monto total (${totalAmount.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 })}).`;
+        }
+      }
     }
     
     if (formData.transactionType === 'transfer') {
@@ -325,6 +340,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         newData.pointOfSaleId = 0;
         newData.destinationPointOfSaleId = 0;
         newData.paymentMethod = ''; // Resetear método de pago
+        newData.discount = '0'; // Resetear descuento
         setProductSearchQuery('');
         setSearchResults([]);
         setSelectedProduct(null);
@@ -390,8 +406,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             };
           }
         }),
-        ...(formData.transactionType === 'sale' && formData.paymentMethod && {
-          paymentMethod: formData.paymentMethod === 'qr' ? 'transfer' : formData.paymentMethod,
+        ...(formData.transactionType === 'sale' && {
+          ...(formData.paymentMethod && {
+            paymentMethod: formData.paymentMethod === 'qr' ? 'transfer' : formData.paymentMethod,
+          }),
+          discount: parseFloat(formData.discount) || 0,
         }),
         ...(formData.transactionType === 'transfer' && {
           sourcePointOfSaleId: formData.pointOfSaleId, // El origen es el punto de venta seleccionado
@@ -1081,6 +1100,56 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           </div>
         )}
 
+        {/* Descuento (solo para ventas) */}
+        {formData.transactionType === 'sale' && (
+          <div style={formStyles.fieldContainer}>
+            <label htmlFor="discount" style={formStyles.label}>
+              <FaDollarSign style={{ marginRight: '8px' }} />
+              Descuento (en pesos)
+            </label>
+            <input
+              type="text"
+              id="discount"
+              name="discount"
+              value={formData.discount}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Permitir solo números, punto decimal y vacío (para poder borrar)
+                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                  handleChange(e);
+                }
+              }}
+              onFocus={() => handleFocus('discount')}
+              onBlur={(e) => {
+                // Validar y normalizar al perder el foco
+                const numValue = parseFloat(e.target.value) || 0;
+                setFormData(prev => ({ ...prev, discount: numValue.toString() }));
+                handleBlur();
+              }}
+              style={getInputStyles(!!errors.discount, focusedField === 'discount', theme)}
+              placeholder="0"
+            />
+            {errors.discount && (
+              <div style={formStyles.errorMessage}>
+                <span>{errors.discount}</span>
+              </div>
+            )}
+            {transactionItems.length > 0 && (
+              <div style={{
+                marginTop: '8px',
+                fontSize: '0.85rem',
+                color: theme.textSecondary,
+              }}>
+                Monto total: {transactionItems.reduce((total, item) => {
+                  const itemPrice = item.price || 0;
+                  const itemQuantity = item.quantity || 0;
+                  return total + (itemPrice * itemQuantity);
+                }, 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Comentarios */}
         <div style={formStyles.fieldContainer}>
           <label htmlFor="remarks" style={formStyles.label}>
@@ -1105,61 +1174,107 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         </div>
 
         {/* Total a pagar (solo para ventas) */}
-        {formData.transactionType === 'sale' && transactionItems.length > 0 && (
-          <div style={formStyles.fieldContainer}>
-            <div style={{
-              padding: '20px',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              border: `2px solid ${theme.success}40`,
-              borderRadius: '12px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <FaDollarSign style={{ 
-                  fontSize: '1.5rem', 
-                  color: theme.success,
-                }} />
-                <div>
-                  <div style={{ 
-                    fontSize: '0.9rem', 
-                    color: theme.textSecondary,
-                    marginBottom: '4px',
-                  }}>
-                    Total a Pagar
-                  </div>
-                  <div style={{ 
-                    fontSize: '2rem', 
-                    fontWeight: '700', 
-                    color: theme.success,
-                  }}>
-                    {transactionItems.reduce((total, item) => {
-                      const itemPrice = item.price || 0;
-                      const itemQuantity = item.quantity || 0;
-                      return total + (itemPrice * itemQuantity);
-                    }, 0).toLocaleString('es-CO', { 
-                      style: 'currency', 
-                      currency: 'COP',
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    })}
-                  </div>
-                </div>
-              </div>
+        {formData.transactionType === 'sale' && transactionItems.length > 0 && (() => {
+          const subtotal = transactionItems.reduce((total, item) => {
+            const itemPrice = item.price || 0;
+            const itemQuantity = item.quantity || 0;
+            return total + (itemPrice * itemQuantity);
+          }, 0);
+          const discount = parseFloat(formData.discount) || 0;
+          const total = Math.max(0, subtotal - discount);
+          
+          return (
+            <div style={formStyles.fieldContainer}>
               <div style={{
-                fontSize: '0.85rem',
-                color: theme.textSecondary,
-                textAlign: 'right',
+                padding: '20px',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                border: `2px solid ${theme.success}40`,
+                borderRadius: '12px',
               }}>
-                <div>{transactionItems.length} {transactionItems.length === 1 ? 'producto' : 'productos'}</div>
-                <div style={{ marginTop: '4px' }}>
-                  {transactionItems.reduce((total, item) => total + (item.quantity || 0), 0)} {transactionItems.reduce((total, item) => total + (item.quantity || 0), 0) === 1 ? 'unidad' : 'unidades'}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: discount > 0 ? '12px' : '0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <FaDollarSign style={{ 
+                      fontSize: '1.5rem', 
+                      color: theme.success,
+                    }} />
+                    <div>
+                      <div style={{ 
+                        fontSize: '0.9rem', 
+                        color: theme.textSecondary,
+                        marginBottom: '4px',
+                      }}>
+                        Total a Pagar
+                      </div>
+                      <div style={{ 
+                        fontSize: '2rem', 
+                        fontWeight: '700', 
+                        color: theme.success,
+                      }}>
+                        {total.toLocaleString('es-CO', { 
+                          style: 'currency', 
+                          currency: 'COP',
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{
+                    fontSize: '0.85rem',
+                    color: theme.textSecondary,
+                    textAlign: 'right',
+                  }}>
+                    <div>{transactionItems.length} {transactionItems.length === 1 ? 'producto' : 'productos'}</div>
+                    <div style={{ marginTop: '4px' }}>
+                      {transactionItems.reduce((total, item) => total + (item.quantity || 0), 0)} {transactionItems.reduce((total, item) => total + (item.quantity || 0), 0) === 1 ? 'unidad' : 'unidades'}
+                    </div>
+                  </div>
                 </div>
+                {discount > 0 && (
+                  <div style={{
+                    paddingTop: '12px',
+                    borderTop: `1px solid ${theme.borderColor}`,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: '0.9rem',
+                  }}>
+                    <div style={{ color: theme.textSecondary }}>
+                      Subtotal:
+                    </div>
+                    <div style={{ color: theme.textPrimary, fontWeight: '600' }}>
+                      {subtotal.toLocaleString('es-CO', { 
+                        style: 'currency', 
+                        currency: 'COP',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      })}
+                    </div>
+                  </div>
+                )}
+                {discount > 0 && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: '0.9rem',
+                    marginTop: '4px',
+                  }}>
+                    <div style={{ color: theme.error }}>
+                      Descuento:
+                    </div>
+                    <div style={{ color: theme.error, fontWeight: '600' }}>
+                      -{discount.toLocaleString('es-CO', { 
+                        style: 'currency', 
+                        currency: 'COP',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Botones */}
         <div style={formStyles.buttonContainer}>
