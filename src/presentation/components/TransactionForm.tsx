@@ -83,7 +83,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
   // Estado para la lista de items de la transacción
   const [transactionItems, setTransactionItems] = useState<TransactionItem[]>([]);
-  const [itemQuantity, setItemQuantity] = useState<number>(1);
+  const [itemQuantity, setItemQuantity] = useState<string>('1');
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -391,7 +391,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           }
         }),
         ...(formData.transactionType === 'sale' && formData.paymentMethod && {
-          paymentMethod: formData.paymentMethod,
+          paymentMethod: formData.paymentMethod === 'qr' ? 'transfer' : formData.paymentMethod,
         }),
         ...(formData.transactionType === 'transfer' && {
           sourcePointOfSaleId: formData.pointOfSaleId, // El origen es el punto de venta seleccionado
@@ -429,12 +429,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     setSearchResults([]);
     setIsSearching(false);
     // Resetear cantidad: 1 para otros tipos, 0 para ajustes (permite negativos)
-    setItemQuantity(formData.transactionType === 'adjustment' ? 0 : 1);
+    setItemQuantity(formData.transactionType === 'adjustment' ? '0' : '1');
   };
 
   // Agregar item a la lista de transacción
   const handleAddItem = () => {
     if (!selectedProduct) return;
+    
+    const quantityValue = parseInt(itemQuantity) || 0;
     
     // Verificar si el item ya existe en la lista
     // Para reabastecimiento, comparar por productId; para otros tipos, por inventoryId
@@ -447,7 +449,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     if (existingItemIndex >= 0) {
       // Si existe, actualizar la cantidad
       const newItems = [...transactionItems];
-      newItems[existingItemIndex].quantity += itemQuantity;
+      newItems[existingItemIndex].quantity += quantityValue;
       setTransactionItems(newItems);
     } else {
       // Si no existe, agregarlo
@@ -456,7 +458,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         // Para otros casos, usar inventoryId
         inventoryId: formData.transactionType === 'restock' ? 0 : selectedProduct.id,
         productId: formData.transactionType === 'restock' ? selectedProduct.productId : undefined,
-        quantity: itemQuantity,
+        quantity: quantityValue,
         productName: selectedProduct.productName,
         productSku: selectedProduct.productSku,
         barcode: selectedProduct.barcode,
@@ -470,7 +472,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     setSelectedProduct(null);
     setProductSearchQuery('');
     // Resetear cantidad: 1 para otros tipos, 0 para ajustes (permite negativos)
-    setItemQuantity(formData.transactionType === 'adjustment' ? 0 : 1);
+    setItemQuantity(formData.transactionType === 'adjustment' ? '0' : '1');
   };
 
   // Eliminar item de la lista
@@ -872,17 +874,23 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                     Cantidad {formData.transactionType === 'adjustment' && '(puede ser negativa)'}
           </label>
           <input
-            type="number"
-                    min={formData.transactionType === 'adjustment' ? undefined : '1'}
+            type="text"
                     value={itemQuantity}
                     onChange={(e) => {
-                      const value = parseInt(e.target.value) || 0;
-                      // Para ajustes, permitir cualquier valor (negativo, cero, positivo)
-                      // Para otros tipos, forzar mínimo 1
-                      if (formData.transactionType === 'adjustment') {
+                      const value = e.target.value;
+                      // Permitir números, signo negativo y vacío (para poder borrar)
+                      if (value === '' || /^-?\d*$/.test(value)) {
                         setItemQuantity(value);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // Validar y normalizar al perder el foco
+                      const numValue = parseInt(e.target.value) || 0;
+                      if (formData.transactionType === 'adjustment') {
+                        setItemQuantity(numValue.toString());
                       } else {
-                        setItemQuantity(Math.max(1, value));
+                        const validValue = Math.max(1, numValue);
+                        setItemQuantity(validValue.toString());
                       }
                     }}
                     style={{

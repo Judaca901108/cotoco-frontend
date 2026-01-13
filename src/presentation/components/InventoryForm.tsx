@@ -34,11 +34,16 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
   const { theme } = useTheme();
   const formStyles = getFormStyles(theme);
   const [formData, setFormData] = useState(
-    initialData || {
+    initialData ? {
+      ...initialData,
+      stockQuantity: initialData.stockQuantity.toString(),
+      minimumStock: initialData.minimumStock.toString(),
+      onDisplay: (initialData.onDisplay || 0).toString(),
+    } : {
       productId: 0,
-      stockQuantity: 0,
-      minimumStock: 0,
-      onDisplay: 0,
+      stockQuantity: '0',
+      minimumStock: '0',
+      onDisplay: '0',
     }
   );
 
@@ -58,15 +63,18 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
     if (!formData.productId) newErrors.productId = 'El producto es obligatorio.';
-    if (formData.stockQuantity < 0) newErrors.stockQuantity = 'La cantidad no puede ser negativa.';
-    if (formData.minimumStock < 0) newErrors.minimumStock = 'El stock mínimo no puede ser negativo.';
+    const stockQuantityNum = parseInt(formData.stockQuantity as string) || 0;
+    const minimumStockNum = parseInt(formData.minimumStock as string) || 0;
+    if (stockQuantityNum < 0) newErrors.stockQuantity = 'La cantidad no puede ser negativa.';
+    if (minimumStockNum < 0) newErrors.minimumStock = 'El stock mínimo no puede ser negativo.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: name === 'stockQuantity' || name === 'minimumStock' || name === 'onDisplay' ? Number(value) : value }));
+    // Para stockQuantity, minimumStock y onDisplay, mantener como string
+    setFormData((prev) => ({ ...prev, [name]: value }));
     // Limpiar error cuando el usuario empiece a escribir
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -76,8 +84,14 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
-      // Asegurar que onDisplay siempre sea 0 para nuevos inventarios
-      onSubmit({ ...formData, onDisplay: 0 });
+      // Convertir strings a números antes de enviar
+      const submissionData = {
+        productId: formData.productId,
+        stockQuantity: parseInt(formData.stockQuantity as string) || 0,
+        minimumStock: parseInt(formData.minimumStock as string) || 0,
+        onDisplay: 0, // Asegurar que onDisplay siempre sea 0 para nuevos inventarios
+      };
+      onSubmit(submissionData);
     }
   };
 
@@ -437,16 +451,26 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               Cantidad en Inventario *
             </label>
             <input
-              type="number"
+              type="text"
               id="stockQuantity"
               name="stockQuantity"
               value={formData.stockQuantity}
-              onChange={handleChange}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Permitir solo números y vacío (para poder borrar)
+                if (value === '' || /^\d*$/.test(value)) {
+                  handleChange(e);
+                }
+              }}
               onFocus={() => handleFocus('stockQuantity')}
-              onBlur={handleBlur}
+              onBlur={(e) => {
+                // Validar y normalizar al perder el foco
+                const numValue = parseInt(e.target.value) || 0;
+                setFormData(prev => ({ ...prev, stockQuantity: numValue.toString() }));
+                handleBlur();
+              }}
               style={getInputStyles(!!errors.stockQuantity, focusedField === 'stockQuantity', theme)}
               placeholder="0"
-              min="0"
             />
             {errors.stockQuantity && (
               <div style={formStyles.errorMessage}>
@@ -460,16 +484,26 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               Stock Mínimo *
             </label>
             <input
-              type="number"
+              type="text"
               id="minimumStock"
               name="minimumStock"
               value={formData.minimumStock}
-              onChange={handleChange}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Permitir solo números y vacío (para poder borrar)
+                if (value === '' || /^\d*$/.test(value)) {
+                  handleChange(e);
+                }
+              }}
               onFocus={() => handleFocus('minimumStock')}
-              onBlur={handleBlur}
+              onBlur={(e) => {
+                // Validar y normalizar al perder el foco
+                const numValue = parseInt(e.target.value) || 0;
+                setFormData(prev => ({ ...prev, minimumStock: numValue.toString() }));
+                handleBlur();
+              }}
               style={getInputStyles(!!errors.minimumStock, focusedField === 'minimumStock', theme)}
               placeholder="0"
-              min="0"
             />
             {errors.minimumStock && (
               <div style={formStyles.errorMessage}>
