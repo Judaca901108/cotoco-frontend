@@ -823,14 +823,12 @@ const TransactionsPage: React.FC = () => {
                       ${transaction.totalValue.toLocaleString('es-CO')}
                     </span>
                   </div>
-                  {transaction.discount && transaction.discount > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ color: theme.textSecondary }}>Descuento:</span>
-                      <span style={{ color: '#60A5FA', fontWeight: '600' }}>
-                        -${transaction.discount.toLocaleString('es-CO')}
-                      </span>
-                    </div>
-                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ color: theme.textSecondary }}>Descuento:</span>
+                    <span style={{ color: '#60A5FA', fontWeight: '600' }}>
+                      -${(transaction.discount || 0).toLocaleString('es-CO')}
+                    </span>
+                  </div>
                   <div style={{ 
                     display: 'flex', 
                     justifyContent: 'space-between',
