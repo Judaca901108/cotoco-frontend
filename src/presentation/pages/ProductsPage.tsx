@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaPlus, FaSearch, FaBox, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
+import { createRoot } from 'react-dom/client';
+import { FaPlus, FaSearch, FaBox, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown, FaPrint } from 'react-icons/fa';
+import Barcode from 'react-barcode';
 import ModalComponent from '../components/ModalComponent';
 import ProductForm from '../components/ProductForm';
 import { authenticatedFetch } from '../../infrastructure/authService';
@@ -270,13 +272,15 @@ const ProductsPage: React.FC = () => {
                 </div>
               </th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">SKU</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Código de Barras</th>
               <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Estado</th>
+              <th style={tableStyles.tableHeaderCell} className="table-header-cell-responsive">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {paginatedProducts.length === 0 ? (
               <tr>
-                <td colSpan={7} style={tableStyles.emptyState}>
+                <td colSpan={9} style={tableStyles.emptyState}>
                   <div style={tableStyles.emptyStateIcon}>📦</div>
                   <div style={tableStyles.emptyStateTitle}>No hay productos</div>
                   <div style={tableStyles.emptyStateDescription}>
@@ -390,9 +394,246 @@ const ProductsPage: React.FC = () => {
                     </code>
                   </td>
                   <td style={tableStyles.tableCell} className="table-cell-responsive">
+                    {product.barcode ? (
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px',
+                        backgroundColor: theme.white,
+                        borderRadius: '6px',
+                        border: `1px solid ${theme.borderColor}`,
+                        maxWidth: '200px',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                      }}>
+                        {/* Código de barras */}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                          overflow: 'hidden',
+                        }}>
+                          <div style={{
+                            display: 'inline-block',
+                          }}
+                          className="barcode-preview-wrapper"
+                          >
+                            <style>{`
+                              .barcode-preview-wrapper svg {
+                                width: auto !important;
+                                height: 50px !important;
+                                max-width: 100% !important;
+                                display: block !important;
+                              }
+                            `}</style>
+                            <Barcode
+                              value={product.barcode}
+                              format="CODE128"
+                              width={0.8}
+                              height={50}
+                              displayValue={false}
+                              fontSize={10}
+                              margin={3}
+                            />
+                          </div>
+                        </div>
+                        {/* Número del código de barras */}
+                        <div style={{
+                          fontSize: '0.75rem',
+                          color: theme.textPrimary,
+                          fontFamily: 'monospace',
+                          letterSpacing: '1px',
+                          fontWeight: '600',
+                          textAlign: 'center',
+                          wordBreak: 'break-all',
+                        }}>
+                          {product.barcode}
+                        </div>
+                        {/* Nombre del producto */}
+                        <div style={{
+                          fontSize: '0.85rem',
+                          color: theme.textPrimary,
+                          fontWeight: '700',
+                          textAlign: 'center',
+                          wordBreak: 'break-word',
+                          lineHeight: '1.2',
+                        }}>
+                          {product.name}
+                        </div>
+                        {/* Precio */}
+                        <div style={{
+                          fontSize: '0.9rem',
+                          color: theme.success,
+                          fontWeight: '600',
+                          textAlign: 'center',
+                        }}>
+                          ${product.price.toFixed(2)}
+                        </div>
+                      </div>
+                    ) : (
+                      <span style={{ color: theme.textSecondary, fontSize: '0.85rem' }}>
+                        Sin código
+                      </span>
+                    )}
+                  </td>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
                     <span style={getStatusBadgeStyle('active', theme)}>
                       Activo
                     </span>
+                  </td>
+                  <td style={tableStyles.tableCell} className="table-cell-responsive">
+                    {product.barcode ? (
+                      <button
+                        onClick={() => {
+                          if (!product.barcode) return;
+                          
+                          // Crear un contenedor temporal oculto para renderizar el código de barras
+                          const tempContainer = document.createElement('div');
+                          tempContainer.style.position = 'absolute';
+                          tempContainer.style.left = '-9999px';
+                          tempContainer.style.top = '-9999px';
+                          document.body.appendChild(tempContainer);
+                          
+                          // Crear un div para el código de barras
+                          const barcodeDiv = document.createElement('div');
+                          barcodeDiv.id = `temp-barcode-${product.id}`;
+                          tempContainer.appendChild(barcodeDiv);
+                          
+                          // Renderizar el código de barras usando React
+                          const root = createRoot(barcodeDiv);
+                          root.render(
+                            React.createElement(Barcode, {
+                              value: product.barcode,
+                              format: 'CODE128',
+                              width: 1,
+                              height: 60,
+                              displayValue: false,
+                              fontSize: 14,
+                              margin: 5,
+                            })
+                          );
+                          
+                          // Esperar a que React renderice el código de barras
+                          setTimeout(() => {
+                            const barcodeSVG = barcodeDiv.querySelector('svg');
+                            const barcodeHTML = barcodeSVG ? barcodeSVG.outerHTML : '';
+                            
+                            // Limpiar el contenedor temporal
+                            root.unmount();
+                            document.body.removeChild(tempContainer);
+                            
+                            // Crear ventana de impresión
+                            const printWindow = window.open('', '_blank');
+                            if (printWindow) {
+                              printWindow.document.write(`
+                                <html>
+                                  <head>
+                                    <title>Código de Barras - ${product.name}</title>
+                                    <style>
+                                      @media print {
+                                        body { margin: 0; padding: 20px; }
+                                        @page { margin: 0; size: auto; }
+                                      }
+                                      body {
+                                        font-family: Arial, sans-serif;
+                                        display: flex;
+                                        flex-direction: column;
+                                        align-items: center;
+                                        justify-content: center;
+                                        min-height: 100vh;
+                                        margin: 0;
+                                        padding: 20px;
+                                      }
+                                      .barcode-container {
+                                        background: white;
+                                        padding: 24px;
+                                        border-radius: 8px;
+                                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                                        display: flex;
+                                        flex-direction: column;
+                                        align-items: center;
+                                        gap: 16px;
+                                        min-width: 300px;
+                                      }
+                                      .barcode-svg {
+                                        width: auto;
+                                        height: 60px;
+                                        max-width: 100%;
+                                      }
+                                      .barcode-number {
+                                        font-size: 1.2rem;
+                                        font-family: monospace;
+                                        letter-spacing: 2px;
+                                        color: #333;
+                                        font-weight: 600;
+                                      }
+                                      .product-name {
+                                        font-size: 1.3rem;
+                                        font-weight: 700;
+                                        color: #000;
+                                        text-align: center;
+                                        margin-top: 8px;
+                                      }
+                                      .product-price {
+                                        font-size: 1.1rem;
+                                        font-weight: 600;
+                                        color: #059669;
+                                        margin-top: 4px;
+                                      }
+                                    </style>
+                                  </head>
+                                  <body>
+                                    <div class="barcode-container">
+                                      <div class="barcode-svg">${barcodeHTML}</div>
+                                      <div class="barcode-number">${product.barcode}</div>
+                                      <div class="product-name">${product.name}</div>
+                                      <div class="product-price">$${product.price.toFixed(2)}</div>
+                                    </div>
+                                  </body>
+                                </html>
+                              `);
+                              printWindow.document.close();
+                              setTimeout(() => {
+                                printWindow.print();
+                              }, 250);
+                            }
+                          }, 200);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          backgroundColor: theme.primaryColor,
+                          color: theme.white,
+                          border: 'none',
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          fontSize: '0.85rem',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#7c3aed';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = theme.primaryColor;
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      >
+                        <FaPrint />
+                        Imprimir
+                      </button>
+                    ) : (
+                      <span style={{ color: theme.textSecondary, fontSize: '0.85rem' }}>
+                        Sin código
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))

@@ -351,7 +351,7 @@ const ProductDetailPage: React.FC = () => {
               <span style={detailStyles.infoLabel}>Precio</span>
               <span style={detailStyles.infoValue}>
                 <FaDollarSign style={{ marginRight: '4px', color: theme.success }} />
-                {product.price.toFixed(2)}
+                {Math.round(product.price).toLocaleString('es-CO')}
               </span>
             </div>
             
@@ -364,13 +364,13 @@ const ProductDetailPage: React.FC = () => {
               <span style={detailStyles.infoValue}>{product.description}</span>
             </div>
             
-            {product.barcode && (
-              <div style={{
-                ...detailStyles.infoItem,
-                gridColumn: '1 / -1',
-                marginTop: '8px',
-              }}>
-                <span style={detailStyles.infoLabel}>Código de Barras</span>
+            <div style={{
+              ...detailStyles.infoItem,
+              gridColumn: '1 / -1',
+              marginTop: '8px',
+            }}>
+              <span style={detailStyles.infoLabel}>Código de Barras</span>
+              {product.barcode ? (
                 <div style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -383,9 +383,10 @@ const ProductDetailPage: React.FC = () => {
                   width: '100%',
                   overflow: 'hidden',
                 }} id="barcode-print-section">
+                {/* Preview de impresión */}
                 <div style={{
                   backgroundColor: theme.white,
-                  padding: '20px',
+                  padding: '24px',
                   borderRadius: '8px',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                   display: 'flex',
@@ -393,9 +394,10 @@ const ProductDetailPage: React.FC = () => {
                   alignItems: 'center',
                   gap: '12px',
                   width: '100%',
-                  maxWidth: '500px',
+                  maxWidth: '400px',
                   margin: '0 auto',
                 }}>
+                  {/* Código de barras */}
                   <div style={{
                     display: 'flex',
                     justifyContent: 'center',
@@ -421,24 +423,44 @@ const ProductDetailPage: React.FC = () => {
                         format="CODE128"
                         width={1}
                         height={60}
-                        displayValue={true}
+                        displayValue={false}
                         fontSize={12}
                         margin={5}
                       />
                     </div>
                   </div>
+                  {/* Número del código de barras */}
                   <div style={{
-                    fontSize: '0.85rem',
-                    color: theme.textSecondary,
+                    fontSize: '1rem',
+                    color: '#000000',
                     fontFamily: 'monospace',
-                    letterSpacing: '1px',
-                    marginTop: '4px',
-                    wordBreak: 'break-all',
+                    letterSpacing: '2px',
+                    fontWeight: '600',
                     textAlign: 'center',
-                    maxWidth: '100%',
-                    padding: '0 10px',
+                    wordBreak: 'break-all',
                   }}>
                     {product.barcode}
+                  </div>
+                  {/* Nombre del producto */}
+                  <div style={{
+                    fontSize: '1.2rem',
+                    color: '#000000',
+                    fontWeight: '700',
+                    textAlign: 'center',
+                    wordBreak: 'break-word',
+                    marginTop: '8px',
+                  }}>
+                    {product.name}
+                  </div>
+                  {/* Precio */}
+                  <div style={{
+                    fontSize: '1.1rem',
+                    color: '#000000',
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    marginTop: '4px',
+                  }}>
+                    ${Math.round(product.price).toLocaleString('es-CO')}
                   </div>
                 </div>
                   
@@ -543,8 +565,31 @@ const ProductDetailPage: React.FC = () => {
                     Imprimir
                   </button>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div style={{
+                  padding: '24px',
+                  textAlign: 'center',
+                  color: theme.textSecondary,
+                  backgroundColor: theme.backgroundTertiary,
+                  borderRadius: '8px',
+                  border: `1px solid ${theme.borderColor}`,
+                }}>
+                  <div style={{
+                    fontSize: '1rem',
+                    marginBottom: '8px',
+                    color: theme.textPrimary,
+                  }}>
+                    Este producto no tiene código de barras
+                  </div>
+                  <div style={{
+                    fontSize: '0.85rem',
+                    opacity: 0.8,
+                  }}>
+                    Genera un código de barras desde el formulario de edición
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
