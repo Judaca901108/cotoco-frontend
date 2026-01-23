@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaSave, FaTimes, FaBox, FaImage, FaDollarSign, FaTag, FaList } from 'react-icons/fa';
+import { FaArrowLeft, FaSave, FaTimes, FaBox, FaImage, FaDollarSign, FaTag, FaList, FaBarcode, FaSpinner } from 'react-icons/fa';
 import { getFormStyles, getInputStyles, getSelectStyles } from '../../shared/formStyles';
 import { authenticatedFetch } from '../../infrastructure/authService';
 import { useTheme } from '../../application/contexts/ThemeContext';
@@ -30,6 +30,7 @@ const EditProductPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [isGeneratingBarcode, setIsGeneratingBarcode] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -232,6 +233,39 @@ const EditProductPage: React.FC = () => {
 
   const handleBlur = () => {
     setFocusedField(null);
+  };
+
+  const handleGenerateBarcode = async () => {
+    setIsGeneratingBarcode(true);
+    try {
+      const response = await authenticatedFetch(`${BASE_PATH}/product/barcode/generate`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error al generar código de barras: ${response.status} - ${errorText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.barcode) {
+        setFormData(prev => ({
+          ...prev,
+          barcode: data.barcode
+        }));
+        // Limpiar error si existe
+        if (errors.barcode) {
+          setErrors(prev => ({ ...prev, barcode: '' }));
+        }
+      }
+    } catch (err: any) {
+      console.error('Error generating barcode:', err);
+      setErrors(prev => ({ 
+        ...prev, 
+        barcode: err.message || 'Error al generar el código de barras' 
+      }));
+    } finally {
+      setIsGeneratingBarcode(false);
+    }
   };
 
   if (loading) {
@@ -441,17 +475,70 @@ const EditProductPage: React.FC = () => {
           <label htmlFor="barcode" style={formStyles.label}>
             Código de Barras
           </label>
-          <input
-            type="text"
-            id="barcode"
-            name="barcode"
-            value={formData.barcode}
-            onChange={handleChange}
-            onFocus={() => handleFocus('barcode')}
-            onBlur={handleBlur}
-            style={getInputStyles(!!errors.barcode, focusedField === 'barcode', theme)}
-            placeholder="Ej: 1234567890123"
-          />
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+            <input
+              type="text"
+              id="barcode"
+              name="barcode"
+              value={formData.barcode}
+              onChange={handleChange}
+              onFocus={() => handleFocus('barcode')}
+              onBlur={handleBlur}
+              style={{
+                ...getInputStyles(!!errors.barcode, focusedField === 'barcode', theme),
+                flex: 1
+              }}
+              placeholder="Ej: 1234567890123"
+            />
+            <button
+              type="button"
+              onClick={handleGenerateBarcode}
+              disabled={isGeneratingBarcode}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                backgroundColor: isGeneratingBarcode ? theme.buttonSecondary : theme.primaryColor,
+                color: theme.white,
+                border: 'none',
+                padding: '12px 16px',
+                borderRadius: '6px',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                cursor: isGeneratingBarcode ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                whiteSpace: 'nowrap',
+                opacity: isGeneratingBarcode ? 0.7 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!isGeneratingBarcode) {
+                  e.currentTarget.style.backgroundColor = '#7c3aed';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isGeneratingBarcode) {
+                  e.currentTarget.style.backgroundColor = theme.primaryColor;
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }
+              }}
+            >
+              {isGeneratingBarcode ? (
+                <>
+                  <FaSpinner style={{ 
+                    animation: 'spinButton 1s linear infinite',
+                    display: 'inline-block'
+                  }} />
+                  Generando...
+                </>
+              ) : (
+                <>
+                  <FaBarcode />
+                  Generar
+                </>
+              )}
+            </button>
+          </div>
           {errors.barcode && (
             <div style={formStyles.errorMessage}>
               <span>{errors.barcode}</span>

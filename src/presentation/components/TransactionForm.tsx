@@ -433,6 +433,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   const pointsOfSaleWithInventory = pointsOfSale.filter(pos => 
     inventories.some(inv => inv.pointOfSaleId === pos.id)
   );
+  
+  // Para transferencias: origen debe tener inventario, destino puede ser cualquiera
+  // Para otros tipos, usar solo los que tienen inventario
+  const availablePointsOfSale = formData.transactionType === 'transfer' 
+    ? pointsOfSaleWithInventory  // Origen debe tener inventario
+    : pointsOfSaleWithInventory;
 
   // Manejar selección de producto del dropdown
   const handleProductSelect = (product: SearchInventoryResult) => {
@@ -630,7 +636,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                 : 'Primero seleccione un tipo de transacción'
               }
             </option>
-            {pointsOfSaleWithInventory.map((pos) => (
+            {availablePointsOfSale.map((pos) => (
               <option key={pos.id} value={pos.id}>
                 {pos.name}
               </option>
@@ -669,7 +675,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   : 'Primero seleccione el punto de venta origen'
               }
             </option>
-              {pointsOfSaleWithInventory
+              {pointsOfSale
                 .filter(pos => pos.id !== formData.pointOfSaleId) // Excluir el punto de venta origen
                 .map((pos) => (
                   <option key={pos.id} value={pos.id}>
